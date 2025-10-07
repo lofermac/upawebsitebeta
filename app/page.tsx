@@ -2,7 +2,8 @@
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { MessageCircle, Search, ThumbsUp, Users, Star, Award, Phone, ArrowRight, Zap, BookOpen } from "lucide-react";
+import { MessageCircle, Search, ThumbsUp, Users, Star, Award, Phone, ArrowRight, Zap } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -183,7 +184,7 @@ export default function Home() {
                 EXCLUSIVE DEALS
               </div>
               <div className="text-5xl md:text-6xl font-black tracking-tighter bg-gradient-to-b from-white to-gray-300 bg-clip-text text-transparent mt-2">
-                On the World's Best Online Poker Sites
+                On the World&apos;s Best Online Poker Sites
               </div>
             </h1>
           </div>
@@ -281,20 +282,20 @@ export default function Home() {
           </div>
         </div>
         <div className="text-center max-w-2xl mx-auto text-white text-lg mt-8">
-          We understand finding the perfect deal might be difficult, but that's where we come in! <a href="#survey" className="text-[#84cc16] font-bold underline hover:text-green-400 transition-all duration-200">Take our survey</a> to find the best deal for you!
+          We understand finding the perfect deal might be difficult, but that&apos;s where we come in! <a href="#survey" className="text-[#84cc16] font-bold underline hover:text-green-400 transition-all duration-200">Take our survey</a> to find the best deal for you!
         </div>
       </section>
       {/* PARTNERS/TESTIMONIALS SECTION */}
       <section className="bg-black w-full py-24 px-4 flex flex-col items-center">
         <h2 className="text-white text-center text-4xl font-bold mb-2">Our Partners</h2>
-        <p className="text-gray-400 text-center mb-12">Don't just take our word for it, take theirs.</p>
+        <p className="text-gray-400 text-center mb-12">Don&apos;t just take our word for it, take theirs.</p>
         <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-3 gap-10 items-center">
           {/* Left: Testimonial */}
           <div className="flex flex-col items-center md:items-end gap-6">
             <div className="bg-[#1a1a1a] rounded-2xl p-8 max-w-xs shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
               <div className="text-white font-bold text-lg mb-1">Jane Doe</div>
               <div className="text-gray-400 text-sm mb-2">@janedoe</div>
-              <p className="text-gray-400 mt-2">"Universal Poker helped me find the best rakeback deal. Super easy and trustworthy!"</p>
+              <p className="text-gray-400 mt-2">&quot;Universal Poker helped me find the best rakeback deal. Super easy and trustworthy!&quot;</p>
             </div>
           </div>
           {/* Center: Logo/Image */}
@@ -306,10 +307,10 @@ export default function Home() {
           {/* Right: Testimonial */}
           <div className="flex flex-col items-center md:items-start gap-6">
             <div className="bg-[#1a1a1a] rounded-2xl p-8 max-w-xs shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 flex flex-col items-center">
-              <img src="/avatar.png" alt="John Smith" className="w-20 h-20 rounded-full mb-3" />
+              <Image src="/avatar.png" alt="John Smith" className="w-20 h-20 rounded-full mb-3" width={80} height={80} />
               <div className="text-white font-bold text-lg mb-1">John Smith</div>
               <div className="text-gray-400 text-sm mb-2">Professional Player</div>
-              <p className="text-gray-400 mt-2 text-center">"The support team was amazing and the deals are unbeatable!"</p>
+              <p className="text-gray-400 mt-2 text-center">&quot;The support team was amazing and the deals are unbeatable!&quot;</p>
             </div>
           </div>
         </div>
@@ -319,7 +320,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto flex flex-col gap-8">
           {/* Card 1 */}
           <div className="flex flex-col md:flex-row items-center bg-[#c2410c] rounded-2xl min-h-[200px] p-8 md:px-12 gap-8 shadow-xl hover:scale-[1.02] hover:shadow-2xl transition-transform duration-300">
-            <img src="/ggpoker-logo.png" alt="GGPoker" className="w-32 h-32 rounded-xl bg-white p-2" />
+            <Image src="/ggpoker-logo.png" alt="GGPoker" className="w-32 h-32 rounded-xl bg-white p-2" width={128} height={128} />
             <div className="flex-1 text-white text-2xl font-bold">GGPoker: Up to 60% Rakeback + Exclusive Promotions</div>
             <div className="flex flex-col gap-3 min-w-[180px]">
               <a href="#" className="bg-white text-[#c2410c] font-bold rounded-full px-7 py-3 text-center text-lg hover:bg-orange-200 transition-all duration-200">JOIN DEAL</a>
@@ -329,7 +330,7 @@ export default function Home() {
           </div>
           {/* Card 2 */}
           <div className="flex flex-col md:flex-row items-center bg-[#0369a1] rounded-2xl min-h-[200px] p-8 md:px-12 gap-8 shadow-xl hover:scale-[1.02] hover:shadow-2xl transition-transform duration-300">
-            <img src="/pokerstars-logo.png" alt="PokerStars" className="w-32 h-32 rounded-xl bg-white p-2" />
+            <Image src="/pokerstars-logo.png" alt="PokerStars" className="w-32 h-32 rounded-xl bg-white p-2" width={128} height={128} />
             <div className="flex-1 text-white text-2xl font-bold">PokerStars: Private Rakeback Deals for High Volume Players</div>
             <div className="flex flex-col gap-3 min-w-[180px]">
               <a href="#" className="bg-white text-[#0369a1] font-bold rounded-full px-7 py-3 text-center text-lg hover:bg-blue-200 transition-all duration-200">JOIN DEAL</a>
@@ -339,7 +340,7 @@ export default function Home() {
           </div>
           {/* Card 3 */}
           <div className="flex flex-col md:flex-row items-center bg-[#7f1d1d] rounded-2xl min-h-[200px] p-8 md:px-12 gap-8 shadow-xl hover:scale-[1.02] hover:shadow-2xl transition-transform duration-300">
-            <img src="/888poker-logo.png" alt="888poker" className="w-32 h-32 rounded-xl bg-white p-2" />
+            <Image src="/888poker-logo.png" alt="888poker" className="w-32 h-32 rounded-xl bg-white p-2" width={128} height={128} />
             <div className="flex-1 text-white text-2xl font-bold">888poker: Up to 40% Rakeback + Welcome Bonus</div>
             <div className="flex flex-col gap-3 min-w-[180px]">
               <a href="#" className="bg-white text-[#7f1d1d] font-bold rounded-full px-7 py-3 text-center text-lg hover:bg-red-200 transition-all duration-200">JOIN DEAL</a>
@@ -355,7 +356,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {/* News Card 1 */}
           <div className="bg-[#18181b] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 hover:scale-105">
-            <img src="/news1.jpg" alt="News 1" className="w-full h-56 object-cover rounded-t-2xl" />
+            <Image src="/news1.jpg" alt="News 1" className="w-full h-56 object-cover rounded-t-2xl" width={600} height={224} />
             <div className="p-6">
               <div className="text-white text-xs mb-2">Oct 2025</div>
               <div className="text-white font-bold text-xl mb-3">Universal Poker launches new exclusive deals!</div>
@@ -364,7 +365,7 @@ export default function Home() {
           </div>
           {/* News Card 2 */}
           <div className="bg-[#18181b] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 hover:scale-105">
-            <img src="/news2.jpg" alt="News 2" className="w-full h-56 object-cover rounded-t-2xl" />
+            <Image src="/news2.jpg" alt="News 2" className="w-full h-56 object-cover rounded-t-2xl" width={600} height={224} />
             <div className="p-6">
               <div className="text-white text-xs mb-2">Sep 2025</div>
               <div className="text-white font-bold text-xl mb-3">Interview with top online poker pros</div>
@@ -373,7 +374,7 @@ export default function Home() {
           </div>
           {/* News Card 3 */}
           <div className="bg-[#18181b] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 hover:scale-105">
-            <img src="/news3.jpg" alt="News 3" className="w-full h-56 object-cover rounded-t-2xl" />
+            <Image src="/news3.jpg" alt="News 3" className="w-full h-56 object-cover rounded-t-2xl" width={600} height={224} />
             <div className="p-6">
               <div className="text-white text-xs mb-2">Aug 2025</div>
               <div className="text-white font-bold text-xl mb-3">How to maximize your rakeback in 2025</div>

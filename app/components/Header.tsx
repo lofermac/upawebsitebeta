@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -9,7 +10,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full h-24 border-b border-white/10 backdrop-blur-md bg-black/90 flex items-center relative after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/20 after:to-transparent">
       <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4 h-full relative">
         {/* Logo */}
-        <a href="/" className="flex items-center h-full group transition-transform duration-300 hover:scale-105">
+        <Link href="/" className="flex items-center h-full group transition-transform duration-300 hover:scale-105">
           <Image
             src="/images/logo.png"
             alt="Universal Poker Logo"
@@ -18,7 +19,7 @@ export default function Header() {
             className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 group-hover:opacity-80 drop-shadow-lg"
             priority
           />
-        </a>
+        </Link>
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-8 text-sm font-medium tracking-wide uppercase h-full items-center">
           <a href="#news" className="text-gray-300 hover:text-white transition-colors duration-200">News</a>
