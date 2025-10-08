@@ -3,7 +3,7 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Link from "next/link";
-import { Search, ThumbsUp, Users, Star, Award, Phone, ArrowRight, Gift, Headphones, Shield, DollarSign, Layers, Clock } from "lucide-react";
+import { ArrowRight, Gift, Headphones, Shield, DollarSign, Layers, Clock } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -24,7 +24,7 @@ const blogPosts = [
   {
     id: 9224,
     date: '02/10/25',
-    title: 'Gilles \'TaxationIsTheft\' Simon Wins $10K WCOOP Main Event for $736,237',
+    title: 'Gilles "TaxationIsTheft" Simon Wins $10K WCOOP Main Event for $736,237',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/10/02144825/Featured-Image-Gilles.png',
     alt: 'Gilles Simon wearing a Universal Poker patch while playing at the WCOOP Main Event',
     url: '/2025/10/gilles-simon-wins-wcoop-main-event-2025/',
@@ -457,7 +457,7 @@ export default function Home() {
                   </div>
                   
                   {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ (19+ in Canada) | Please Play Responsibly | Full GGPoker T&C's Apply | Full Universal Poker T&C's Apply | GambleAware</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ (19+ in Canada) | Please Play Responsibly | Full GGPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
@@ -504,7 +504,7 @@ export default function Home() {
                   </div>
                   
                   {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">* New .COM Accounts Only | 18+ (19+ In Canada) | Please Gamble Responsibly | GambleAware | Full partypoker T&C's Apply | Full Universal Poker T&C's Apply</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">* New .COM Accounts Only | 18+ (19+ In Canada) | Please Gamble Responsibly | GambleAware | Full partypoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply</p>
                 </div>
               </div>
             </div>
@@ -551,7 +551,7 @@ export default function Home() {
                   </div>
                   
                   {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">#Ad | 18+ | GambleAware | Full 888Poker T&C's Apply | Full Universal Poker T&C's Apply | Play Responsibly</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">#Ad | 18+ | GambleAware | Full 888Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | Play Responsibly</p>
                 </div>
               </div>
             </div>
@@ -585,7 +585,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full WPT Global T&C's Apply | Full Universal Poker T&C's Apply | GambleAware</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full WPT Global T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
@@ -619,7 +619,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | GambleAware | Full Unibet T&C's apply | Full Universal Poker T&C's apply | Play Responsibly | New UK players only</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | GambleAware | Full Unibet T&amp;C&apos;s apply | Full Universal Poker T&amp;C&apos;s apply | Play Responsibly | New UK players only</p>
                 </div>
               </div>
             </div>
@@ -653,7 +653,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full Betfair T&C's Apply | Full Universal Poker T&C's Apply | GambleAware</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full Betfair T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
@@ -687,7 +687,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Play Responsibly | Full Champion Poker T&C's Apply | Full Universal Poker T&C's Apply | GambleAware</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Play Responsibly | Full Champion Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
@@ -721,7 +721,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">19+ | Please Play Responsibly | Full WSOP.ca T&C's Apply | Full Universal Poker T&C's Apply | www.ConnexOntario.ca</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">19+ | Please Play Responsibly | Full WSOP.ca T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | www.ConnexOntario.ca</p>
                 </div>
               </div>
             </div>
@@ -755,7 +755,7 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | GambleAware | Full Optibet T&C's Apply | Full Universal Poker T&C's Apply | EE & LAT Only</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | GambleAware | Full Optibet T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | EE &amp; LAT Only</p>
                 </div>
               </div>
             </div>
@@ -822,7 +822,7 @@ export default function Home() {
             </div>
             <h3 className="text-white text-2xl font-bold mb-4 text-center">Customer Support</h3>
             <p className="text-gray-300 text-center leading-relaxed">
-              Had a disconnection? Having troubles logging in? Let us know and we'll contact the sites on your behalf to get quicker responses!
+              Had a disconnection? Having troubles logging in? Let us know and we&apos;ll contact the sites on your behalf to get quicker responses!
             </p>
           </div>
 
@@ -838,7 +838,7 @@ export default function Home() {
             </div>
             <h3 className="text-white text-2xl font-bold mb-4 text-center">Trusted Community</h3>
             <p className="text-gray-300 text-center leading-relaxed">
-              We have a community of thousands of players. We've been tried and stood the test of time
+              We have a community of thousands of players. We&apos;ve been tried and stood the test of time
             </p>
           </div>
 
@@ -885,7 +885,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <h3 className="text-white text-xl font-bold mb-4 text-center">How Long We've<br />Been Here</h3>
+            <h3 className="text-white text-xl font-bold mb-4 text-center">How Long We&apos;ve<br />Been Here</h3>
             <div className="text-4xl font-black text-gray-400">
               <AnimatedCounter end={13} duration={2000} suffix=" years" decimals={0} />
             </div>
