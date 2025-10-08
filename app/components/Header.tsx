@@ -1,86 +1,242 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full h-24 border-b border-white/10 backdrop-blur-md bg-black/90 flex items-center relative after:absolute after:inset-x-0 after:top-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-white/20 after:to-transparent">
-      <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4 h-full relative">
+    <header className="flex justify-center transition-all duration-500">
+      <div 
+        className={`max-w-7xl w-full flex items-center justify-between px-4 md:px-8 py-4 md:py-4 rounded-full backdrop-blur-xl bg-gradient-to-r from-black/90 via-black/85 to-black/90 border border-white/10 shadow-2xl shadow-black/50 transition-all duration-500 relative overflow-hidden group`}
+      >
+        {/* Animated gradient border effect */}
+        <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#077124]/20 via-emerald-400/20 to-[#077124]/20 blur-xl animate-pulse-slow"></div>
+        </div>
+        
+        {/* Shine effect on hover */}
+        <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
+        </div>
         {/* Logo */}
-        <Link href="/" className="flex items-center h-full group transition-transform duration-300 hover:scale-105">
-          <Image
-            src="/images/logo.png"
-            alt="Universal Poker Logo"
-            width={180}
-            height={50}
-            className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 group-hover:opacity-80 drop-shadow-lg"
-            priority
-          />
+        <Link href="/" className="flex items-center relative z-10 group/logo">
+          <div className="relative">
+            <Image
+              src="/images/logo.png"
+              alt="Universal Poker Logo"
+              width={150}
+              height={40}
+              className="h-9 md:h-10 w-auto object-contain transition-all duration-500 group-hover/logo:brightness-110 group-hover/logo:scale-[1.02]"
+              priority
+            />
+            {/* Subtle glow effect on logo */}
+            <div className="absolute inset-0 blur-lg opacity-0 group-hover/logo:opacity-30 transition-opacity duration-500 bg-white/20 rounded-full"></div>
+          </div>
         </Link>
+        
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex gap-8 text-sm font-medium tracking-wide uppercase h-full items-center">
-          <a href="#news" className="text-gray-300 hover:text-white transition-colors duration-200">News</a>
-          <a href="#deals" className="text-gray-300 hover:text-white transition-colors duration-200">Deals</a>
-          <a href="#blog" className="text-gray-300 hover:text-white transition-colors duration-200">Blog</a>
+        <nav className="hidden md:flex gap-1 lg:gap-2 text-sm font-medium items-center flex-1 justify-center relative z-10">
+          <a 
+            href="#deals" 
+            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+          >
+            <span className="relative z-10">Deals</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+          </a>
+          <a 
+            href="#mission" 
+            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+          >
+            <span className="relative z-10">Mission</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+          </a>
+          <a 
+            href="#partners" 
+            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+          >
+            <span className="relative z-10">Partners</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+          </a>
+          <a 
+            href="#news" 
+            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+          >
+            <span className="relative z-10">News</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+          </a>
         </nav>
+        
         {/* Auth Buttons */}
-        <div className="hidden md:flex items-center h-full gap-6">
-          <a href="#login" className="text-gray-400 font-medium hover:text-white transition-colors duration-200 text-sm tracking-wide">Login</a>
+        <div className="hidden md:flex items-center gap-3 relative z-10">
+          <a 
+            href="#login" 
+            className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
+          >
+            <span className="relative z-10">Login</span>
+            <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
+          </a>
           <a
             href="#register"
-            className="font-bold text-sm tracking-wide px-8 py-2.5 rounded-full bg-white text-black shadow-lg shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4)] hover:shadow-xl hover:scale-105 transition-all duration-300"
+            className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
           >
-            Register
+            <span className="relative z-10 flex items-center gap-2">
+              Register
+              <svg className="w-0 group-hover/register:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </span>
+            {/* Animated shine effect */}
+            <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            {/* Subtle inner glow */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
           </a>
         </div>
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden flex items-center justify-center p-2 ml-2 text-gray-300 hover:text-white transition-colors"
+          className="md:hidden relative flex items-center justify-center p-2.5 ml-2 text-gray-300 hover:text-white transition-all duration-300 rounded-full group/menu z-10"
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
         >
-          <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/menu:scale-100 transition-transform duration-300"></div>
+          <svg className="relative z-10" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M4 7h16M4 12h16M4 17h16"/>
+          </svg>
         </button>
-        {/* Mobile Menu */}
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end">
-            <div className="bg-black/90 backdrop-blur-md w-72 max-w-full h-full flex flex-col p-8 gap-8 shadow-2xl animate-slide-in-right relative">
+      </div>
+      
+      {/* Mobile Menu */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop with blur */}
+          <div 
+            className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setMobileOpen(false)}
+          />
+          
+          {/* Menu Panel */}
+          <div className="fixed inset-y-0 right-0 z-[70] w-80 max-w-[85vw] animate-slide-in-right">
+            <div className="h-full bg-gradient-to-b from-black/98 via-black/95 to-black/98 backdrop-blur-2xl border-l border-white/10 flex flex-col shadow-2xl shadow-black/80 relative overflow-hidden">
+              {/* Ambient glow effect */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#077124]/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
+              
+              {/* Close button */}
               <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                className="absolute top-6 right-6 z-10 p-2.5 text-gray-400 hover:text-white transition-all duration-300 rounded-full group/close"
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
               >
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M6 6l12 12M6 18L18 6"/></svg>
+                <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/close:scale-100 transition-transform duration-300"></div>
+                <svg className="relative z-10" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M6 6l12 12M6 18L18 6"/>
+                </svg>
               </button>
-              <nav className="flex flex-col gap-8 mt-12 text-sm font-medium tracking-wide uppercase">
-                <a href="#news" className="text-gray-300 hover:text-white transition-colors duration-200" onClick={() => setMobileOpen(false)}>News</a>
-                <a href="#deals" className="text-gray-300 hover:text-white transition-colors duration-200" onClick={() => setMobileOpen(false)}>Deals</a>
-                <a href="#blog" className="text-gray-300 hover:text-white transition-colors duration-200" onClick={() => setMobileOpen(false)}>Blog</a>
-                <a href="#login" className="text-gray-400 font-medium hover:text-white transition-colors duration-200 text-sm tracking-wide" onClick={() => setMobileOpen(false)}>Login</a>
-                <a
-                  href="#register"
-                  className="font-bold text-sm tracking-wide px-8 py-2.5 rounded-full bg-white text-black shadow-lg shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4)] hover:shadow-xl hover:scale-105 transition-all duration-300 mt-2"
+              
+              {/* Navigation */}
+              <nav className="flex flex-col gap-3 mt-20 px-8 relative z-10">
+                <a 
+                  href="#deals" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
                   onClick={() => setMobileOpen(false)}
                 >
-                  Register
+                  <span className="relative z-10">Deals</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                <a 
+                  href="#mission" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10">Mission</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                <a 
+                  href="#partners" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10">Partners</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                <a 
+                  href="#news" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10">News</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
+                
+                <a 
+                  href="#login" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10">Login</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                <a
+                  href="#register"
+                  className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    Register
+                    <svg className="w-0 group-hover/register-mobile:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                  <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
                 </a>
               </nav>
             </div>
-            {/* Overlay */}
-            <div className="flex-1" onClick={() => setMobileOpen(false)} />
           </div>
-        )}
-      </div>
+        </>
+      )}
+      
       <style jsx global>{`
         @keyframes slide-in-right {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
+          from { 
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to { 
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
         .animate-slide-in-right {
-          animation: slide-in-right 0.3s cubic-bezier(0.4,0,0.2,1);
+          animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.3s ease-out;
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 0.8; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
     </header>

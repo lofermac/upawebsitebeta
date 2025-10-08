@@ -1,14 +1,156 @@
 export default function Footer() {
   return (
-    <footer className="w-full bg-[#3a3a3a] text-white py-12 mt-16">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-4 gap-6">
-        <div className="flex gap-8 text-base font-medium">
-          <a href="#news" className="hover:text-green-400 transition-all duration-200">News</a>
-          <a href="#deals" className="hover:text-green-400 transition-all duration-200">Deals</a>
-          <a href="#blog" className="hover:text-green-400 transition-all duration-200">Blog</a>
+    <footer className="relative w-full bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0a0a0a] text-white overflow-hidden">
+      {/* Subtle top border with gradient */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      
+      {/* Ambient background effects */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#077124]/[0.02] rounded-full blur-[120px]"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/[0.015] rounded-full blur-[120px]"></div>
+      
+      <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20">
+        {/* Footer Grid - 4 Columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-16">
+          
+          {/* Column 1 - Poker Sites */}
+          <div className="space-y-6">
+            <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Poker Sites</h3>
+            <ul className="space-y-3.5">
+              <li>
+                <a href="#partypoker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  PartyPoker
+                </a>
+              </li>
+              <li>
+                <a href="#optibet" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Optibet
+                </a>
+              </li>
+              <li>
+                <a href="#betfair" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Betfair
+                </a>
+              </li>
+              <li>
+                <a href="#wpt" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  WPT Global
+                </a>
+              </li>
+              <li>
+                <a href="#ggpoker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  GGPoker
+                </a>
+              </li>
+              <li>
+                <a href="#888poker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  888Poker
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 2 - Quick Links */}
+          <div className="space-y-6">
+            <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Quick Links</h3>
+            <ul className="space-y-3.5">
+              <li>
+                <a href="#deals" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Deals
+                </a>
+              </li>
+              <li>
+                <a href="#news" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  News and Updates
+                </a>
+              </li>
+              <li>
+                <a href="#partners" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Partners
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Contact Us
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3 - Legal */}
+          <div className="space-y-6">
+            <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Legal</h3>
+            <ul className="space-y-3.5">
+              <li>
+                <a href="#terms" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Terms & Conditions
+                </a>
+              </li>
+              <li>
+                <a href="#privacy" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Privacy Policy
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4 - Company Info (No Links) */}
+          <div className="space-y-6">
+            <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Contact Information</h3>
+            <div className="space-y-2 text-sm text-gray-400 leading-relaxed">
+              <p className="font-semibold text-white mb-3">Universal Affiliates Limited</p>
+              <p className="flex items-start">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
+                <span>Sutherland House</span>
+              </p>
+              <p className="flex items-start">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
+                <span>1759 London Road</span>
+              </p>
+              <p className="flex items-start">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
+                <span>Leigh on Sea</span>
+              </p>
+              <p className="flex items-start">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
+                <span>Essex, SS9 2RZ</span>
+              </p>
+              <p className="flex items-start pt-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
+                <span>Company Number 11667550</span>
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="text-xs text-gray-400 text-center md:text-right">
-          &copy; {new Date().getFullYear()} Universal Poker. All rights reserved.
+
+        {/* Bottom Bar - Copyright */}
+        <div className="relative pt-8 border-t border-white/[0.05]">
+          {/* Subtle gradient line on top of border */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-gray-400 font-medium">
+              <span className="text-white font-bold">UNIVERSALPOKER.COM</span> © {new Date().getFullYear()} All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>Poker Deals</span>
+              <span className="w-1 h-1 rounded-full bg-gray-600"></span>
+              <span>18+</span>
+              <span className="w-1 h-1 rounded-full bg-gray-600"></span>
+              <span>T&Cs Apply</span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

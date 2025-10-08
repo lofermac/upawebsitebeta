@@ -1,5 +1,25 @@
 @import "tailwindcss";
 
+/* Cross-Device Consistency Reset */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Force consistent viewport height across browsers */
+html {
+  -webkit-text-size-adjust: 100%; /* Prevent automatic zoom on iOS Safari */
+  -ms-text-size-adjust: 100%;
+}
+
+/* Ensure consistent box model across all browsers */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 @layer utilities {
   /* Original scan animations */
   @keyframes scan {
@@ -136,5 +156,194 @@
   
   .animate-fade-up-delay-1600 {
     animation: fade-up 0.8s ease-out 1.6s both;
+  }
+
+  /* Hide scrollbar for carousel */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ultra-smooth carousel scrolling */
+  .smooth-carousel {
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scroll-snap-stop: always;
+    -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
+    transition: scroll-behavior 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .smooth-carousel-item {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  /* GPU-accelerated smooth transitions */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+    will-change: transform;
+  }
+
+  /* Embla Carousel - Netflix Style with Peek Effect */
+  .embla {
+    overflow: hidden; /* Hide overflow to show only immediate neighbors */
+    cursor: grab;
+    position: relative;
+    max-width: 100%;
+  }
+  
+  .embla:active {
+    cursor: grabbing;
+  }
+  
+  .embla__container {
+    display: flex;
+    touch-action: pan-y;
+    backface-visibility: hidden;
+    will-change: transform;
+    gap: 3rem; /* Spacing between slides */
+    padding: 0 25%; /* More padding to make neighbors smaller */
+    margin: 0; /* Ensure no margin on container */
+  }
+  
+  /* Ensure uniform spacing for all slides including clones */
+  .embla__slide:first-child,
+  .embla__slide:last-child {
+    margin: 0 !important;
+  }
+  
+  @media (max-width: 1280px) {
+    .embla__container {
+      padding: 0 20%;
+      gap: 2.5rem;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .embla__container {
+      padding: 0 15%; /* Less padding on tablets */
+      gap: 2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .embla__container {
+      padding: 0 10%; /* Less padding on mobile */
+      gap: 1.5rem;
+    }
+  }
+  
+  .embla__slide {
+    flex: 0 0 50%; /* Smaller base width - neighbors will be even smaller */
+    min-width: 0;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Smoother easing */
+    will-change: transform, opacity, filter;
+    transform: translateZ(0) scale(0.65); /* Much smaller side slides */
+    backface-visibility: hidden;
+    opacity: 0.35; /* More dimmed */
+    filter: blur(1.5px); /* Slight blur */
+  }
+  
+  @media (max-width: 1280px) {
+    .embla__slide {
+      flex: 0 0 60%;
+      transform: translateZ(0) scale(0.7);
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .embla__slide {
+      flex: 0 0 70%; /* Larger on tablets */
+      transform: translateZ(0) scale(0.75);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .embla__slide {
+      flex: 0 0 80%; /* Even larger on mobile */
+      transform: translateZ(0) scale(0.85);
+      opacity: 0.4;
+    }
+  }
+  
+  /* Active slide (center) - full size, sharp, bright */
+  .embla__slide.is-active {
+    opacity: 1 !important;
+    transform: translateZ(0) scale(1) !important;
+    filter: blur(0) !important;
+    z-index: 10;
+  }
+  
+  /* Inactive slides (sides) - smaller, dimmed, blurred */
+  .embla__slide.is-inactive {
+    opacity: 0.35;
+    transform: translateZ(0) scale(0.65);
+    filter: blur(1.5px);
+    z-index: 1;
+  }
+  
+  @media (max-width: 1280px) {
+    .embla__slide.is-inactive {
+      transform: translateZ(0) scale(0.7);
+      opacity: 0.35;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .embla__slide.is-inactive {
+      transform: translateZ(0) scale(0.75);
+      opacity: 0.4;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .embla__slide.is-inactive {
+      transform: translateZ(0) scale(0.85);
+      opacity: 0.4;
+    }
+  }
+
+  /* Premium Header Effects */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { 
+      box-shadow: 0 0 20px rgba(7, 113, 36, 0.2), 0 0 40px rgba(7, 113, 36, 0.1);
+    }
+    50% { 
+      box-shadow: 0 0 30px rgba(7, 113, 36, 0.4), 0 0 60px rgba(7, 113, 36, 0.2);
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  /* Smooth scroll behavior */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Remove tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
