@@ -39,7 +39,7 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-1 lg:gap-2 text-sm font-medium items-center flex-1 justify-center relative z-10">
           <a 
-            href="#deals" 
+            href="/deals" 
             className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
           >
             <span className="relative z-10">Deals</span>
@@ -137,7 +137,7 @@ export default function Header() {
               {/* Navigation */}
               <nav className="flex flex-col gap-3 mt-20 px-8 relative z-10">
                 <a 
-                  href="#deals" 
+                  href="/deals" 
                   className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
                   onClick={() => setMobileOpen(false)}
                 >

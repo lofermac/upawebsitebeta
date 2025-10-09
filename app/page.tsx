@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Link from "next/link";
-import { ArrowRight, Gift, Headphones, Shield, DollarSign, Layers, Clock } from "lucide-react";
+import { ArrowRight, Users, Headset, Shield, Clock, HelpCircle } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from 'embla-carousel-react';
@@ -34,9 +34,9 @@ const blogPosts = [
   {
     id: 9190,
     date: '25/09/25',
-    title: 'UP Private Tournament – Unibet Poker €500 Freeroll',
+    title: 'UP Private Tournament â€“ Unibet Poker â‚¬500 Freeroll',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/09/02162300/Unibet-Small-Banner.png',
-    alt: 'Unibet UP Private Tournament banner for €500 freeroll poker event',
+    alt: 'Unibet UP Private Tournament banner for â‚¬500 freeroll poker event',
     url: '/2025/09/unibet-up-private-tournament-freeroll/',
     category: 'News',
     isHighlighted: false,
@@ -54,7 +54,7 @@ const blogPosts = [
   {
     id: 8996,
     date: '27/06/25',
-    title: 'Join the PartyPoker Tour Challenge – Win Free Live Event Packages!',
+    title: 'Join the PartyPoker Tour Challenge â€“ Win Free Live Event Packages!',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/06/12201637/PartyPoker-Tour-Small-New-1.png',
     alt: 'PartyPoker Tour Challenge promotional banner',
     url: '/2025/06/partypoker-tour-challenge/',
@@ -136,7 +136,7 @@ const testimonials = [
   // CLONES at beginning (for left peek)
   {
     id: 'clone-8',
-    name: 'Péter Traply',
+    name: 'PÃ©ter Traply',
     meta: 'Belabasci',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174831/p2j-test.webp',
     quote: 'I really like working with Universal. They are always helpful, fast with their responses and even helped me with some unique requests. They have very good connections in the poker business which can be really helpful. Would recommend them for any serious player/stable.',
@@ -182,7 +182,7 @@ const testimonials = [
     name: 'Douglas Ferreira',
     meta: 'Dowgh-Santos',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174834/dowgh-santos-test.webp',
-    quote: 'Universal é a melhor empresa de afiliados pois tem uma politica de transparencia muito grande, sempre cumprindo os prazos e dando um suporte VP aos afiliados através do grupo do Discord.',
+    quote: 'Universal Ã© a melhor empresa de afiliados pois tem uma politica de transparencia muito grande, sempre cumprindo os prazos e dando um suporte VP aos afiliados atravÃ©s do grupo do Discord.',
     isClone: false
   },
   {
@@ -211,7 +211,7 @@ const testimonials = [
   },
   {
     id: '8',
-    name: 'Péter Traply',
+    name: 'PÃ©ter Traply',
     meta: 'Belabasci',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174831/p2j-test.webp',
     quote: 'I really like working with Universal. They are always helpful, fast with their responses and even helped me with some unique requests. They have very good connections in the poker business which can be really helpful. Would recommend them for any serious player/stable.',
@@ -278,10 +278,10 @@ export default function Home() {
     
     // Map clone indices to real indices for dot navigation display
     let displayIndex = selectedIndex;
-    if (selectedIndex === 0) displayIndex = 8; // Clone Péter → real Péter
-    else if (selectedIndex === 1) displayIndex = 9; // Clone RYE → real RYE
-    else if (selectedIndex === 11) displayIndex = 2; // Clone Ryan → real Ryan
-    else if (selectedIndex === 12) displayIndex = 3; // Clone Smart Spin → real Smart Spin
+    if (selectedIndex === 0) displayIndex = 8; // Clone PÃ©ter â†’ real PÃ©ter
+    else if (selectedIndex === 1) displayIndex = 9; // Clone RYE â†’ real RYE
+    else if (selectedIndex === 11) displayIndex = 2; // Clone Ryan â†’ real Ryan
+    else if (selectedIndex === 12) displayIndex = 3; // Clone Smart Spin â†’ real Smart Spin
     
     setCurrentSlide(displayIndex);
     
@@ -313,13 +313,13 @@ export default function Home() {
     <div className="bg-[#1E1E1E] min-h-screen flex flex-col">
       {/* HERO SECTION */}
       <section className="relative bg-[#1E1E1E] w-full h-screen flex flex-col items-center justify-start px-3 md:px-4 pt-6">
-        {/* Premium Container Card - engloba o header e todo conteúdo */}
+        {/* Premium Container Card - engloba o header e todo conteÃºdo */}
         <div className="relative w-full h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden group/hero transition-all duration-700">
           {/* Header dentro do card */}
           <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
       <Header />
           </div>
-          {/* Background with gradient - tom intermediário entre preto e cinza */}
+          {/* Background with gradient - tom intermediÃ¡rio entre preto e cinza */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/hero:from-[#0e0e0e] group-hover/hero:via-[#131313] group-hover/hero:to-[#0e0e0e]"></div>
           
           {/* Subtle border effect - borda completa ao redor */}
@@ -341,53 +341,83 @@ export default function Home() {
           {/* Content wrapper */}
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center px-8 md:px-16 lg:px-20 pt-24">
             {/* Hero Text Content */}
-            <div className="max-w-5xl mx-auto text-center space-y-8">
-              {/* Main Heading - Typography Premium */}
+            <div className="max-w-6xl mx-auto text-center space-y-10">
+              {/* Main Heading - Apple-like Typography */}
               <h1 className="animate-fade-up-delay-800">
-                <div className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.1] tracking-tight">
-                  <span className="block text-white drop-shadow-2xl">
+                <div className="text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.5rem] font-semibold leading-[1.08] tracking-[-0.02em]">
+                  {/* Primeira linha - Peso menor, mais sutil */}
+                  <span className="block text-white/95 font-medium" 
+                        style={{ 
+                          textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+                          letterSpacing: '-0.02em'
+                        }}>
                     Exclusive Deals On The
                   </span>
-                  <span className="block mt-2 bg-gradient-to-br from-white via-gray-100 to-gray-300 bg-clip-text text-transparent" 
+                  {/* Segunda linha - Destaque premium com gradiente sutil */}
+                  <span className="block mt-1 bg-gradient-to-br from-white via-white to-gray-200 bg-clip-text text-transparent font-semibold" 
                         style={{ 
-                          textShadow: '0 0 40px rgba(255,255,255,0.1)',
-                          WebkitTextStroke: '0.5px rgba(255,255,255,0.1)'
+                          textShadow: '0 4px 24px rgba(255,255,255,0.08)',
+                          letterSpacing: '-0.03em'
                         }}>
-                    Worlds Best Poker Sites
+                    World's Best Poker Sites
                   </span>
                 </div>
               </h1>
               
-              {/* Subtitle - Elegant & Refined */}
-              <p className="text-xl md:text-2xl lg:text-3xl text-gray-300 font-light tracking-wide max-w-3xl mx-auto leading-relaxed animate-fade-up-delay-1200"
+              {/* Subtitle - Apple-style minimalista */}
+              <p className="text-[1.35rem] sm:text-2xl md:text-[1.75rem] lg:text-[2rem] text-gray-400 font-normal max-w-4xl mx-auto leading-[1.4] animate-fade-up-delay-1200"
                  style={{ 
-                   textShadow: '0 2px 12px rgba(0,0,0,0.5)',
-                   letterSpacing: '0.02em'
+                   textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                   letterSpacing: '-0.01em',
+                   fontWeight: '400'
                  }}>
             More Rakeback. More Support. Maximum Value.
           </p>
           
-              {/* CTA Button - Hero Style */}
+              {/* CTA Button - Premium Apple-like Style */}
               <div className="flex justify-center pt-6 animate-fade-up-delay-1400">
           <a 
             href="#deals"
-                  className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 text-lg md:text-xl font-bold text-white bg-[#077124] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl hover:shadow-[#077124]/40 active:scale-[0.98]"
+                  className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                   style={{
-                    boxShadow: '0 10px 40px rgba(7, 113, 36, 0.3), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.2)'
+                    boxShadow: `
+                      0 0 0 1px rgba(255,255,255,0.1),
+                      0 1px 3px 0 rgba(0,0,0,0.5),
+                      0 4px 12px rgba(7,113,36,0.3),
+                      0 8px 32px rgba(7,113,36,0.25),
+                      0 16px 64px rgba(7,113,36,0.2),
+                      inset 0 1px 1px rgba(255,255,255,0.3),
+                      inset 0 -1px 1px rgba(0,0,0,0.2)
+                    `
                   }}
                 >
-                  {/* Animated gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                  {/* Outer glow - Layer 1 (most intense) */}
+                  <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
                   
-                  {/* Pulsing glow effect */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[#077124] blur-xl"></div>
+                  {/* Outer glow - Layer 2 (medium spread) */}
+                  <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                  
+                  {/* Outer glow - Layer 3 (soft wide spread) */}
+                  <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                  
+                  {/* Glass reflection effect on top */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                  
+                  {/* Animated shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                  
+                  {/* Inner shadow for depth */}
+                  <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                  
+                  {/* Pulsing ambient glow on hover */}
+                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
                   
                   {/* Button content */}
-                  <span className="relative z-10 tracking-wide">Explore Our Deals</span>
+                  <span className="relative z-10 tracking-wide drop-shadow-lg">Explore Our Deals</span>
                   
                   {/* Animated arrow */}
                   <svg 
-                    className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" 
+                    className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor" 
@@ -396,8 +426,11 @@ export default function Home() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                   
-                  {/* Inner highlight */}
-                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+                  {/* Top edge highlight */}
+                  <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                  
+                  {/* Bottom edge shadow */}
+                  <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                 </a>
               </div>
             </div>
@@ -408,72 +441,28 @@ export default function Home() {
       {/* FEATURED DEALS SECTION - 9 Real Poker Room Deals */}
       <section id="deals" className="w-full py-24 px-4 bg-[#1E1E1E]">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-white text-center text-4xl md:text-5xl font-bold mb-4">Our Exclusive Poker Deals</h2>
-          <p className="text-gray-400 text-center text-lg mb-16">Choose from the best online poker rooms with exclusive rakeback and promotions</p>
+          <h2 className="text-white text-center text-4xl md:text-5xl font-bold mb-4">Most Popular Deals</h2>
+          <p className="text-gray-400 text-center text-lg mb-16">Here are our most popular offers within our community</p>
           
           {/* Deals Grid - 3 columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
-            
-            {/* Deal 1: GGPOKER - Primeira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#077124]/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-[#077124]/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                {/* Background Image with Overlay */}
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07124324/GG-BACKRGOUND-WebP.webp" alt="GGPoker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#077124]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                
-                {/* Logo */}
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144333/ggpoker_logo-1_white-1.webp" alt="GGPoker Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                
-                {/* Content - Flex grow to push buttons down */}
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Get up to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">60% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">through the GGPoker Fish Buffet</p>
-                  </div>
-                  
-                  {/* Spacer to push buttons to bottom */}
-                  <div className="flex-grow"></div>
-                  
-                  {/* Buttons */}
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1365" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/ggpoker/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  
-                  {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ (19+ in Canada) | Please Play Responsibly | Full GGPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-auto">
 
             {/* Deal 2: PARTYPOKER - Primeira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
+            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
               {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/50 via-amber-600/40 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
               
               {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-orange-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-orange-500/25 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[580px]">
                 {/* Background Image with Overlay */}
                 <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17184316/PARTYPOKER-background-788x1024.webp" alt="PartyPoker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  {/* PartyPoker brand orange/brown gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-600/35 via-amber-700/25 to-orange-900/30"></div>
+                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17184316/PARTYPOKER-background-788x1024.webp" alt="PartyPoker" className="w-full h-full object-cover opacity-55 group-hover:opacity-75 group-hover:scale-110 transition-all duration-700 mix-blend-overlay" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/25 via-amber-600/15 to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+                  {/* Subtle warm glow effect */}
+                  <div className="absolute inset-0 bg-orange-600/8 backdrop-blur-[1px]"></div>
                 </div>
                 
                 {/* Logo */}
@@ -482,45 +471,65 @@ export default function Home() {
                 </div>
                 
                 {/* Content */}
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Receive up to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">65% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">+ an extra 10% for 3 months *</p>
+                <div className="relative px-6 pt-5 pb-3 flex flex-col">
+                  <div className="text-center space-y-2 mb-5">
+                    <p className="text-base font-semibold text-zinc-400 tracking-wide">Get Up To</p>
+                    <p className="text-5xl font-black text-white drop-shadow-lg leading-tight">65%<br />Cashback</p>
+                    <p className="text-base text-zinc-400 leading-relaxed pt-1">Through Our Promotions</p>
                   </div>
                   
-                  <div className="flex-grow"></div>
-                  
                   {/* Buttons */}
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1368" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                  <div className="flex gap-3 mb-3">
+                    <a href="/platform-connection?platform_id=1368" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                       style={{
+                         boxShadow: `
+                           0 0 0 1px rgba(255,255,255,0.1),
+                           0 1px 3px 0 rgba(0,0,0,0.5),
+                           0 4px 12px rgba(7,113,36,0.3),
+                           0 8px 32px rgba(7,113,36,0.25),
+                           0 16px 64px rgba(7,113,36,0.2),
+                           inset 0 1px 1px rgba(255,255,255,0.3),
+                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                         `
+                       }}>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
+                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
-                    <a href="/deals/partypoker/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    <a href="/deals/partypoker/" className="flex-1 relative group/info overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-300 hover:border-[#0a9b30] hover:scale-[1.03] backdrop-blur-sm bg-[#077124]/5">
+                      <span className="relative z-10">Learn More</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 group-hover/info:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
                   
                   {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">* New .COM Accounts Only | 18+ (19+ In Canada) | Please Gamble Responsibly | GambleAware | Full partypoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply</p>
+                  <p className="text-xs text-zinc-500 leading-snug text-center pt-3 border-t border-zinc-800/50">18+ (19+ in Canada) | Please Play Responsibly | Full PartyPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
 
             {/* Deal 3: 888POKER - Primeira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
+            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
               {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/50 via-cyan-600/40 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
               
               {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-blue-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-blue-500/25 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[580px]">
                 {/* Background Image with Overlay */}
                 <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183600/888-background-788x1024.webp" alt="888poker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  {/* 888poker brand blue gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-600/35 via-cyan-700/25 to-blue-900/30"></div>
+                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183600/888-background-788x1024.webp" alt="888poker" className="w-full h-full object-cover opacity-55 group-hover:opacity-75 group-hover:scale-110 transition-all duration-700 mix-blend-overlay" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/25 via-cyan-600/15 to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+                  {/* Subtle blue glow effect */}
+                  <div className="absolute inset-0 bg-blue-500/8 backdrop-blur-[1px]"></div>
                 </div>
                 
                 {/* Logo */}
@@ -529,246 +538,164 @@ export default function Home() {
                 </div>
                 
                 {/* Content */}
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Get up to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">60% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">every month</p>
+                <div className="relative px-6 pt-5 pb-3 flex flex-col">
+                  <div className="text-center space-y-2 mb-5">
+                    <p className="text-base font-semibold text-zinc-400 tracking-wide">Get An Extra</p>
+                    <p className="text-5xl font-black text-white drop-shadow-lg leading-tight">50%<br />Cashback</p>
+                    <p className="text-base text-zinc-400 leading-relaxed pt-1">Through Our Offer</p>
                   </div>
                   
-                  <div className="flex-grow"></div>
-                  
                   {/* Buttons */}
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1367" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                  <div className="flex gap-3 mb-3">
+                    <a href="/platform-connection?platform_id=1367" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                       style={{
+                         boxShadow: `
+                           0 0 0 1px rgba(255,255,255,0.1),
+                           0 1px 3px 0 rgba(0,0,0,0.5),
+                           0 4px 12px rgba(7,113,36,0.3),
+                           0 8px 32px rgba(7,113,36,0.25),
+                           0 16px 64px rgba(7,113,36,0.2),
+                           inset 0 1px 1px rgba(255,255,255,0.3),
+                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                         `
+                       }}>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
+                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
-                    <a href="/deals/888poker/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    <a href="/deals/888poker/" className="flex-1 relative group/info overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-300 hover:border-[#0a9b30] hover:scale-[1.03] backdrop-blur-sm bg-[#077124]/5">
+                      <span className="relative z-10">Learn More</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 group-hover/info:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
                   
                   {/* Terms */}
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">#Ad | 18+ | GambleAware | Full 888Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | Play Responsibly</p>
+                  <p className="text-xs text-zinc-500 leading-snug text-center pt-3 border-t border-zinc-800/50">18+ (19+ in Canada) | Please Play Responsibly | Full 888Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
 
-            {/* Deal 4: WPT GLOBAL - Segunda Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-purple-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+            {/* Deal 10: COINPOKER - Quarta Linha */}
+            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-orange-600/40 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-red-500/25 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[580px]">
                 <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07104357/WPT-BG-WebP-1920x1002-1-1024x534.webp" alt="WPT Global" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  {/* CoinPoker brand red/orange gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-600/35 via-orange-700/25 to-red-900/30"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-red-500/25 via-orange-600/15 to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+                  {/* Subtle red glow effect */}
+                  <div className="absolute inset-0 bg-red-500/8 backdrop-blur-[1px]"></div>
                 </div>
                 <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp" alt="WPT Global Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
+                  <img src="/images/coinlogo.png" alt="CoinPoker Logo" className="max-h-64 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
                 </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Get up to an extra</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">40% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">every month</p>
+                <div className="relative px-6 pt-5 pb-5 flex flex-col">
+                  <div className="text-center space-y-2 mb-5">
+                    <p className="text-base font-semibold text-zinc-400 tracking-wide">Join Our</p>
+                    <p className="text-5xl font-black text-white drop-shadow-lg leading-tight">Monthly Rake<br />Chase</p>
+                    <p className="text-base text-zinc-400 leading-relaxed pt-1">Up To $1500 In Rewards</p>
                   </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1364" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                  <div className="flex gap-3 mb-3">
+                    <a href="#" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                       style={{
+                         boxShadow: `
+                           0 0 0 1px rgba(255,255,255,0.1),
+                           0 1px 3px 0 rgba(0,0,0,0.5),
+                           0 4px 12px rgba(7,113,36,0.3),
+                           0 8px 32px rgba(7,113,36,0.25),
+                           0 16px 64px rgba(7,113,36,0.2),
+                           inset 0 1px 1px rgba(255,255,255,0.3),
+                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                         `
+                       }}>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
+                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
-                    <a href="/deals/wptglobal/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    <a href="#" className="flex-1 relative group/info overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-5 py-3 rounded-full text-center text-sm transition-all duration-300 hover:border-[#0a9b30] hover:scale-[1.03] backdrop-blur-sm bg-[#077124]/5">
+                      <span className="relative z-10">Learn More</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 group-hover/info:opacity-100 transition-opacity duration-300"></div>
                     </a>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full WPT Global T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
+                  <p className="text-xs text-zinc-500 leading-snug text-center pt-3 border-t border-zinc-800/50">18+ (19+ in Canada) | Please Play Responsibly | Full CoinPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
                 </div>
               </div>
             </div>
 
-            {/* Deal 5: UNIBET - Segunda Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-emerald-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/28150352/Unibet-Deal-Tab-Final.png" alt="Unibet Poker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/15110203/Unitbet-Logo.png" alt="Unibet Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Enhanced Welcome Bonus</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">Worth £540</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">Plus 4 x €500 Freerolls</p>
-                  </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=9074" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/unibet/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | GambleAware | Full Unibet T&amp;C&apos;s apply | Full Universal Poker T&amp;C&apos;s apply | Play Responsibly | New UK players only</p>
-                </div>
-              </div>
             </div>
 
-            {/* Deal 6: BETFAIR POKER - Segunda Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-yellow-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/24142934/betfair-webp.webp" alt="Betfair Poker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp" alt="Betfair Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Instant VIP upgrade to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">35% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">+ €50k in races</p>
-                  </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1363" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/betfair/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | Full Betfair T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Deal 7: CHAMPION POKER - Terceira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-red-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17184718/ChampionPoker-background-1024x392.webp" alt="Champion Poker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp" alt="Champion Poker Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Get an Instant upgrade to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">30% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">+ all on-site promotions</p>
-                  </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=6016" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/championpoker/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Play Responsibly | Full Champion Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Deal 8: WSOP.CA - Terceira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-amber-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/01/13213231/WSOPca-Tab-NENW-788x1024.png" alt="WSOP.CA" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/12/11192441/wsop-ontario-logo-1024x376.webp" alt="WSOP.CA Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Play on a</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">GGPoker Alternative</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">from Ontario only</p>
-                  </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=2933" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/wsop-ca/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">19+ | Please Play Responsibly | Full WSOP.ca T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | www.ConnexOntario.ca</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Deal 9: OPTIBET POKER - Terceira Linha */}
-            <div className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-600/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-rose-600/20 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
-                <div className="relative h-48 overflow-hidden flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144315/MicrosoftTeams-image-110.png" alt="Optibet Poker" className="w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                  <div className="absolute inset-0 bg-gradient-to-br from-rose-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                <div className="absolute inset-0 h-48 flex items-center justify-center px-8">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17100841/Optibet-Poker-logo-2D-horizontal-red-bg-1024x298.png" alt="Optibet Poker Logo" className="max-h-16 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                <div className="relative p-8 flex flex-col flex-grow">
-                  <div className="text-center space-y-3 mb-6">
-                    <p className="text-sm font-medium text-zinc-400 tracking-wide uppercase">Get up to</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent drop-shadow-lg leading-tight">60% Cashback</p>
-                    <p className="text-sm text-zinc-400 leading-relaxed min-h-[42px] flex items-center justify-center">every month</p>
-                  </div>
-                  <div className="flex-grow"></div>
-                  <div className="flex gap-3 mb-4">
-                    <a href="/platform-connection?platform_id=1362" className="flex-1 relative group/btn overflow-hidden bg-gradient-to-r from-[#077124] to-[#0a9b30] text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 hover:scale-105">
-                      <span className="relative z-10">Claim Offer</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#0a9b30] to-[#077124] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    <a href="/deals/optibet/" className="flex-1 relative overflow-hidden border-2 border-[#077124] text-[#077124] hover:text-white font-bold px-6 py-3.5 rounded-full text-center transition-all duration-300 hover:border-[#0a9b30] hover:scale-105 backdrop-blur-sm bg-[#077124]/5">
-                      <span className="relative z-10">More Info</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-[#0a9b30] opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed text-center pt-4 border-t border-zinc-800/50 min-h-[80px] flex items-center justify-center">18+ | Please Play Responsibly | GambleAware | Full Optibet T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | EE &amp; LAT Only</p>
-                </div>
-              </div>
-            </div>
-
+          {/* View All Deals Button */}
+          <div className="text-center mt-12">
+            <Link 
+              href="/deals"
+              className="group relative inline-flex items-center justify-center gap-2.5 px-10 py-4.5 text-lg font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                       style={{
+                         boxShadow: `
+                           0 0 0 1px rgba(255,255,255,0.1),
+                           0 1px 3px 0 rgba(0,0,0,0.5),
+                           0 4px 12px rgba(7,113,36,0.3),
+                           0 8px 32px rgba(7,113,36,0.25),
+                           0 16px 64px rgba(7,113,36,0.2),
+                           inset 0 1px 1px rgba(255,255,255,0.3),
+                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                         `
+              }}
+            >
+              {/* Outer glow - Layer 1 (most intense) */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+              
+              {/* Outer glow - Layer 2 (medium spread) */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+              
+              {/* Outer glow - Layer 3 (soft wide spread) */}
+              <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+              
+              {/* Glass reflection effect on top */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+              
+              {/* Animated shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+              
+              {/* Inner shadow for depth */}
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+              
+              {/* Pulsing ambient glow on hover */}
+              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+              
+              {/* Button content */}
+              <span className="relative z-10 tracking-wide drop-shadow-lg">View All Deals</span>
+              
+              {/* Animated arrow */}
+              <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+              
+              {/* Top edge highlight */}
+                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+              
+              {/* Bottom edge shadow */}
+                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* WHO ARE UNIVERSAL POKER SECTION */}
       <section id="mission" className="relative bg-[#1E1E1E] w-full py-12 md:py-16 px-3 md:px-4">
-        {/* Premium Container Card - engloba toda a seção */}
+        {/* Premium Container Card - engloba toda a seÃ§Ã£o */}
         <div className="relative w-full rounded-[2.5rem] overflow-hidden group/who transition-all duration-700">
-          {/* Background with gradient - tom intermediário entre preto e cinza */}
+          {/* Background with gradient - tom intermediÃ¡rio entre preto e cinza */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/who:from-[#0e0e0e] group-hover/who:via-[#131313] group-hover/who:to-[#0e0e0e]"></div>
           
           {/* Subtle border effect - borda completa ao redor */}
@@ -789,40 +716,41 @@ export default function Home() {
           
           {/* Content wrapper */}
           <div className="relative z-10 w-full py-20 md:py-24 px-4">
-        <h2 className="text-white text-center text-4xl font-bold mb-12">Who are Universal Poker?</h2>
+        <h2 className="text-white text-center text-4xl md:text-5xl font-bold mb-4">Why Universal Poker</h2>
+        <p className="text-gray-400 text-center text-lg mb-16">Many Reasons...</p>
         
         {/* Grid: 2 linhas x 3 colunas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-8">
           {/* Primeira Linha */}
-          {/* Card 1: More Rewards */}
+          {/* Card 1: Power In Numbers */}
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl">
-                  <Gift className="w-8 h-8 text-white" strokeWidth={2.5} />
+                  <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             </div>
-            <h3 className="text-white text-2xl font-bold mb-4 text-center">More Rewards</h3>
+            <h3 className="text-white text-2xl font-bold mb-4 text-center">Power In Numbers</h3>
             <p className="text-gray-300 text-center leading-relaxed">
-              Get more rewards with us compared to being with the poker site directly
+              Why do we have the best deals? There&apos;s power in numbers, the more players with us, the better benefits we can negotiate for you!
             </p>
           </div>
 
-          {/* Card 2: Customer Support */}
+          {/* Card 2: Not A Regular Affiliate */}
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 group">
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl">
-                  <Headphones className="w-8 h-8 text-white" strokeWidth={2.5} />
+                  <Headset className="w-8 h-8 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             </div>
-            <h3 className="text-white text-2xl font-bold mb-4 text-center">Customer Support</h3>
+            <h3 className="text-white text-2xl font-bold mb-4 text-center">Not A Regular Affiliate</h3>
             <p className="text-gray-300 text-center leading-relaxed">
-              Had a disconnection? Having troubles logging in? Let us know and we&apos;ll contact the sites on your behalf to get quicker responses!
+              Normal Affiliates give you a sign-up link. We give you <span className="font-bold">lifetime support</span> the moment you sign-up.
             </p>
           </div>
 
@@ -838,44 +766,28 @@ export default function Home() {
             </div>
             <h3 className="text-white text-2xl font-bold mb-4 text-center">Trusted Community</h3>
             <p className="text-gray-300 text-center leading-relaxed">
-              We have a community of thousands of players. We&apos;ve been tried and stood the test of time
+              We have a community of <span className="font-bold">thousands of players</span>. We&apos;ve been tried and stood the test of time.
             </p>
           </div>
 
           {/* Segunda Linha */}
-          {/* Card 4: Total Rakeback Paid */}
+          {/* Card 4: Number Of Players With Us */}
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center group">
             <div className="flex justify-center mb-6">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#055a1c] to-emerald-600 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
                 <div className="relative bg-gradient-to-br from-[#055a1c] to-emerald-600 p-4 rounded-2xl">
-                  <DollarSign className="w-8 h-8 text-white" strokeWidth={2.5} />
+                  <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
                 </div>
               </div>
             </div>
-            <h3 className="text-white text-xl font-bold mb-4 text-center">Total Rakeback<br />Paid</h3>
+            <h3 className="text-white text-xl font-bold mb-4 text-center">Number Of Players With Us</h3>
             <div className="text-4xl font-black text-gray-400">
-              <AnimatedCounter end={6247893} duration={2500} prefix="$" decimals={0} />
+              <AnimatedCounter end={10000} duration={2500} suffix="+" decimals={0} />
             </div>
           </div>
 
-          {/* Card 5: Number Of Deals Available */}
-          <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center group">
-            <div className="flex justify-center mb-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#055a1c] to-emerald-600 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
-                <div className="relative bg-gradient-to-br from-[#055a1c] to-emerald-600 p-4 rounded-2xl">
-                  <Layers className="w-8 h-8 text-white" strokeWidth={2.5} />
-                </div>
-              </div>
-            </div>
-            <h3 className="text-white text-xl font-bold mb-4 text-center">Number Of Deals<br />Available</h3>
-            <div className="text-4xl font-black text-gray-400">
-              <AnimatedCounter end={16000} duration={2500} suffix="" decimals={0} />
-            </div>
-          </div>
-
-          {/* Card 6: How Long We've Been Here */}
+          {/* Card 5: How Long We've Been Here */}
           <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center group">
             <div className="flex justify-center mb-6">
               <div className="relative">
@@ -885,14 +797,35 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <h3 className="text-white text-xl font-bold mb-4 text-center">How Long We&apos;ve<br />Been Here</h3>
+            <h3 className="text-white text-xl font-bold mb-4 text-center">How Long We&apos;ve Been Here</h3>
             <div className="text-4xl font-black text-gray-400">
-              <AnimatedCounter end={13} duration={2000} suffix=" years" decimals={0} />
+              <AnimatedCounter end={13} duration={2000} suffix=" Years" decimals={0} />
+            </div>
+          </div>
+
+          {/* Card 6: Test */}
+          <div className="bg-zinc-900/80 backdrop-blur-sm rounded-3xl p-8 border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300 hover:-translate-y-1 flex flex-col items-center justify-center group">
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#055a1c] to-emerald-600 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
+                <div className="relative bg-gradient-to-br from-[#055a1c] to-emerald-600 p-4 rounded-2xl">
+                  <HelpCircle className="w-8 h-8 text-white" strokeWidth={2.5} />
+                </div>
+              </div>
+            </div>
+            <h3 className="text-white text-xl font-bold mb-4 text-center">Test</h3>
+            <div className="text-4xl font-black text-gray-400">
+              <AnimatedCounter end={10} duration={2000} suffix="" decimals={0} />
             </div>
           </div>
         </div>
-            {/* Rakeback Paid in 2025 - Integrado dentro do card */}
-            <div className="max-w-5xl mx-auto text-center mt-16 pt-12 border-t border-white/[0.08]">
+          </div>
+        </div>
+      </section>
+
+      {/* RAKEBACK PAID IN 2025 SECTION */}
+      <section className="bg-[#1E1E1E] w-full py-24 px-4">
+        <div className="max-w-5xl mx-auto text-center">
               <h2 className="text-white text-4xl md:text-5xl font-bold mb-6">Rakeback Paid in 2025</h2>
               <div className="inline-block">
                 <div className="text-6xl md:text-8xl font-black bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent mb-4"
@@ -907,22 +840,95 @@ export default function Home() {
                 <p className="text-xl md:text-2xl text-gray-300 font-light mb-6">
                   And counting...
                 </p>
-                <p className="text-xl md:text-2xl text-gray-300 font-light">
+            <p className="text-xl md:text-2xl text-gray-300 font-light mb-8">
                   Join thousands of players maximizing their poker profits with exclusive rakeback deals.
                 </p>
               </div>
-            </div>
+
+          {/* Claim Your Share Button */}
+          <div className="text-center mt-8">
+            <Link 
+              href="/deals"
+              className="group relative inline-flex items-center justify-center gap-2.5 px-10 py-4.5 text-lg font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+              style={{
+                boxShadow: `
+                  0 0 0 1px rgba(255,255,255,0.1),
+                  0 1px 3px 0 rgba(0,0,0,0.5),
+                  0 4px 12px rgba(7,113,36,0.3),
+                  0 8px 32px rgba(7,113,36,0.25),
+                  0 16px 64px rgba(7,113,36,0.2),
+                  inset 0 1px 1px rgba(255,255,255,0.3),
+                  inset 0 -1px 1px rgba(0,0,0,0.2)
+                `
+              }}
+            >
+              {/* Outer glow - Layer 1 (most intense) */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+              
+              {/* Outer glow - Layer 2 (medium spread) */}
+              <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+              
+              {/* Outer glow - Layer 3 (soft wide spread) */}
+              <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+              
+              {/* Glass reflection effect on top */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+              
+              {/* Animated shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+              
+              {/* Inner shadow for depth */}
+              <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+              
+              {/* Pulsing ambient glow on hover */}
+              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+              
+              {/* Button content */}
+              <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Your Share</span>
+              
+              {/* Animated arrow */}
+              <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+              
+              {/* Top edge highlight */}
+              <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+              
+              {/* Bottom edge shadow */}
+              <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* OUR PARTNERS SECTION - Carousel de testimonials */}
-      <section id="partners" className="bg-[#1E1E1E] w-full py-24 flex flex-col items-center overflow-hidden select-none">
-        <h2 className="text-white text-center text-4xl font-bold mb-2 px-4">Our Partners</h2>
-        <p className="text-gray-400 text-center mb-16 px-4">Don&apos;t just take our word for it, take theirs.</p>
-        
-        {/* Embla Carousel Container */}
-        <div className="embla w-full max-w-[1800px] select-none" ref={emblaRef}>
+      <section id="partners" className="relative bg-[#1E1E1E] w-full py-6 md:py-8 px-3 md:px-4 overflow-hidden select-none">
+        {/* Premium Container Card */}
+        <div className="relative w-full rounded-[2.5rem] overflow-hidden group/partners transition-all duration-700">
+          {/* Background with gradient - tom intermediário entre preto e cinza */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/partners:from-[#0e0e0e] group-hover/partners:via-[#131313] group-hover/partners:to-[#0e0e0e]"></div>
+          
+          {/* Subtle border effect - borda completa ao redor */}
+          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/partners:border-white/[0.09] group-hover/partners:shadow-black/60"></div>
+          
+          {/* Inner glow effect - brilho interno sutil */}
+          <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/partners:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
+          
+          {/* Top light rim - brilho no topo */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2.5rem]"></div>
+          
+          {/* Ambient background effects - glows verdes sutis */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/[0.025] rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+          
+          {/* Subtle noise texture overlay for premium feel */}
+          <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
+          
+          {/* Content wrapper */}
+          <div className="relative z-10 w-full py-20 md:py-24 px-4 flex flex-col items-center">
+            <h2 className="text-white text-center text-4xl font-bold mb-2 px-4">Our Partners</h2>
+            <p className="text-gray-400 text-center mb-16 px-4">Don&apos;t just take our word for it, take theirs.</p>
+            
+            {/* Embla Carousel Container */}
+            <div className="embla w-full max-w-[1800px] select-none" ref={emblaRef}>
           <div className="embla__container">
             {testimonials.map((testimonial) => (
             <div key={testimonial.id} className="embla__slide flex items-center justify-center py-8 px-4">
@@ -950,52 +956,32 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll Indicator Dots - Only for real slides (not clones) */}
-        <div className="flex gap-2 mt-8">
-          {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((index, displayIndex) => (
-            <button
-              key={index}
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                currentSlide === index ? 'bg-white' : 'bg-gray-600'
-              }`}
-              onClick={() => emblaApi?.scrollTo(index)}
-              aria-label={`Go to slide ${displayIndex + 1}`}
-            />
-          ))}
+            {/* Scroll Indicator Dots - Only for real slides (not clones) */}
+            <div className="flex gap-2 mt-8">
+              {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((index, displayIndex) => (
+                <button
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                    currentSlide === index ? 'bg-white' : 'bg-gray-600'
+                  }`}
+                  onClick={() => emblaApi?.scrollTo(index)}
+                  aria-label={`Go to slide ${displayIndex + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       {/* LATEST NEWS SECTION */}
       <section id="news" className="relative bg-[#1E1E1E] w-full py-12 md:py-16 px-3 md:px-4">
-        {/* Premium Container Card - engloba toda a seção */}
-        <div className="relative w-full rounded-[2.5rem] overflow-hidden group/news transition-all duration-700">
-          {/* Background with gradient - tom intermediário entre preto e cinza */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/news:from-[#0e0e0e] group-hover/news:via-[#131313] group-hover/news:to-[#0e0e0e]"></div>
-          
-          {/* Subtle border effect - borda completa ao redor */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/news:border-white/[0.09] group-hover/news:shadow-black/60"></div>
-          
-          {/* Inner glow effect - brilho interno sutil */}
-          <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/news:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
-          
-          {/* Top light rim - brilho no topo */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2.5rem]"></div>
-          
-          {/* Ambient background effects - glows verdes sutis */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/[0.025] rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
-          
-          {/* Subtle noise texture overlay for premium feel */}
-          <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
-          
-          {/* Content wrapper */}
-          <div className="relative z-10 w-full py-20 md:py-24 px-4">
+        <div className="w-full py-8 md:py-12 px-4">
             <h2 className="text-white text-center text-4xl md:text-5xl font-bold mb-4">Latest News & Updates</h2>
-            <p className="text-gray-400 text-center mb-12 px-4">Stay updated with the latest poker news, tournaments, and exclusive deals.</p>
+            <p className="text-gray-400 text-center mb-12 px-4">Stay updated with the latest poker news, site promotions and Universal Poker updates</p>
             
-            {/* Blog Posts Grid - Responsive */}
+            {/* Blog Posts Grid - 1x3 Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-              {blogPosts.map((post) => (
+              {blogPosts.slice(0, 3).map((post) => (
                 <article 
                   key={post.id}
                   className={`group relative bg-zinc-900 rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
@@ -1029,7 +1015,7 @@ export default function Home() {
                     {/* Date & Category */}
                     <div className="flex items-center gap-3 mb-3">
                       <time className="text-xs text-zinc-400 font-medium">{post.date}</time>
-                      <span className="text-xs text-zinc-600">•</span>
+                      <span className="text-xs text-zinc-600">â€¢</span>
                       <span className="text-xs text-[#077124] font-semibold uppercase tracking-wide">{post.category}</span>
             </div>
 
@@ -1057,13 +1043,53 @@ export default function Home() {
             <div className="text-center mt-12">
               <Link 
                 href="/blog"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-[#077124] to-emerald-500 hover:from-emerald-500 hover:to-[#077124] text-white font-bold px-8 py-4 rounded-full shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/50 transition-all duration-300 hover:scale-105"
+                className="group relative inline-flex items-center justify-center gap-2.5 px-10 py-4.5 text-lg font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                style={{
+                  boxShadow: `
+                    0 0 0 1px rgba(255,255,255,0.1),
+                    0 1px 3px 0 rgba(0,0,0,0.5),
+                    0 4px 12px rgba(7,113,36,0.3),
+                    0 8px 32px rgba(7,113,36,0.25),
+                    0 16px 64px rgba(7,113,36,0.2),
+                    inset 0 1px 1px rgba(255,255,255,0.3),
+                    inset 0 -1px 1px rgba(0,0,0,0.2)
+                  `
+                }}
               >
-                View All News
-                <ArrowRight className="w-5 h-5" />
+                {/* Outer glow - Layer 1 (most intense) */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+                
+                {/* Outer glow - Layer 2 (medium spread) */}
+                <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                
+                {/* Outer glow - Layer 3 (soft wide spread) */}
+                <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                
+                {/* Glass reflection effect on top */}
+                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                
+                {/* Animated shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                
+                {/* Inner shadow for depth */}
+                <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                
+                {/* Pulsing ambient glow on hover */}
+                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+                
+                {/* Button content */}
+                <span className="relative z-10 tracking-wide drop-shadow-lg">View All News</span>
+                
+                {/* Animated arrow */}
+                <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                
+                {/* Top edge highlight */}
+                <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                
+                {/* Bottom edge shadow */}
+                <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
               </Link>
             </div>
-          </div>
         </div>
       </section>
 
