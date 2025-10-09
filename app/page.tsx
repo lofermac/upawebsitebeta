@@ -359,7 +359,7 @@ export default function Home() {
                           textShadow: '0 4px 24px rgba(255,255,255,0.08)',
                           letterSpacing: '-0.03em'
                         }}>
-                    World's Best Poker Sites
+                    World&apos;s Best Poker Sites
                   </span>
                 </div>
               </h1>
