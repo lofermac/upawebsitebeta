@@ -3,7 +3,7 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Link from "next/link";
-import { ArrowRight, Users, Headset, Shield, Clock, HelpCircle, DollarSign, Calendar, Award } from "lucide-react";
+import { ArrowRight, Users, Calendar, Award } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from 'embla-carousel-react';
