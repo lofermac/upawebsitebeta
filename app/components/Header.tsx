@@ -70,15 +70,15 @@ export default function Header() {
         
         {/* Auth Buttons */}
         <div className="hidden md:flex items-center gap-3 relative z-10">
-          <a 
-            href="#login" 
+          <Link 
+            href="/login" 
             className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
           >
             <span className="relative z-10">Login</span>
             <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
-          </a>
-          <a
-            href="#register"
+          </Link>
+          <Link
+            href="/register"
             className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-2">
@@ -91,7 +91,7 @@ export default function Header() {
             <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
             {/* Subtle inner glow */}
             <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
-          </a>
+          </Link>
         </div>
         {/* Mobile Menu Button */}
         <button
@@ -172,16 +172,16 @@ export default function Header() {
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
                 
-                <a 
-                  href="#login" 
+                <Link 
+                  href="/login" 
                   className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
                   onClick={() => setMobileOpen(false)}
                 >
                   <span className="relative z-10">Login</span>
                   <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a
-                  href="#register"
+                </Link>
+                <Link
+                  href="/register"
                   className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
                   onClick={() => setMobileOpen(false)}
                 >
@@ -192,7 +192,7 @@ export default function Header() {
                     </svg>
                   </span>
                   <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                </a>
+                </Link>
               </nav>
             </div>
           </div>

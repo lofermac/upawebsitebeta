@@ -1,14 +1,29 @@
 export default function Footer() {
   return (
-    <footer className="relative w-full bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0a0a0a] text-white overflow-hidden">
-      {/* Subtle top border with gradient */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-      
-      {/* Ambient background effects */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#077124]/[0.02] rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/[0.015] rounded-full blur-[120px]"></div>
-      
-      <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-20">
+    <footer className="relative bg-black w-full px-3 md:px-4 pb-0">
+      {/* Premium Container Card - Rounded top, cut bottom */}
+      <div className="relative w-full rounded-t-[2.5rem] overflow-hidden group/footer transition-all duration-700">
+        {/* Background with gradient - tom intermediário entre preto e cinza */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/footer:from-[#0e0e0e] group-hover/footer:via-[#131313] group-hover/footer:to-[#0e0e0e]"></div>
+        
+        {/* Subtle border effect - borda completa ao redor (exceto embaixo) */}
+        <div className="absolute inset-x-0 top-0 bottom-0 left-0 right-0 rounded-t-[2.5rem] border-t border-l border-r border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/footer:border-white/[0.09] group-hover/footer:shadow-black/60 pointer-events-none"></div>
+        
+        {/* Inner glow effect - brilho interno sutil */}
+        <div className="absolute inset-0 rounded-t-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/footer:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
+        
+        {/* Top light rim - brilho no topo */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2.5rem]"></div>
+        
+        {/* Ambient background effects - glows verdes sutis */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/[0.025] rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+        
+        {/* Subtle noise texture overlay for premium feel */}
+        <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulance type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
+        
+        {/* Content wrapper */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-20">
         {/* Footer Grid - 4 Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16 mb-16">
           
@@ -110,26 +125,11 @@ export default function Footer() {
             <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Contact Information</h3>
             <div className="space-y-2 text-sm text-gray-400 leading-relaxed">
               <p className="font-semibold text-white mb-3">Universal Affiliates Limited</p>
-              <p className="flex items-start">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
-                <span>Sutherland House</span>
-              </p>
-              <p className="flex items-start">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
-                <span>1759 London Road</span>
-              </p>
-              <p className="flex items-start">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
-                <span>Leigh on Sea</span>
-              </p>
-              <p className="flex items-start">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
-                <span>Essex, SS9 2RZ</span>
-              </p>
-              <p className="flex items-start pt-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-gray-600 mt-1.5 mr-3 flex-shrink-0"></span>
-                <span>Company Number 11667550</span>
-              </p>
+              <p>Sutherland House</p>
+              <p>1759 London Road</p>
+              <p>Leigh on Sea</p>
+              <p>Essex, SS9 2RZ</p>
+              <p className="pt-2">Company Number 11667550</p>
             </div>
           </div>
         </div>
@@ -151,6 +151,7 @@ export default function Footer() {
               <span>T&Cs Apply</span>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </footer>
