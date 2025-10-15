@@ -224,18 +224,8 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                {/* Divider */}
-                <div className="relative my-8">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/[0.06]"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] text-gray-500 font-medium">OR</span>
-                  </div>
-                </div>
-
                 {/* Sign Up Link */}
-                <div className="text-center">
+                <div className="text-center mt-8">
                   <p className="text-base text-gray-400 font-normal mb-2">
                     Don&apos;t Have An Account?
                   </p>
