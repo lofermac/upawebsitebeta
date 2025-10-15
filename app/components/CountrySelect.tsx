@@ -8,7 +8,8 @@ import * as flags from 'country-flag-icons/react/3x2';
 interface Country {
   code: string;
   name: string;
-  Flag: any; // Using any to bypass TypeScript strict checking for flag components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Flag: any;
 }
 
 // Lista completa de países com códigos ISO 3166-1 alpha-2 e componentes de bandeiras
