@@ -1,56 +1,20 @@
 'use client'
 
 import { useState } from "react";
-import { Eye, EyeOff, User, Mail, Lock, Globe, MessageCircle, Send } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, MessageCircle, Send, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
-// Lista de países (exemplo - pode expandir)
-const countries = [
-  "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
-  "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahamas",
-  "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize",
-  "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil",
-  "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon",
-  "Canada", "Cape Verde", "Central African Republic", "Chad", "Chile", "China",
-  "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba",
-  "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-  "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea",
-  "Estonia", "Ethiopia", "Fiji", "Finland", "France", "Gabon",
-  "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada",
-  "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras",
-  "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
-  "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan",
-  "Kazakhstan", "Kenya", "Kiribati", "North Korea", "South Korea", "Kuwait",
-  "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia",
-  "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macedonia", "Madagascar",
-  "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands",
-  "Mauritania", "Mauritius", "Mexico", "Micronesia", "Moldova", "Monaco",
-  "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia",
-  "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger",
-  "Nigeria", "Norway", "Oman", "Pakistan", "Palau", "Panama",
-  "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal",
-  "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
-  "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe",
-  "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore",
-  "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "Spain",
-  "Sri Lanka", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland",
-  "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo",
-  "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu",
-  "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay",
-  "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen",
-  "Zambia", "Zimbabwe"
-];
+import CountrySelect from "../components/CountrySelect";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     country: '',
     email: '',
+    confirmEmail: '',
     password: '',
     confirmPassword: '',
     discordId: '',
@@ -79,209 +43,254 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      {/* Header with same positioning as home */}
-      <div className="w-full pt-4 md:pt-6 px-3 md:px-4">
-        <Header />
-      </div>
+      {/* Header Container - Same as login and homepage */}
+      <section className="relative bg-black w-full px-3 md:px-4 pt-6">
+        <div className="relative w-full">
+          <div className="relative z-50">
+            <Header />
+          </div>
+        </div>
+      </section>
 
       {/* Main Content - Registration Form */}
       <main className="flex-1 flex items-center justify-center px-4 py-12 md:py-16">
         <div className="w-full max-w-5xl">
-          {/* Registration Card */}
-          <div className="relative group">
-            {/* Background with gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] rounded-3xl transition-all duration-700 group-hover:from-[#0e0e0e] group-hover:via-[#131313] group-hover:to-[#0e0e0e]"></div>
+          {/* Registration Card - Premium Container */}
+          <div className="relative group/card">
+            {/* Background with gradient - Same as login */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] rounded-[2rem] transition-all duration-700 group-hover/card:from-[#0e0e0e] group-hover/card:via-[#131313] group-hover/card:to-[#0e0e0e]"></div>
             
             {/* Border effect */}
-            <div className="absolute inset-0 rounded-3xl border border-white/[0.08] shadow-2xl shadow-black/50 transition-all duration-700 group-hover:border-white/[0.12] group-hover:shadow-black/60 pointer-events-none"></div>
+            <div className="absolute inset-0 rounded-[2rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/card:border-white/[0.09] group-hover/card:shadow-black/60 pointer-events-none"></div>
             
             {/* Inner glow effect */}
-            <div className="absolute inset-0 rounded-3xl shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)] transition-all duration-700 group-hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"></div>
+            <div className="absolute inset-0 rounded-[2rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/card:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
             
             {/* Top light rim */}
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.1] to-transparent rounded-t-3xl"></div>
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2rem]"></div>
             
-            {/* Ambient glow effects */}
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#077124]/[0.06] rounded-full blur-[120px] animate-pulse-slow"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/[0.04] rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+            {/* Ambient glow effects - Multiple layers */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-emerald-500/[0.025] rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+            
+            {/* Subtle noise texture overlay for premium feel */}
+            <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none rounded-[2rem]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
             
             {/* Content */}
-            <div className="relative z-10 p-8 md:p-12">
-              {/* Title */}
+            <div className="relative z-10 p-10 md:p-12">
+              {/* Title - Same typography as homepage sections */}
               <div className="text-center mb-10">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 bg-gradient-to-r from-white via-gray-100 to-white bg-clip-text text-transparent">
+                <h1 className="text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold text-white mb-4 animate-fade-up-delay-800"
+                    style={{ 
+                      textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+                      letterSpacing: '-0.02em',
+                      fontWeight: '600'
+                    }}>
                   Register
                 </h1>
-                <p className="text-gray-400 text-base max-w-2xl mx-auto leading-relaxed">
-                  Please register for a Universal Poker account. You can then start earning cash back through our industry leading deals and referral program.
+                <p className="text-base sm:text-lg md:text-xl lg:text-[1.4rem] text-gray-400 font-normal max-w-2xl mx-auto animate-fade-up-delay-1200"
+                   style={{ 
+                     textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                     letterSpacing: '-0.01em',
+                     fontWeight: '400'
+                   }}>
+                  Take your seat at the table.
                 </p>
               </div>
 
               {/* Registration Form */}
-              <form onSubmit={handleSubmit} className="space-y-8">
+              <form onSubmit={handleSubmit} className="space-y-8 animate-fade-up-delay-1400">
                 {/* Account Details Section */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
                     <div className="p-2 rounded-lg bg-[#077124]/10 border border-[#077124]/20">
-                      <User className="h-5 w-5 text-[#077124]" />
+                      <User className="h-5 w-5 text-[#077124]" strokeWidth={2} />
                     </div>
-                    <h2 className="text-2xl font-bold text-white">Account Details</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight"
+                        style={{ 
+                          textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                          letterSpacing: '-0.01em'
+                        }}>
+                      Account Details
+                    </h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {/* First Name */}
-                    <div className="space-y-2">
-                      <label htmlFor="firstName" className="block text-sm font-medium text-gray-300">
-                        First Name <span className="text-red-400">*</span>
+                    {/* Linha 1: Full Name e Country */}
+                    {/* Full Name */}
+                    <div className="space-y-3">
+                      <label htmlFor="fullName" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        Full Name <span className="text-[#10b981]">*</span>
                       </label>
                       <div className="relative group/input">
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type="text"
-                          id="firstName"
-                          name="firstName"
-                          value={formData.firstName}
+                          id="fullName"
+                          name="fullName"
+                          value={formData.fullName}
                           onChange={handleChange}
-                          className="w-full px-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
-                          placeholder="Enter your first name"
+                          className="relative w-full px-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          placeholder="Doyle Brunson"
                           required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Last Name */}
-                    <div className="space-y-2">
-                      <label htmlFor="lastName" className="block text-sm font-medium text-gray-300">
-                        Last Name <span className="text-red-400">*</span>
-                      </label>
-                      <div className="relative group/input">
-                        <input
-                          type="text"
-                          id="lastName"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
-                          placeholder="Enter your last name"
-                          required
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* Country */}
-                    <div className="space-y-2">
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-300">
-                        Country <span className="text-red-400">*</span>
+                    <div className="space-y-3">
+                      <label htmlFor="country" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        Country <span className="text-[#10b981]">*</span>
                       </label>
-                      <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Globe className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" />
-                        </div>
-                        <select
-                          id="country"
-                          name="country"
-                          value={formData.country}
-                          onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] appearance-none cursor-pointer"
-                          required
-                        >
-                          <option value="" className="bg-[#121212]">Choose a Country</option>
-                          {countries.map((country) => (
-                            <option key={country} value={country} className="bg-[#121212]">
-                              {country}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                          <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </div>
+                      <CountrySelect
+                        value={formData.country}
+                        onChange={(countryCode) => setFormData(prev => ({ ...prev, country: countryCode }))}
+                        required
+                      />
                     </div>
 
+                    {/* Linha 2: E-mail e Confirm E-mail */}
                     {/* Email */}
-                    <div className="space-y-2">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                        E-mail <span className="text-red-400">*</span>
+                    <div className="space-y-3">
+                      <label htmlFor="email" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        E-mail <span className="text-[#10b981]">*</span>
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Mail className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" />
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <Mail className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400 group-focus-within/input:text-[#077124]" strokeWidth={2} />
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type="email"
                           id="email"
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
-                          placeholder="your@email.com"
+                          className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          placeholder="email@example.com"
                           required
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
                       </div>
                     </div>
 
-                    {/* Password */}
-                    <div className="space-y-2">
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                        Password <span className="text-red-400">*</span>
+                    {/* Confirm Email */}
+                    <div className="space-y-3">
+                      <label htmlFor="confirmEmail" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        Confirm E-mail <span className="text-[#10b981]">*</span>
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" />
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <Mail className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400 group-focus-within/input:text-[#077124]" strokeWidth={2} />
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
+                        <input
+                          type="email"
+                          id="confirmEmail"
+                          name="confirmEmail"
+                          value={formData.confirmEmail}
+                          onChange={handleChange}
+                          className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          placeholder="email@example.com"
+                          required
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Linha 3: Password e Confirm Password */}
+                    {/* Password */}
+                    <div className="space-y-3">
+                      <label htmlFor="password" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        Password <span className="text-[#10b981]">*</span>
+                      </label>
+                      <div className="relative group/input">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <Lock className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400 group-focus-within/input:text-[#077124]" strokeWidth={2} />
+                        </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type={showPassword ? "text" : "password"}
                           id="password"
                           name="password"
                           value={formData.password}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-12 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
-                          placeholder="Create a strong password"
+                          className="relative w-full pl-14 pr-14 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          placeholder="••••••••"
                           required
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
+                        
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition-colors duration-300"
+                          className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-500 hover:text-gray-300 transition-colors duration-300 z-10"
                         >
                           {showPassword ? (
-                            <EyeOff className="h-5 w-5" />
+                            <EyeOff className="h-5 w-5" strokeWidth={2} />
                           ) : (
-                            <Eye className="h-5 w-5" />
+                            <Eye className="h-5 w-5" strokeWidth={2} />
                           )}
                         </button>
                       </div>
                     </div>
 
                     {/* Confirm Password */}
-                    <div className="space-y-2">
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-                        Confirm Password <span className="text-red-400">*</span>
+                    <div className="space-y-3">
+                      <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                        Confirm Password <span className="text-[#10b981]">*</span>
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Lock className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" />
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <Lock className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400 group-focus-within/input:text-[#077124]" strokeWidth={2} />
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type={showConfirmPassword ? "text" : "password"}
                           id="confirmPassword"
                           name="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-12 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
-                          placeholder="Confirm your password"
+                          className="relative w-full pl-14 pr-14 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          placeholder="••••••••"
                           required
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
+                        
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-gray-300 transition-colors duration-300"
+                          className="absolute inset-y-0 right-0 pr-5 flex items-center text-gray-500 hover:text-gray-300 transition-colors duration-300 z-10"
                         >
                           {showConfirmPassword ? (
-                            <EyeOff className="h-5 w-5" />
+                            <EyeOff className="h-5 w-5" strokeWidth={2} />
                           ) : (
-                            <Eye className="h-5 w-5" />
+                            <Eye className="h-5 w-5" strokeWidth={2} />
                           )}
                         </button>
                       </div>
@@ -293,169 +302,237 @@ export default function RegisterPage() {
                 <div className="space-y-6 pt-4">
                   <div className="flex items-center gap-3 pb-3 border-b border-white/[0.06]">
                     <div className="p-2 rounded-lg bg-[#077124]/10 border border-[#077124]/20">
-                      <MessageCircle className="h-5 w-5 text-[#077124]" />
+                      <MessageCircle className="h-5 w-5 text-[#077124]" strokeWidth={2} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">Contact Information</h2>
-                      <p className="text-sm text-gray-400 mt-1">
+                      <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight"
+                          style={{ 
+                            textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                            letterSpacing: '-0.01em'
+                          }}>
+                        Contact Information
+                      </h2>
+                      <p className="text-sm text-gray-400 mt-1 font-normal">
                         This information helps us get in touch so we can provide you with support on our affiliate deals.
                       </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     {/* Discord ID */}
-                    <div className="space-y-2">
-                      <label htmlFor="discordId" className="block text-sm font-medium text-gray-300">
+                    <div className="space-y-3">
+                      <label htmlFor="discordId" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         Discord ID
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <svg className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <svg className={`h-5 w-5 transition-colors duration-300 ${formData.discordId ? 'text-[#5865F2]' : 'text-gray-500 group-hover/input:text-gray-400 group-focus-within/input:text-gray-400'}`} fill="currentColor" viewBox="0 0 24 24">
                             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                           </svg>
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type="text"
                           id="discordId"
                           name="discordId"
                           value={formData.discordId}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
+                          className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
                           placeholder="username#1234"
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* WhatsApp */}
-                    <div className="space-y-2">
-                      <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-300">
+                    <div className="space-y-3">
+                      <label htmlFor="whatsapp" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         WhatsApp
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <svg className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <svg className={`h-5 w-5 transition-colors duration-300 ${formData.whatsapp ? 'text-[#25D366]' : 'text-gray-500 group-hover/input:text-gray-400 group-focus-within/input:text-gray-400'}`} fill="currentColor" viewBox="0 0 24 24">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                           </svg>
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type="tel"
                           id="whatsapp"
                           name="whatsapp"
                           value={formData.whatsapp}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
+                          className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
                           placeholder="+1 234 567 8900"
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
                       </div>
                     </div>
 
                     {/* Telegram */}
-                    <div className="space-y-2 md:col-span-2">
-                      <label htmlFor="telegram" className="block text-sm font-medium text-gray-300">
+                    <div className="space-y-3">
+                      <label htmlFor="telegram" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         Telegram
                       </label>
                       <div className="relative group/input">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Send className="h-5 w-5 text-gray-500 transition-colors duration-300 group-hover/input:text-gray-400" />
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                          <Send className={`h-5 w-5 transition-colors duration-300 ${formData.telegram ? 'text-[#0088cc]' : 'text-gray-500 group-hover/input:text-gray-400 group-focus-within/input:text-gray-400'}`} strokeWidth={2} />
                         </div>
+                        
+                        {/* Glow effect on focus */}
+                        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                        
                         <input
                           type="text"
                           id="telegram"
                           name="telegram"
                           value={formData.telegram}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-3.5 bg-black/40 border border-white/[0.08] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12]"
+                          className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
                           placeholder="@username"
+                          style={{
+                            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                          }}
                         />
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Terms and Conditions */}
-                <div className="space-y-4 pt-6 border-t border-white/[0.06]">
-                  <label className="flex items-start cursor-pointer group/checkbox">
-                    <input
-                      type="checkbox"
-                      name="agreeTerms"
-                      checked={formData.agreeTerms}
-                      onChange={handleChange}
-                      className="mt-1 w-4 h-4 rounded border-white/[0.08] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/20 focus:ring-offset-0 transition-all duration-300 cursor-pointer"
-                      required
-                    />
-                    <span className="ml-3 text-sm text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300">
-                      I agree to the{' '}
-                      <a href="#terms" className="text-[#077124] hover:text-[#088a2d] font-medium transition-colors duration-300">
-                        Universal Poker Terms & Conditions
-                      </a>
-                      .
-                    </span>
-                  </label>
+                {/* Terms and Conditions - Horizontal Compact Layout */}
+                <div className="pt-6 border-t border-white/[0.06]">
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+                    {/* Terms Checkbox */}
+                    <label className="flex items-start cursor-pointer group/checkbox flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          name="agreeTerms"
+                          checked={formData.agreeTerms}
+                          onChange={handleChange}
+                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                          required
+                        />
+                      </div>
+                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                        I agree to the{' '}
+                        <a href="#terms" className="text-[#077124] hover:text-[#0a9b30] font-semibold transition-colors duration-300 underline-offset-4 hover:underline whitespace-nowrap">
+                          Terms & Conditions
+                        </a>
+                      </span>
+                    </label>
 
-                  <label className="flex items-start cursor-pointer group/checkbox">
-                    <input
-                      type="checkbox"
-                      name="agreePrivacy"
-                      checked={formData.agreePrivacy}
-                      onChange={handleChange}
-                      className="mt-1 w-4 h-4 rounded border-white/[0.08] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/20 focus:ring-offset-0 transition-all duration-300 cursor-pointer"
-                      required
-                    />
-                    <span className="ml-3 text-sm text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300">
-                      I agree to the{' '}
-                      <a href="#privacy" className="text-[#077124] hover:text-[#088a2d] font-medium transition-colors duration-300">
-                        Universal Poker Privacy Policy
-                      </a>
-                      .
-                    </span>
-                  </label>
+                    {/* Privacy Checkbox */}
+                    <label className="flex items-start cursor-pointer group/checkbox flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          name="agreePrivacy"
+                          checked={formData.agreePrivacy}
+                          onChange={handleChange}
+                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                          required
+                        />
+                      </div>
+                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                        I agree to the{' '}
+                        <a href="#privacy" className="text-[#077124] hover:text-[#0a9b30] font-semibold transition-colors duration-300 underline-offset-4 hover:underline whitespace-nowrap">
+                          Privacy Policy
+                        </a>
+                      </span>
+                    </label>
 
-                  <label className="flex items-start cursor-pointer group/checkbox">
-                    <input
-                      type="checkbox"
-                      name="receivePromotions"
-                      checked={formData.receivePromotions}
-                      onChange={handleChange}
-                      className="mt-1 w-4 h-4 rounded border-white/[0.08] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/20 focus:ring-offset-0 transition-all duration-300 cursor-pointer"
-                    />
-                    <span className="ml-3 text-sm text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300">
-                      Get contacted about our latest deals and promotions!
-                    </span>
-                  </label>
+                    {/* Promotions Checkbox */}
+                    <label className="flex items-start cursor-pointer group/checkbox flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <input
+                          type="checkbox"
+                          name="receivePromotions"
+                          checked={formData.receivePromotions}
+                          onChange={handleChange}
+                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                        />
+                      </div>
+                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                        Get contacted about latest deals
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
-                {/* Register Button */}
-                <button
-                  type="submit"
-                  className="w-full relative font-bold text-lg px-6 py-4 rounded-xl bg-gradient-to-r from-[#077124] to-[#088a2d] text-white shadow-2xl shadow-[#077124]/40 hover:shadow-[#077124]/60 hover:scale-[1.02] transition-all duration-300 group/submit overflow-hidden mt-8"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-3">
-                    REGISTER
-                    <svg className="w-0 group-hover/submit:w-6 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                  {/* Animated shine effect */}
-                  <div className="absolute inset-0 translate-x-[-100%] group-hover/submit:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
-                  {/* Subtle inner glow */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover/submit:opacity-100 transition-opacity duration-300"></div>
-                  {/* Pulsing glow on hover */}
-                  <div className="absolute inset-0 rounded-xl bg-[#077124]/20 blur-xl scale-0 group-hover/submit:scale-110 transition-transform duration-500"></div>
-                </button>
+                {/* Register Button - Same premium style as login */}
+                <div className="flex justify-center mt-10">
+                  <button
+                    type="submit"
+                    className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                    style={{
+                      boxShadow: `
+                        0 0 0 1px rgba(255,255,255,0.1),
+                        0 1px 3px 0 rgba(0,0,0,0.5),
+                        0 4px 12px rgba(7,113,36,0.3),
+                        0 8px 32px rgba(7,113,36,0.25),
+                        0 16px 64px rgba(7,113,36,0.2),
+                        inset 0 1px 1px rgba(255,255,255,0.3),
+                        inset 0 -1px 1px rgba(0,0,0,0.2)
+                      `
+                    }}
+                  >
+                    {/* Outer glow - Layer 1 (most intense) */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+                    
+                    {/* Outer glow - Layer 2 (medium spread) */}
+                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                    
+                    {/* Outer glow - Layer 3 (soft wide spread) */}
+                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                    
+                    {/* Glass reflection effect on top */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                    
+                    {/* Animated shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                    
+                    {/* Inner shadow for depth */}
+                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                    
+                    {/* Pulsing ambient glow on hover */}
+                    <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+                    
+                    {/* Button content */}
+                    <span className="relative z-10 tracking-wide drop-shadow-lg">Register</span>
+                    
+                    {/* Animated arrow */}
+                    <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                    
+                    {/* Top edge highlight */}
+                    <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                    
+                    {/* Bottom edge shadow */}
+                    <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+                  </button>
+                </div>
 
                 {/* Login Link */}
-                <div className="text-center pt-4">
-                  <p className="text-sm text-gray-400">
-                    Already have an account? Please{' '}
-                    <Link
-                      href="/login"
-                      className="font-semibold text-[#077124] hover:text-[#088a2d] transition-colors duration-300 hover:underline"
-                    >
-                      Login
-                    </Link>
-                    .
+                <div className="text-center mt-8">
+                  <p className="text-base text-gray-400 font-normal mb-2">
+                    Already have an account?
                   </p>
+                  <Link
+                    href="/login"
+                    className="font-semibold text-[#077124] hover:text-[#0a9b30] transition-colors duration-300 hover:underline underline-offset-4 text-base"
+                  >
+                    Login
+                  </Link>
                 </div>
               </form>
             </div>

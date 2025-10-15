@@ -66,6 +66,13 @@ export default function Header() {
             <span className="relative z-10">News</span>
             <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
           </a>
+          <a 
+            href="/contact-us" 
+            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+          >
+            <span className="relative z-10">Contact Us</span>
+            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+          </a>
         </nav>
         
         {/* Auth Buttons */}
@@ -166,6 +173,14 @@ export default function Header() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <span className="relative z-10">News</span>
+                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                </a>
+                <a 
+                  href="/contact-us" 
+                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <span className="relative z-10">Contact Us</span>
                   <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
                 </a>
                 
