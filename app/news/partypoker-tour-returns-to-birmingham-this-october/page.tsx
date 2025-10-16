@@ -4,7 +4,6 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User } from "lucide-react";
-import Image from "next/image";
 
 export default function PartyPokerBirminghamNewsPage() {
   return (
@@ -102,12 +101,12 @@ export default function PartyPokerBirminghamNewsPage() {
           {/* Article Body */}
           <article className="max-w-5xl mx-auto">
             
-            {/* Introduction Paragraph */}
-            <div className="mb-12">
-              <p className="text-gray-300 text-lg md:text-xl leading-relaxed" style={{ lineHeight: '1.8' }}>
-                Players, mark your calendars: the PartyPoker Tour Birmingham is back from 11-19 October 2025 at the Resorts World Genting Casino in Birmingham, and it's shaping up to be one of the most accessible, value-driven poker festivals in the UK.
-              </p>
-            </div>
+             {/* Introduction Paragraph */}
+             <div className="mb-12">
+               <p className="text-gray-300 text-lg md:text-xl leading-relaxed" style={{ lineHeight: '1.8' }}>
+                 Players, mark your calendars: the PartyPoker Tour Birmingham is back from 11-19 October 2025 at the Resorts World Genting Casino in Birmingham, and it&apos;s shaping up to be one of the most accessible, value-driven poker festivals in the UK.
+               </p>
+             </div>
 
             {/* Festival Highlights Section */}
             <div className="mb-12">

@@ -11,7 +11,6 @@ import {
   Shield,
   Star,
   Trophy,
-  CheckCircle,
   ChevronRight,
   HelpCircle
 } from 'lucide-react';
