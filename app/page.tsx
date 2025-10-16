@@ -17,7 +17,7 @@ const blogPosts = [
     title: 'PartyPoker Tour Returns to Birmingham this October',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/10/06190843/PartyPoker-Tour-Birmingham.png',
     alt: 'PartyPoker Tour Birmingham promotional banner',
-    url: '/2025/10/partypoker-tour-returns-to-birmingham-this-october/',
+    url: '/news/partypoker-tour-returns-to-birmingham-this-october',
     category: 'News',
     isHighlighted: true,
   },
@@ -1238,19 +1238,8 @@ export default function Home() {
               {blogPosts.slice(0, 3).map((post) => (
                 <article 
                   key={post.id}
-                  className={`group relative bg-zinc-900 rounded-2xl overflow-hidden border transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
-                    post.isHighlighted 
-                      ? 'border-2 border-[#077124]/50 hover:border-[#077124] hover:shadow-[#077124]/20' 
-                      : 'border-zinc-800 hover:border-zinc-700 hover:shadow-green-600/10'
-                  }`}
+                  className="group relative bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-[#077124] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#077124]/20"
                 >
-                  {/* Featured Badge for Highlighted Posts */}
-                  {post.isHighlighted && (
-                    <div className="absolute top-4 right-4 z-10 bg-gradient-to-r from-[#077124] to-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                      FEATURED
-                    </div>
-                  )}
-
                   {/* Image */}
                   <Link href={post.url} className="block overflow-hidden">
                     <div className="relative h-56 overflow-hidden">
@@ -1296,7 +1285,7 @@ export default function Home() {
             {/* View All News Button */}
             <div className="text-center mt-12">
               <Link 
-                href="/blog"
+                href="/news"
                 className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                 style={{
                   boxShadow: `

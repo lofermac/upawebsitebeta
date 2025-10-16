@@ -5,17 +5,24 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [keepSignedIn, setKeepSignedIn] = useState(false);
+  const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Login logic will be implemented later
-    console.log({ email, password, keepSignedIn });
+    setError('');
+    
+    const success = login(email, password);
+    if (!success) {
+      setError('Invalid credentials');
+    }
   };
 
   return (
@@ -77,10 +84,17 @@ export default function LoginPage() {
 
               {/* Login Form */}
               <form onSubmit={handleSubmit} className="space-y-6 animate-fade-up-delay-1400">
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 text-red-400 text-sm text-center">
+                    {error}
+                  </div>
+                )}
+                
                 {/* Email Field */}
                 <div className="space-y-3">
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-300 tracking-tight">
-                    Email
+                    Username
                   </label>
                   <div className="relative group/input">
                     {/* Icon with subtle glow on focus */}
@@ -92,12 +106,12 @@ export default function LoginPage() {
                     <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
                     
                     <input
-                      type="email"
+                      type="text"
                       id="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
-                      placeholder="email@example.com"
+                      placeholder="admin or player"
                       required
                       style={{
                         boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'

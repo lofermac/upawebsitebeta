@@ -2,9 +2,19 @@
 import Image from "next/image";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth-context";
+import { LogOut, User } from "lucide-react";
 
-export default function Header() {
+export default function HeaderWithAuth() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isAuthenticated, userType, logout } = useAuth();
+
+  // Get username based on userType
+  const getUsername = () => {
+    if (userType === 'admin') return 'Admin';
+    if (userType === 'player') return 'Player';
+    return '';
+  };
 
   return (
     <header className="flex justify-center transition-all duration-500">
@@ -20,6 +30,7 @@ export default function Header() {
         <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none">
           <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12"></div>
         </div>
+        
         {/* Logo */}
         <Link href="/" className="flex items-center relative z-10 group/logo">
           <div className="relative">
@@ -60,7 +71,7 @@ export default function Header() {
             <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
           </a>
           <a 
-            href="/news" 
+            href="#news" 
             className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
           >
             <span className="relative z-10">News</span>
@@ -75,31 +86,53 @@ export default function Header() {
           </a>
         </nav>
         
-        {/* Auth Buttons */}
+        {/* Auth Section - Conditional rendering based on auth state */}
         <div className="hidden md:flex items-center gap-3 relative z-10">
-          <Link 
-            href="/login" 
-            className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
-          >
-            <span className="relative z-10">Login</span>
-            <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
-          </Link>
-          <Link
-            href="/register"
-            className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              Register
-              <svg className="w-0 group-hover/register:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </span>
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            {/* Subtle inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
-          </Link>
+          {isAuthenticated && userType === 'player' ? (
+            // Player logged in view
+            <>
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                <User size={18} className="text-[#10b981]" />
+                <span className="text-gray-300 text-sm">Hello,</span>
+                <span className="text-[#10b981] font-semibold text-sm">{getUsername()}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-full transition-all duration-300 text-red-400 hover:text-red-300 text-sm font-medium"
+              >
+                <LogOut size={16} />
+                <span>Logout</span>
+              </button>
+            </>
+          ) : (
+            // Not logged in or admin (show normal buttons)
+            <>
+              <Link 
+                href="/login" 
+                className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
+              >
+                <span className="relative z-10">Login</span>
+                <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
+              </Link>
+              <Link
+                href="/register"
+                className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Register
+                  <svg className="w-0 group-hover/register:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                {/* Animated shine effect */}
+                <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                {/* Subtle inner glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+            </>
+          )}
         </div>
+        
         {/* Mobile Menu Button */}
         <button
           className="md:hidden relative flex items-center justify-center p-2.5 ml-2 text-gray-300 hover:text-white transition-all duration-300 rounded-full group/menu z-10"
@@ -168,7 +201,7 @@ export default function Header() {
                   <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
                 </a>
                 <a 
-                  href="/news" 
+                  href="#news" 
                   className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
                   onClick={() => setMobileOpen(false)}
                 >
@@ -187,27 +220,52 @@ export default function Header() {
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
                 
-                <Link 
-                  href="/login" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Login</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </Link>
-                <Link
-                  href="/register"
-                  className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Register
-                    <svg className="w-0 group-hover/register-mobile:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                  <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                </Link>
+                {/* Mobile Auth Section */}
+                {isAuthenticated && userType === 'player' ? (
+                  <>
+                    <div className="px-4 py-3.5 bg-white/5 rounded-xl border border-white/10">
+                      <div className="flex items-center gap-2">
+                        <User size={18} className="text-[#10b981]" />
+                        <span className="text-gray-300 text-sm">Hello,</span>
+                        <span className="text-[#10b981] font-semibold text-sm">{getUsername()}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                      }}
+                      className="flex items-center justify-center gap-2 px-4 py-3.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-xl transition-all duration-300 text-red-400 hover:text-red-300 text-sm font-medium"
+                    >
+                      <LogOut size={16} />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href="/login" 
+                      className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="relative z-10">Login</span>
+                      <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        Register
+                        <svg className="w-0 group-hover/register-mobile:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </span>
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    </Link>
+                  </>
+                )}
               </nav>
             </div>
           </div>
@@ -248,3 +306,4 @@ export default function Header() {
     </header>
   );
 }
+

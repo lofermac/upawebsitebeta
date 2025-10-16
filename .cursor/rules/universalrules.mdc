@@ -1,0 +1,137 @@
+---
+alwaysApply: true
+---
+PROJETO: Plataforma de Afiliação com Área de Membros
+STACK: Next.js 15 (App Router) + React 19 + TypeScript + Tailwind + Supabase
+
+=== ARQUITETURA & ORGANIZAÇÃO ===
+
+1. ESTRUTURA DE PASTAS:
+   /app - Rotas públicas e autenticadas
+   /app/(auth) - Grupo de rotas protegidas (dashboard, profile)
+   /app/(admin) - Painel administrativo
+   /components - Componentes reutilizáveis
+   /lib - Utilitários, helpers, configs
+   /types - Type definitions (TypeScript)
+
+2. SEPARAÇÃO DE RESPONSABILIDADES:
+   - Server Components para conteúdo estático/público
+   - Client Components ('use client') apenas quando necessário
+   - API Routes em /app/api para operações sensíveis
+   - Lógica de negócio isolada em /lib
+
+=== SEGURANÇA ===
+
+3. AUTENTICAÇÃO & AUTORIZAÇÃO:
+   - Implementar Supabase Auth (não reinventar a roda)
+   - JWT tokens com refresh automático
+   - Middleware para proteção de rotas (/middleware.ts)
+   - Validar permissões no server-side sempre
+
+4. PROTEÇÃO DE DADOS:
+   - NUNCA expor API keys no client-side
+   - Environment variables (.env.local) para segredos
+   - Row Level Security (RLS) no Supabase
+   - Validação de input em TODAS as entradas
+
+5. SEGURANÇA DO BANCO:
+   - RLS policies para cada tabela (users só veem próprios dados)
+   - Admin endpoints com verificação dupla de role
+   - Prepared statements (Supabase já faz isso)
+   - Nunca confiar em dados do client
+
+=== PERFORMANCE & ESCALABILIDADE ===
+
+6. OTIMIZAÇÕES:
+   - Next.js Image component para todas as imagens
+   - ISR (Incremental Static Regeneration) para blog posts
+   - Server Components como padrão (menor bundle JS)
+   - Lazy loading de componentes pesados
+
+7. CACHE STRATEGY:
+   - Cache de conteúdo estático (blog, deals)
+   - Revalidação inteligente (revalidatePath/revalidateTag)
+   - CDN para assets estáticos
+   - Database indexes em queries frequentes
+
+8. DATABASE DESIGN:
+   - Normalização apropriada (evitar redundância)
+   - Indexes em foreign keys e campos de busca
+   - Paginação em listagens (nunca carregar tudo)
+   - Soft deletes para dados sensíveis (histórico)
+
+=== CÓDIGO LIMPO & MANUTENIBILIDADE ===
+
+9. TYPESCRIPT:
+   - Tipos para TODAS as entidades (User, Deal, Post, etc.)
+   - Evitar 'any' - usar 'unknown' quando necessário
+   - Interfaces para props de componentes
+   - Type guards para validação runtime
+
+10. COMPONENTES:
+    - Single Responsibility Principle
+    - Props tipadas e documentadas
+    - Reutilização antes de duplicação
+    - Testes unitários para lógica crítica
+
+11. STATE MANAGEMENT:
+    - React state para UI temporária
+    - Supabase para dados persistentes
+    - NUNCA localStorage para dados sensíveis
+    - Context API apenas quando necessário (evitar prop drilling)
+
+=== DEPLOY & CI/CD ===
+
+12. GIT WORKFLOW:
+    - Branches: main (produção), dev (desenvolvimento)
+    - Commits atômicos e descritivos
+    - Pull requests para features grandes
+    - .gitignore configurado (.env, node_modules, .next)
+
+13. VERCEL DEPLOY:
+    - Preview deployments automáticos (branches)
+    - Environment variables por ambiente
+    - Monitoramento de erros (Vercel Analytics)
+    - Deploy manual apenas para produção crítica
+
+=== SEO & ACESSIBILIDADE ===
+
+14. SEO:
+    - Metadata configurada (title, description, OG tags)
+    - Sitemap.xml gerado automaticamente
+    - URLs amigáveis e semânticas
+    - Schema.org markup onde aplicável
+
+15. ACESSIBILIDADE:
+    - Semantic HTML sempre
+    - Alt text em todas as imagens
+    - Navegação por teclado funcional
+    - Contraste de cores adequado (WCAG AA)
+
+=== DADOS SENSÍVEIS ===
+
+16. INFORMAÇÕES FINANCEIRAS:
+    - Histórico de rake/pagamentos apenas via API autenticada
+    - Logs de acesso a dados sensíveis
+    - Nunca enviar dados financeiros via query params
+    - HTTPS obrigatório em produção
+
+=== MONITORAMENTO ===
+
+17. OBSERVABILIDADE:
+    - Logs estruturados (erro, warn, info)
+    - Tracking de erros (Sentry ou similar)
+    - Métricas de performance (Web Vitals)
+    - Alertas para falhas críticas
+
+=== REGRAS DE DESENVOLVIMENTO ===
+
+18. PRIORIDADE: Funcionalidade antes de perfeição (regra 80/20)
+    - Não ficar polindo detalhes por horas
+    - Se funciona bem, avançar para próxima tarefa
+    - Evitar over-engineering
+
+19. COMMITS & MENSAGENS:
+    - Commits frequentes e atômicos
+    - Mensagens claras: "feat:", "fix:", "refactor:", "docs:"
+    - Testar localmente antes de push
