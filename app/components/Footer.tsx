@@ -106,13 +106,13 @@ export default function Footer() {
             <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Legal</h3>
             <ul className="space-y-3.5">
               <li>
-                <a href="#terms" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                <a href="/terms" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
                   Terms & Conditions
                 </a>
               </li>
               <li>
-                <a href="#privacy" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                <a href="/privacy" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
                   <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
                   Privacy Policy
                 </a>

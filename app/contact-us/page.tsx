@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { Send, Mail, MessageCircle } from "lucide-react";
+import { Send, MessageCircle } from "lucide-react";
 
 export default function ContactUsPage() {
   const [formData, setFormData] = useState({
@@ -51,13 +51,6 @@ export default function ContactUsPage() {
       link: 'https://discord.gg/yourdiscord'
     },
     {
-      icon: <Mail className="h-6 w-6" strokeWidth={2} />,
-      label: 'Email',
-      color: 'from-gray-600 to-gray-700',
-      hoverColor: 'group-hover/method:shadow-gray-500/40',
-      link: 'mailto:contact@universalpoker.com'
-    },
-    {
       icon: <Send className="h-6 w-6" strokeWidth={2} />,
       label: 'Telegram',
       color: 'from-[#0088cc] to-[#006699]',
@@ -97,7 +90,7 @@ export default function ContactUsPage() {
               </div>
 
               {/* Contact Method Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {contactMethods.map((method, index) => (
                   <a
                     key={index}
@@ -110,17 +103,16 @@ export default function ContactUsPage() {
                     <div className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-10 group-hover/method:opacity-20 transition-all duration-500`}></div>
                     
                     {/* Border */}
-                    <div className={`relative border border-white/[0.08] rounded-2xl p-6 bg-black/40 backdrop-blur-sm shadow-xl ${method.hoverColor} transition-all duration-500`}>
+                    <div className={`relative border border-white/[0.08] rounded-2xl p-5 bg-black/40 backdrop-blur-sm shadow-xl ${method.hoverColor} transition-all duration-500`}>
                       {/* Icon */}
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${method.color} flex items-center justify-center mb-4 shadow-lg transition-all duration-500 group-hover/method:scale-110`}>
+                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${method.color} flex items-center justify-center mb-3 shadow-lg transition-all duration-500 group-hover/method:scale-110`}>
                         <div className="text-white">
                           {method.icon}
                         </div>
                       </div>
                       
                       {/* Label */}
-                      <h3 className="text-lg font-semibold text-white mb-1">{method.label}</h3>
-                      <p className="text-sm text-gray-400">Connect instantly</p>
+                      <h3 className="text-base font-semibold text-white">{method.label}</h3>
                       
                       {/* Hover arrow */}
                       <div className="absolute top-6 right-6 opacity-0 group-hover/method:opacity-100 transition-all duration-300 transform translate-x-2 group-hover/method:translate-x-0">
@@ -165,21 +157,21 @@ export default function ContactUsPage() {
                 <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
                 
                 {/* Content */}
-                <div className="relative z-10 p-8 md:p-10">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3"
+                <div className="relative z-10 p-6 md:p-8">
+                  <h2 className="text-xl md:text-2xl font-bold text-white mb-2"
                       style={{ 
                         textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                         letterSpacing: '-0.01em'
                       }}>
-                    Send Us A Message
+                    Send Us An Email
                   </h2>
-                  <p className="text-base text-gray-400 mb-8">
+                  <p className="text-sm text-gray-400 mb-6">
                     Fill out the form and we&apos;ll get back to you as soon as possible.
                   </p>
 
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Name Field */}
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <label htmlFor="name" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         Name <span className="text-[#10b981]">*</span>
                       </label>
@@ -191,7 +183,7 @@ export default function ContactUsPage() {
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          className="relative w-full px-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
                           placeholder="Doyle Brunson"
                           required
                           style={{
@@ -202,7 +194,7 @@ export default function ContactUsPage() {
                     </div>
 
                     {/* Email Field */}
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <label htmlFor="email" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         Email <span className="text-[#10b981]">*</span>
                       </label>
@@ -214,7 +206,7 @@ export default function ContactUsPage() {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="relative w-full px-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                          className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
                           placeholder="email@example.com"
                           required
                           style={{
@@ -225,7 +217,7 @@ export default function ContactUsPage() {
                     </div>
 
                     {/* Message Field */}
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       <label htmlFor="message" className="block text-sm font-semibold text-gray-300 tracking-tight">
                         Message <span className="text-[#10b981]">*</span>
                       </label>
@@ -236,8 +228,8 @@ export default function ContactUsPage() {
                           name="message"
                           value={formData.message}
                           onChange={handleChange}
-                          rows={6}
-                          className="relative w-full px-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50 resize-none"
+                          rows={4}
+                          className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50 resize-none"
                           placeholder="Tell us what's wrong. If this is concerning a specific site, please let us know which one and your username."
                           required
                           style={{
@@ -248,10 +240,10 @@ export default function ContactUsPage() {
                     </div>
 
                     {/* Submit Button */}
-                    <div className="flex justify-center mt-8">
+                    <div className="flex justify-center mt-6">
                       <button
                         type="submit"
-                        className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                        className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                         style={{
                           boxShadow: `
                             0 0 0 1px rgba(255,255,255,0.1),
@@ -280,7 +272,7 @@ export default function ContactUsPage() {
                         
                         {/* Button content */}
                         <span className="relative z-10 tracking-wide drop-shadow-lg">Send Message</span>
-                        <Send className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                        <Send className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
                         
                         {/* Edge highlights */}
                         <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>

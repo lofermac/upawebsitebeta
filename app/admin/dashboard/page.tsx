@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import { useAuth } from '@/lib/auth-context';
+import { useAuth } from '@/lib/contexts/AuthContext';
 import { 
   LayoutDashboard, 
   Users, 

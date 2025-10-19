@@ -7,88 +7,61 @@ import { ArrowLeft, Calendar, User } from "lucide-react";
 
 export default function PartyPokerBirminghamNewsPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Hero Section - Black Background */}
-      <section className="relative bg-black w-full px-3 md:px-4 pt-6 pb-8">
-        {/* Premium Container Card - envolve Header, Título, Author e Data */}
-        <div className="relative w-full rounded-[2.5rem] overflow-hidden group/hero transition-all duration-700">
-          
-          {/* Background com gradiente cinza escuro premium - mesmo tom da homepage */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/hero:from-[#0e0e0e] group-hover/hero:via-[#131313] group-hover/hero:to-[#0e0e0e]"></div>
-          
-          {/* Borda sutil ao redor do card */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/hero:border-white/[0.09] group-hover/hero:shadow-black/60"></div>
-          
-          {/* Brilho interno sutil */}
-          <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/hero:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
-          
-          {/* Brilho no topo do card */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2.5rem]"></div>
-          
-          {/* Efeitos de glow verde sutil (marca Universal Poker) */}
-          <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-[#077124]/[0.03] rounded-full blur-[100px] animate-pulse-slow"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-emerald-500/[0.02] rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
-          
-          {/* Textura de ruído sutil para sensação premium */}
-          <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
-          
-          {/* Header */}
-          <div className="relative z-10 pt-6 px-4">
-            <Header />
-          </div>
-          
-          {/* Hero Content - Title, Author and Date */}
-          <div className="relative z-10 pt-20 pb-20 px-4">
-            <div className="max-w-4xl mx-auto">
-              
-              {/* Article Title */}
-              <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 text-center" 
-                  style={{ 
-                    textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.02em'
-                  }}>
-                PartyPoker Tour Returns to Birmingham this October
-              </h1>
+    <div className="bg-[#1E1E1E] min-h-screen flex flex-col">
+      {/* Header Section */}
+      <section className="relative bg-[#1E1E1E] w-full px-3 md:px-4 pt-6">
+        <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
+          <Header />
+        </div>
+      </section>
 
-              {/* Meta Information - Author and Date */}
-              <div className="flex flex-wrap items-center justify-center gap-6 text-gray-400">
-                {/* Published by */}
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-[#077124]/20 rounded-full blur-sm"></div>
-                    <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-[#077124] to-emerald-500 flex items-center justify-center">
-                      <User className="w-4 h-4 text-white" strokeWidth={2.5} />
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider">Published by</span>
-                    <p className="text-sm font-semibold text-white">Chris Andreou</p>
+      {/* Main Content */}
+      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1">
+        <div className="max-w-7xl mx-auto px-4">
+          
+          {/* Article Title and Meta */}
+          <div className="max-w-5xl mx-auto mb-12">
+            {/* Article Title */}
+            <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-8 text-center" 
+                style={{ 
+                  textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+                  letterSpacing: '-0.02em'
+                }}>
+              PartyPoker Tour Returns to Birmingham this October
+            </h1>
+
+            {/* Meta Information - Author and Date */}
+            <div className="flex flex-wrap items-center justify-center gap-6 text-gray-400 mb-12">
+              {/* Published by */}
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-[#077124]/20 rounded-full blur-sm"></div>
+                  <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-[#077124] to-emerald-500 flex items-center justify-center">
+                    <User className="w-4 h-4 text-white" strokeWidth={2.5} />
                   </div>
                 </div>
+                <div>
+                  <span className="text-xs text-gray-500 uppercase tracking-wider">Published by</span>
+                  <p className="text-sm font-semibold text-white">Chris Andreou</p>
+                </div>
+              </div>
 
-                {/* Divider */}
-                <div className="h-8 w-px bg-white/[0.08]"></div>
+              {/* Divider */}
+              <div className="h-8 w-px bg-white/[0.08]"></div>
 
-                {/* Date */}
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-[#077124]" />
-                  <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider">Published</span>
-                    <p className="text-sm font-semibold text-white">October 6, 2025</p>
-                  </div>
+              {/* Date */}
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#077124]" />
+                <div>
+                  <span className="text-xs text-gray-500 uppercase tracking-wider">Published</span>
+                  <p className="text-sm font-semibold text-white">October 6, 2025</p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Article Content Section - Pure Black Background */}
-      <main className="relative bg-black w-full pt-12 pb-24">
-        <div className="max-w-7xl mx-auto px-4">
-          
-          {/* Featured Image - Full Width Premium */}
-          <div className="relative rounded-3xl overflow-hidden mb-16 group shadow-2xl">
+          {/* Featured Image - 60% Width Premium */}
+          <div className="relative rounded-3xl overflow-hidden mb-16 group shadow-2xl mx-auto" style={{ maxWidth: '60%' }}>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             <div className="absolute inset-0 border border-white/[0.05] rounded-3xl"></div>
             <img 
@@ -121,47 +94,57 @@ export default function PartyPokerBirminghamNewsPage() {
                 The Festival offers a variety of tournaments designed to appeal to a wide range of bankrolls and styles:
               </p>
 
-              {/* Premium Table */}
-              <div className="relative rounded-2xl overflow-hidden backdrop-blur-xl mb-8">
-                <div className="absolute inset-0 bg-gradient-to-br from-zinc-900/40 via-black/60 to-zinc-900/40"></div>
-                <div className="relative border border-white/[0.08] rounded-2xl overflow-hidden">
+              {/* Premium Table - Eye-catching design */}
+              <div className="relative rounded-3xl overflow-hidden mb-8 group/table shadow-2xl">
+                {/* Vibrant gradient background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#077124]/20 via-emerald-900/30 to-[#077124]/20"></div>
+                
+                {/* Animated glow effects */}
+                <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#077124]/20 rounded-full blur-[120px] animate-pulse-slow"></div>
+                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/15 rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+                
+                {/* Border with green accent */}
+                <div className="relative border-2 border-[#077124]/30 rounded-3xl overflow-hidden backdrop-blur-sm bg-black/60">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="border-b border-white/[0.08]">
-                        <th className="px-6 py-4 text-white font-bold text-base">Event</th>
-                        <th className="px-6 py-4 text-white font-bold text-base">Buy-In</th>
-                        <th className="px-6 py-4 text-white font-bold text-base">Guarantee</th>
-                        <th className="px-6 py-4 text-white font-bold text-base">Dates</th>
+                      <tr className="bg-gradient-to-r from-[#077124]/40 via-[#077124]/50 to-[#077124]/40 border-b-2 border-[#077124]/40">
+                        <th className="px-6 py-5 text-white font-bold text-base tracking-wide">Event</th>
+                        <th className="px-6 py-5 text-white font-bold text-base tracking-wide">Buy-In</th>
+                        <th className="px-6 py-5 text-white font-bold text-base tracking-wide">Guarantee</th>
+                        <th className="px-6 py-5 text-white font-bold text-base tracking-wide">Dates</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors duration-300">
-                        <td className="px-6 py-4 text-gray-300">Mini Main Event</td>
-                        <td className="px-6 py-4 text-gray-300">£150</td>
-                        <td className="px-6 py-4 text-gray-300">£50,000</td>
-                        <td className="px-6 py-4 text-gray-300">11-16 October</td>
+                      <tr className="border-b border-[#077124]/10 hover:bg-[#077124]/10 transition-all duration-300 group/row">
+                        <td className="px-6 py-5 text-gray-200 font-semibold group-hover/row:text-white transition-colors">Mini Main Event</td>
+                        <td className="px-6 py-5 text-emerald-400 font-bold">£150</td>
+                        <td className="px-6 py-5 text-gray-300 group-hover/row:text-white transition-colors">£50,000</td>
+                        <td className="px-6 py-5 text-gray-400 group-hover/row:text-gray-200 transition-colors">11-16 October</td>
                       </tr>
-                      <tr className="border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors duration-300">
-                        <td className="px-6 py-4 text-gray-300">Main Event</td>
-                        <td className="px-6 py-4 text-gray-300">£500</td>
-                        <td className="px-6 py-4 text-gray-300">£100,000</td>
-                        <td className="px-6 py-4 text-gray-300">16 – 19 October</td>
+                      <tr className="border-b border-[#077124]/10 hover:bg-[#077124]/10 transition-all duration-300 group/row">
+                        <td className="px-6 py-5 text-gray-200 font-semibold group-hover/row:text-white transition-colors">Main Event</td>
+                        <td className="px-6 py-5 text-emerald-400 font-bold">£500</td>
+                        <td className="px-6 py-5 text-gray-300 group-hover/row:text-white transition-colors">£100,000</td>
+                        <td className="px-6 py-5 text-gray-400 group-hover/row:text-gray-200 transition-colors">16 – 19 October</td>
                       </tr>
-                      <tr className="border-b border-white/[0.05] hover:bg-white/[0.02] transition-colors duration-300">
-                        <td className="px-6 py-4 text-gray-300">PLO Masters</td>
-                        <td className="px-6 py-4 text-gray-300">£250</td>
-                        <td className="px-6 py-4 text-gray-300">£20,000</td>
-                        <td className="px-6 py-4 text-gray-300">17 – 19 October</td>
+                      <tr className="border-b border-[#077124]/10 hover:bg-[#077124]/10 transition-all duration-300 group/row">
+                        <td className="px-6 py-5 text-gray-200 font-semibold group-hover/row:text-white transition-colors">PLO Masters</td>
+                        <td className="px-6 py-5 text-emerald-400 font-bold">£250</td>
+                        <td className="px-6 py-5 text-gray-300 group-hover/row:text-white transition-colors">£20,000</td>
+                        <td className="px-6 py-5 text-gray-400 group-hover/row:text-gray-200 transition-colors">17 – 19 October</td>
                       </tr>
-                      <tr className="hover:bg-white/[0.02] transition-colors duration-300">
-                        <td className="px-6 py-4 text-gray-300">High Roller</td>
-                        <td className="px-6 py-4 text-gray-300">£1,000</td>
-                        <td className="px-6 py-4 text-gray-300">Based on entries</td>
-                        <td className="px-6 py-4 text-gray-300">19 October</td>
+                      <tr className="hover:bg-[#077124]/10 transition-all duration-300 group/row">
+                        <td className="px-6 py-5 text-gray-200 font-semibold group-hover/row:text-white transition-colors">High Roller</td>
+                        <td className="px-6 py-5 text-emerald-400 font-bold">£1,000</td>
+                        <td className="px-6 py-5 text-gray-300 group-hover/row:text-white transition-colors">Based on entries</td>
+                        <td className="px-6 py-5 text-gray-400 group-hover/row:text-gray-200 transition-colors">19 October</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
+                
+                {/* Bottom glow accent */}
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#077124]/60 to-transparent"></div>
               </div>
             </div>
 
@@ -234,6 +217,9 @@ export default function PartyPokerBirminghamNewsPage() {
         </div>
       </main>
 
+      {/* Footer */}
+      <Footer />
+
       <style jsx global>{`
         @keyframes pulse-slow {
           0%, 100% { opacity: 0.5; }
@@ -243,8 +229,6 @@ export default function PartyPokerBirminghamNewsPage() {
           animation: pulse-slow 3s ease-in-out infinite;
         }
       `}</style>
-
-      <Footer />
     </div>
   );
 }

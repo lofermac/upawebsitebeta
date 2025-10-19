@@ -8,6 +8,11 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import DealCardWithGeo from "@/components/DealCardWithGeo";
+import AuthModal from "@/components/AuthModal";
+import JoinDealModal from "@/components/JoinDealModal";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useAuthModal } from "@/lib/hooks/useAuthModal";
 
 // Blog Posts Data
 const blogPosts = [
@@ -271,9 +276,21 @@ const testimonials = [
 ];
 
 export default function Home() {
+  const { isLoggedIn } = useAuth();
+  const authModal = useAuthModal();
   const [cardsVisible, setCardsVisible] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(2); // Start at first real slide (Ryan)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
+  const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      authModal.openLogin('888Poker'); // Passa o nome do deal
+    }
+    // Se logado, link funciona normalmente
+  };
+
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       align: 'center',
@@ -692,6 +709,7 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-auto">
 
             {/* Deal 2: PARTYPOKER - Primeira Linha */}
+            <DealCardWithGeo dealId={2}>
             <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
               {/* Gradient Border Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
@@ -699,7 +717,7 @@ export default function Home() {
               {/* Card Content */}
               <div className="relative border border-orange-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-orange-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
                    style={{
-                     background: 'radial-gradient(ellipse at center top, #E67339 0%, #D4642D 20%, #B85425 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)'
+                     background: 'radial-gradient(ellipse at center top, #C8582B 0%, #B85425 20%, #A04920 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)'
                    }}>
                 {/* Subtle vignette for extra depth */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
@@ -718,9 +736,10 @@ export default function Home() {
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                   </div>
                   
-                  {/* Button */}
-                  <div className="flex justify-center mb-4">
-                    <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-12 py-3.5 rounded-full text-center text-base transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                  {/* Buttons - 2 side by side */}
+                  <div className="flex gap-3 justify-center mb-4 px-2">
+                    {/* Claim Offer Button - Primary */}
+                    <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
                            0 0 0 1px rgba(255,255,255,0.1),
@@ -738,9 +757,13 @@ export default function Home() {
                       <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Deal</span>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
                       <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
                       <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+                    </a>
+                    {/* Learn More Button - Secondary */}
+                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                     </a>
                   </div>
                   
@@ -751,8 +774,10 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </DealCardWithGeo>
 
             {/* Deal 3: 888POKER - Primeira Linha */}
+            <DealCardWithGeo dealId={3}>
             <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
               {/* Gradient Border Effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/50 via-cyan-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
@@ -760,7 +785,7 @@ export default function Home() {
               {/* Card Content */}
               <div className="relative border border-blue-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-blue-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
                    style={{
-                     background: 'radial-gradient(ellipse at center top, #4A7AC9 0%, #3B68B8 20%, #2E56A3 40%, #234489 60%, #1A3470 80%, #142958 100%)'
+                     background: 'radial-gradient(ellipse at center top, #3B5FA3 0%, #2E56A3 20%, #264A8C 40%, #234489 60%, #1A3470 80%, #142958 100%)'
                    }}>
                 {/* Subtle vignette for extra depth */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
@@ -779,9 +804,10 @@ export default function Home() {
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                   </div>
                   
-                  {/* Button */}
-                  <div className="flex justify-center mb-4">
-                    <a href="/platform-connection?platform_id=1367" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-12 py-3.5 rounded-full text-center text-base transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                  {/* Buttons - 2 side by side */}
+                  <div className="flex gap-3 justify-center mb-4 px-2">
+                    {/* Claim Offer Button - Primary */}
+                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
                            0 0 0 1px rgba(255,255,255,0.1),
@@ -799,9 +825,13 @@ export default function Home() {
                       <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Deal</span>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
                       <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
                       <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+                    </a>
+                    {/* Learn More Button - Secondary */}
+                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                     </a>
                   </div>
                   
@@ -812,13 +842,15 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </DealCardWithGeo>
 
             {/* Deal 10: COINPOKER - Quarta Linha */}
+            <DealCardWithGeo dealId={10}>
             <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
               <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-orange-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
               <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
                    style={{
-                     background: 'radial-gradient(ellipse at center top, #9A3838 0%, #872E2E 20%, #6E2424 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)'
+                     background: 'radial-gradient(ellipse at center top, #7D2C2C 0%, #6E2424 20%, #5F1F1F 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)'
                    }}>
                 {/* Subtle vignette for extra depth */}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
@@ -835,8 +867,11 @@ export default function Home() {
                     <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Up To $1500 Every Month</p>
                   </div>
-                  <div className="flex justify-center mb-4">
-                    <a href="#" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-12 py-3.5 rounded-full text-center text-base transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                  
+                  {/* Buttons - 2 side by side */}
+                  <div className="flex gap-3 justify-center mb-4 px-2">
+                    {/* Claim Offer Button - Primary */}
+                    <a href="#" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
                            0 0 0 1px rgba(255,255,255,0.1),
@@ -854,11 +889,16 @@ export default function Home() {
                       <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Deal</span>
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
                       <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
                       <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
+                    {/* Learn More Button - Secondary */}
+                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
+                    </a>
                   </div>
+                  
                   {/* Terms */}
                   <div className="mt-auto pt-5 border-t border-white/[0.15]">
                     <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full CoinPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
@@ -866,6 +906,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
+            </DealCardWithGeo>
 
             </div>
 
@@ -1337,6 +1378,21 @@ export default function Home() {
       </section>
 
       <Footer />
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={authModal.isOpen} 
+        onClose={authModal.close}
+        initialTab={authModal.initialTab}
+        onSuccess={authModal.onAuthSuccess}
+      />
+
+      {/* Join Deal Modal */}
+      <JoinDealModal
+        isOpen={authModal.isJoinDealOpen}
+        onClose={authModal.closeJoinDeal}
+        dealName={authModal.dealName}
+      />
     </div>
   );
 }

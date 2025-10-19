@@ -2,8 +2,24 @@
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import DealCardWithGeo from "@/components/DealCardWithGeo";
+import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useAuthModal } from "@/lib/hooks/useAuthModal";
 
 export default function DealsPage() {
+  const { isLoggedIn } = useAuth();
+  const authModal = useAuthModal();
+
+  // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
+  const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      authModal.openLogin();
+    }
+    // Se logado, link funciona normalmente
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section - Black Background */}
@@ -65,10 +81,11 @@ export default function DealsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-auto">
           
           {/* Deal 1: GGPOKER */}
+          <DealCardWithGeo dealId={1}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-red-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #B83232 0%, #A02828 20%, #7D1F1F 40%, #5C1616 60%, #3D0E0E 80%, #2B0A0A 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #962727 0%, #7D1F1F 20%, #6A1A1A 40%, #5C1616 60%, #3D0E0E 80%, #2B0A0A 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144333/ggpoker_logo-1_white-1.webp" alt="GGPoker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -105,12 +122,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 2: PARTYPOKER */}
+          <DealCardWithGeo dealId={2}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-orange-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-orange-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #E67339 0%, #D4642D 20%, #B85425 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #C8582B 0%, #B85425 20%, #A04920 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/07/07144334/ENT_PartyPoker_Landscape_FullWhite_RGB.png" alt="PartyPoker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -145,12 +164,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 3: 888POKER */}
+          <DealCardWithGeo dealId={3}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/50 via-cyan-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-blue-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-blue-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #4A7AC9 0%, #3B68B8 20%, #2E56A3 40%, #234489 60%, #1A3470 80%, #142958 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #3B5FA3 0%, #2E56A3 20%, #264A8C 40%, #234489 60%, #1A3470 80%, #142958 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183728/888-LOGO-webp-1024x309.webp" alt="888poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -163,7 +184,7 @@ export default function DealsPage() {
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1367" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
+                  <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                      style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
                     <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
@@ -185,12 +206,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 4: WPT GLOBAL */}
+          <DealCardWithGeo dealId={4}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-indigo-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-purple-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-purple-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #7C4DBF 0%, #6940A8 20%, #563391 40%, #43277A 60%, #301C63 80%, #20134C 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #633C9A 0%, #563391 20%, #4A2C7D 40%, #43277A 60%, #301C63 80%, #20134C 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp" alt="WPT Global Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -225,12 +248,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 5: UNIBET */}
+          <DealCardWithGeo dealId={5}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/50 via-green-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-emerald-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-emerald-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #47A76A 0%, #3C8F5A 20%, #2F7547 40%, #235935 60%, #183E24 80%, #0F2A18 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #398654 0%, #2F7547 20%, #28653D 40%, #235935 60%, #183E24 80%, #0F2A18 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/15110203/Unitbet-Logo.png" alt="Unibet Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -265,12 +290,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 6: BETFAIR POKER */}
+          <DealCardWithGeo dealId={6}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-yellow-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-yellow-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #D4A837 0%, #B89230 20%, #947625 40%, #705A1C 60%, #4D3F14 80%, #352B0E 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #AA872C 0%, #947625 20%, #80651F 40%, #705A1C 60%, #4D3F14 80%, #352B0E 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp" alt="Betfair Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -305,12 +332,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 7: CHAMPION POKER */}
+          <DealCardWithGeo dealId={7}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-rose-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #B84545 0%, #A03A3A 20%, #7D2D2D 40%, #5C2121 60%, #3D1616 80%, #2B0F0F 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #943636 0%, #7D2D2D 20%, #6A2626 40%, #5C2121 60%, #3D1616 80%, #2B0F0F 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp" alt="Champion Poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -345,12 +374,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 8: WSOP.CA */}
+          <DealCardWithGeo dealId={8}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-yellow-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-amber-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-amber-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #D4A037 0%, #B88F30 20%, #947225 40%, #70541C 60%, #4D3914 80%, #35270E 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #AA7F2B 0%, #947225 20%, #7F611F 40%, #70541C 60%, #4D3914 80%, #35270E 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/12/11192441/wsop-ontario-logo-1024x376.webp" alt="WSOP.CA Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -385,12 +416,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 9: OPTIBET POKER */}
+          <DealCardWithGeo dealId={9}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-rose-500/50 via-pink-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-rose-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-rose-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #C84D6B 0%, #B04460 20%, #8E3750 40%, #6C2A3D 60%, #491D29 80%, #31141C 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #A23D56 0%, #8E3750 20%, #7C3044 40%, #6C2A3D 60%, #491D29 80%, #31141C 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17100841/Optibet-Poker-logo-2D-horizontal-red-bg-1024x298.png" alt="Optibet Poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -425,12 +458,14 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
           {/* Deal 10: COINPOKER */}
+          <DealCardWithGeo dealId={10}>
           <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
             <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-orange-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
             <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #9A3838 0%, #872E2E 20%, #6E2424 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)' }}>
+                 style={{ background: 'radial-gradient(ellipse at center top, #7D2C2C 0%, #6E2424 20%, #5F1F1F 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)' }}>
               <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
               <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
                 <img src="/images/coinlogo.png" alt="CoinPoker Logo" className="max-h-60 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
@@ -465,6 +500,7 @@ export default function DealsPage() {
               </div>
             </div>
           </div>
+          </DealCardWithGeo>
 
         </div>
       </div>
@@ -480,6 +516,13 @@ export default function DealsPage() {
       `}</style>
       </main>
       <Footer />
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={authModal.isOpen} 
+        onClose={authModal.close}
+        initialTab={authModal.initialTab}
+      />
     </div>
   );
 }

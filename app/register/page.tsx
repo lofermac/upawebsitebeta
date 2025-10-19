@@ -6,10 +6,12 @@ import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CountrySelect from "../components/CountrySelect";
+import WelcomeModal from "@/components/WelcomeModal";
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     country: '',
@@ -39,10 +41,27 @@ export default function RegisterPage() {
     e.preventDefault();
     // Registration logic will be implemented later
     console.log(formData);
+    
+    // Simula registro bem-sucedido e mostra o modal de boas-vindas
+    // TODO: Integrar com Supabase Auth
+    setShowWelcomeModal(true);
+  };
+
+  const handleCloseWelcomeModal = () => {
+    setShowWelcomeModal(false);
   };
 
   return (
-    <div className="min-h-screen bg-black flex flex-col">
+    <>
+      {/* Welcome Modal */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={handleCloseWelcomeModal}
+        userName={formData.fullName.split(' ')[0]} // Pega o primeiro nome
+      />
+
+      {/* Page Content */}
+      <div className="min-h-screen bg-black flex flex-col">
       {/* Header Container - Same as login and homepage */}
       <section className="relative bg-black w-full px-3 md:px-4 pt-6">
         <div className="relative w-full">
@@ -543,6 +562,7 @@ export default function RegisterPage() {
       {/* Footer */}
       <Footer />
     </div>
+    </>
   );
 }
 

@@ -212,9 +212,11 @@ interface CountrySelectProps {
   value: string;
   onChange: (countryCode: string) => void;
   required?: boolean;
+  error?: string;
+  compact?: boolean; // Para modais, usa py-3 ao invés de py-4
 }
 
-export default function CountrySelect({ value, onChange, required = false }: CountrySelectProps) {
+export default function CountrySelect({ value, onChange, required = false, compact = false }: CountrySelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(0);
@@ -308,8 +310,8 @@ export default function CountrySelect({ value, onChange, required = false }: Cou
       <div className={`absolute inset-0 rounded-xl opacity-0 ${isOpen ? 'opacity-100' : 'group-focus-within/input:opacity-100'} transition-opacity duration-300 blur-xl bg-[#077124]/10`}></div>
       
       {/* Globe Icon */}
-      <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
-        <Globe className={`h-5 w-5 transition-colors duration-300 ${isOpen ? 'text-[#077124]' : 'text-gray-500 group-hover/input:text-gray-400'}`} strokeWidth={2} />
+      <div className={`absolute inset-y-0 left-0 ${compact ? 'pl-4' : 'pl-5'} flex items-center pointer-events-none z-10`}>
+        <Globe className={`${compact ? 'h-4 w-4' : 'h-5 w-5'} transition-colors duration-300 ${isOpen ? 'text-[#077124]' : 'text-gray-500 group-hover/input:text-gray-400'}`} strokeWidth={2} />
       </div>
 
       {/* Input Field */}
@@ -320,7 +322,7 @@ export default function CountrySelect({ value, onChange, required = false }: Cou
             inputRef.current?.focus();
           }
         }}
-        className={`relative w-full pl-14 pr-12 py-4 bg-black/40 border ${isOpen ? 'border-[#077124]/50 ring-2 ring-[#077124]/20' : 'border-white/[0.08]'} rounded-xl text-white text-base cursor-pointer transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50 flex items-center gap-3`}
+        className={`relative w-full ${compact ? 'pl-12 pr-11 py-3 text-sm' : 'pl-14 pr-12 py-4 text-base'} bg-black/40 border ${isOpen ? 'border-[#077124]/50 ring-2 ring-[#077124]/20' : 'border-white/[0.08]'} rounded-xl text-white cursor-pointer transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50 flex items-center gap-3`}
         style={{
           boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
         }}
@@ -340,8 +342,8 @@ export default function CountrySelect({ value, onChange, required = false }: Cou
             autoFocus
           />
         ) : selectedCountry ? (
-          <div className="flex items-center gap-3 flex-1">
-            <selectedCountry.Flag className="w-6 h-4 rounded-sm shadow-sm" />
+          <div className="flex items-center gap-2.5 flex-1">
+            <selectedCountry.Flag className={`${compact ? 'w-5 h-3.5' : 'w-6 h-4'} rounded-sm shadow-sm`} />
             <span>{selectedCountry.name}</span>
           </div>
         ) : (
@@ -350,18 +352,18 @@ export default function CountrySelect({ value, onChange, required = false }: Cou
       </div>
 
       {/* Chevron/Clear Icon */}
-      <div className="absolute inset-y-0 right-0 pr-5 flex items-center gap-2 z-10">
+      <div className={`absolute inset-y-0 right-0 ${compact ? 'pr-4' : 'pr-5'} flex items-center gap-2 z-10`}>
         {selectedCountry && !isOpen && (
           <button
             type="button"
             onClick={handleClear}
             className="text-gray-500 hover:text-gray-300 transition-colors duration-300"
           >
-            <X className="h-4 w-4" strokeWidth={2} />
+            <X className={`${compact ? 'h-3.5 w-3.5' : 'h-4 w-4'}`} strokeWidth={2} />
           </button>
         )}
         <ChevronDown 
-          className={`h-5 w-5 text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
+          className={`${compact ? 'h-4 w-4' : 'h-5 w-5'} text-gray-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
           strokeWidth={2}
         />
       </div>

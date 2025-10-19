@@ -3,7 +3,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
 import { useState } from "react";
 
 // Blog Posts Data - todas as notícias
@@ -133,6 +133,7 @@ const blogPosts = [
 export default function NewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const postsPerPage = 12; // Grid 3x4 (3 colunas × 4 linhas)
   
   // Categorias de filtro
@@ -165,6 +166,7 @@ export default function NewsPage() {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     setCurrentPage(1); // Reset para primeira página ao trocar categoria
+    setIsFilterOpen(false); // Fechar o filtro após selecionar
   };
   return (
     <div className="min-h-screen flex flex-col">
@@ -217,94 +219,118 @@ export default function NewsPage() {
             </div>
           </div>
         </div>
-
-        {/* Premium Filter Section - Inside the card, below hero */}
-        <div className="relative z-10 px-4 pt-8 pb-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Filter Container */}
-            <div className="relative group/filter">
-              {/* Background with subtle gradient */}
-              <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/50 via-zinc-800/50 to-zinc-900/50 rounded-2xl blur-sm"></div>
-              
-              {/* Filter Content */}
-              <div className="relative bg-gradient-to-b from-zinc-900/80 to-zinc-900/60 backdrop-blur-xl rounded-2xl border border-zinc-800/50 p-6 shadow-xl">
-                {/* Title */}
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-semibold text-sm uppercase tracking-wider flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#077124] shadow-lg shadow-[#077124]/50 animate-pulse-slow"></span>
-                    Filter by Category
-                  </h3>
-                  {selectedCategory !== 'All' && (
-                    <button
-                      onClick={() => handleCategoryChange('All')}
-                      className="text-xs text-zinc-400 hover:text-[#077124] transition-colors duration-300 flex items-center gap-1"
-                    >
-                      <span>Clear Filter</span>
-                      <span className="text-lg">×</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Filter Buttons */}
-                <div className="flex flex-wrap gap-3">
-                  {categories.map((category) => {
-                    const isActive = selectedCategory === category.id;
-                    return (
-                      <button
-                        key={category.id}
-                        onClick={() => handleCategoryChange(category.id)}
-                        className={`group relative px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-500 overflow-hidden ${
-                          isActive
-                            ? 'text-white scale-105 shadow-xl'
-                            : 'text-zinc-400 hover:text-white hover:scale-105 bg-zinc-800/50 hover:bg-zinc-700/50'
-                        }`}
-                        style={isActive ? {
-                          background: 'linear-gradient(135deg, #088929 0%, #077124 50%, #055a1c 100%)',
-                          boxShadow: `
-                            0 0 0 1px rgba(255,255,255,0.1),
-                            0 4px 16px rgba(7,113,36,0.4),
-                            0 8px 24px rgba(7,113,36,0.3),
-                            inset 0 1px 1px rgba(255,255,255,0.3)
-                          `
-                        } : {}}
-                      >
-                        {isActive && (
-                          <>
-                            {/* Animated Glow */}
-                            <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] rounded-xl blur-lg opacity-60 animate-pulse-slow"></div>
-                            {/* Shine Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/5 to-transparent rounded-xl" style={{ height: '50%' }}></div>
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-                          </>
-                        )}
-                        <span className="relative z-10 flex items-center gap-2">
-                          <span>{category.icon}</span>
-                          <span>{category.name}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Results Counter */}
-                <div className="mt-4 pt-4 border-t border-zinc-800/50">
-                  <p className="text-zinc-500 text-xs">
-                    Showing <span className="text-[#077124] font-semibold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'article' : 'articles'}
-                    {selectedCategory !== 'All' && (
-                      <span className="text-zinc-600"> in <span className="text-zinc-400">{selectedCategory}</span></span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* News Section - Pure Black Background */}
       <main className="relative bg-black w-full pt-4 pb-24">
         <div className="max-w-7xl mx-auto px-4">
           
+          {/* Minimalist Filter Button - Top Right */}
+          <div className="flex justify-end mb-6">
+            <div className="relative">
+              {/* Filter Toggle Button */}
+              <button
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={`group relative flex items-center gap-2.5 px-5 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${
+                  isFilterOpen
+                    ? 'bg-gradient-to-r from-[#088929] to-[#077124] text-white shadow-lg shadow-[#077124]/30'
+                    : 'bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-800/80 border border-zinc-800/50'
+                }`}
+              >
+                <Filter className={`w-4 h-4 transition-transform duration-300 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                <span>Filter</span>
+                {selectedCategory !== 'All' && (
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-xs font-bold">
+                    1
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown Filter Menu */}
+              {isFilterOpen && (
+                <>
+                  {/* Overlay para fechar ao clicar fora */}
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsFilterOpen(false)}
+                  ></div>
+
+                  {/* Filter Dropdown */}
+                  <div className="absolute right-0 mt-2 w-80 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="relative group/dropdown">
+                      {/* Background Glow */}
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124]/20 to-emerald-500/20 rounded-2xl blur-xl opacity-50"></div>
+                      
+                      {/* Dropdown Content */}
+                      <div className="relative bg-zinc-900 border border-zinc-800/50 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-zinc-800/50">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-[#077124] shadow-lg shadow-[#077124]/50 animate-pulse-slow"></div>
+                            <h3 className="text-white font-semibold text-sm">Filter by Category</h3>
+                          </div>
+                          <button
+                            onClick={() => setIsFilterOpen(false)}
+                            className="text-zinc-500 hover:text-white transition-colors duration-200"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Categories List */}
+                        <div className="p-3 space-y-1.5 max-h-96 overflow-y-auto">
+                          {categories.map((category) => {
+                            const isActive = selectedCategory === category.id;
+                            return (
+                              <button
+                                key={category.id}
+                                onClick={() => handleCategoryChange(category.id)}
+                                className={`w-full group/item relative flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 ${
+                                  isActive
+                                    ? 'bg-gradient-to-r from-[#088929] to-[#077124] text-white shadow-lg shadow-[#077124]/20'
+                                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                                }`}
+                              >
+                                {isActive && (
+                                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-white/10 rounded-xl"></div>
+                                )}
+                                <span className="text-lg">{category.icon}</span>
+                                <span className="relative z-10 flex-1 text-left">{category.name}</span>
+                                {isActive && (
+                                  <div className="w-1.5 h-1.5 rounded-full bg-white shadow-lg"></div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Footer - Results Counter */}
+                        <div className="px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/50">
+                          <p className="text-zinc-500 text-xs text-center">
+                            <span className="text-[#077124] font-semibold">{filteredPosts.length}</span> {filteredPosts.length === 1 ? 'article' : 'articles'}
+                            {selectedCategory !== 'All' && (
+                              <>
+                                {' '}in <span className="text-zinc-400">{selectedCategory}</span>
+                              </>
+                            )}
+                          </p>
+                          {selectedCategory !== 'All' && (
+                            <button
+                              onClick={() => handleCategoryChange('All')}
+                              className="mt-2 w-full text-xs text-zinc-400 hover:text-[#077124] transition-colors duration-300 font-medium"
+                            >
+                              Clear Filter
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           {/* News Grid - 3x4 (3 colunas × 4 linhas) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {currentPosts.map((post) => (

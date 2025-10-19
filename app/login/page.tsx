@@ -5,7 +5,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
