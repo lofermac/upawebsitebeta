@@ -30,9 +30,6 @@ export default function TermsPage() {
                 }}>
               Terms & Conditions
             </h1>
-            <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              These are the basic rules and legal stuff that go with using the site. It isn&apos;t supposed to be complicated stuff so if you have any questions about it or you are unsure of something then please contact us with your enquiry.
-            </p>
           </div>
 
           {/* Terms Content */}

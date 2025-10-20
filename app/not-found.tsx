@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { Search, Home, ArrowLeft, HelpCircle } from "lucide-react";
+import { Search, Home, HelpCircle } from "lucide-react";
 
 export default function NotFound() {
   return (
@@ -61,26 +61,8 @@ export default function NotFound() {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10 animate-fade-up-delay-400">
-            {/* Go Back Button */}
-            <button
-              onClick={() => window.history.back()}
-              className="group relative inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] border border-white/10"
-              style={{
-                boxShadow: `
-                  0 1px 3px 0 rgba(0,0,0,0.5),
-                  inset 0 1px 1px rgba(255,255,255,0.1)
-                `
-              }}
-            >
-              <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" strokeWidth={2.5} />
-              <span className="relative z-10 tracking-wide">Go Back</span>
-              
-              {/* Hover effect */}
-              <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            </button>
-
+          {/* Action Button */}
+          <div className="flex items-center justify-center mb-10 animate-fade-up-delay-400">
             {/* Home Button */}
             <Link
               href="/"

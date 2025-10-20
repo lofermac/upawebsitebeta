@@ -410,7 +410,7 @@ export default function Home() {
             <div className="max-w-6xl mx-auto text-center space-y-10">
               {/* Main Heading - Apple-like Typography */}
               <h1 className="animate-fade-up-delay-800">
-                <div className="text-[2.75rem] sm:text-6xl md:text-7xl lg:text-[5.5rem] font-semibold leading-[1.08] tracking-[-0.02em]">
+                <div className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-semibold leading-tight tracking-[-0.02em]">
                   {/* Primeira linha - Peso menor, mais sutil */}
                   <span className="block text-white/95 font-medium" 
                         style={{ 
@@ -431,7 +431,7 @@ export default function Home() {
               </h1>
               
               {/* Subtitle - Apple-style minimalista */}
-              <p className="text-[1.35rem] sm:text-2xl md:text-[1.75rem] lg:text-[2rem] text-gray-400 font-normal max-w-4xl mx-auto leading-[1.4] animate-fade-up-delay-1200"
+              <p className="text-lg sm:text-xl md:text-xl lg:text-2xl text-gray-400 font-normal max-w-4xl mx-auto leading-relaxed animate-fade-up-delay-1200"
                  style={{ 
                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                    letterSpacing: '-0.01em',
@@ -505,7 +505,7 @@ export default function Home() {
       </section>
       
       {/* STATS & RAKEBACK SECTION - Premium */}
-      <section id="mission" className="relative bg-black w-full py-16 md:py-20 px-4">
+      <section id="mission" className="relative bg-black w-full py-20 md:py-32 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Stats Grid - No Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-20">
@@ -522,7 +522,7 @@ export default function Home() {
               </div>
               
               {/* Title */}
-              <h3 className="text-gray-400 text-lg sm:text-xl md:text-[1.225rem] lg:text-[1.4rem] font-semibold mb-4 text-center tracking-tight"
+              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
                   style={{ 
                     textShadow: '0 2px 12px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.01em',
@@ -532,7 +532,7 @@ export default function Home() {
               </h3>
               
               {/* Counter */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.8rem] font-bold text-white drop-shadow-lg tracking-tight"
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
                    style={{ 
                      textShadow: '0 2px 16px rgba(0,0,0,0.5)',
                      letterSpacing: '-0.02em',
@@ -555,7 +555,7 @@ export default function Home() {
               </div>
               
               {/* Title */}
-              <h3 className="text-gray-400 text-lg sm:text-xl md:text-[1.225rem] lg:text-[1.4rem] font-semibold mb-4 text-center tracking-tight"
+              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
                   style={{ 
                     textShadow: '0 2px 12px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.01em',
@@ -565,7 +565,7 @@ export default function Home() {
               </h3>
               
               {/* Counter */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.8rem] font-bold text-white drop-shadow-lg tracking-tight"
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
                    style={{ 
                      textShadow: '0 2px 16px rgba(0,0,0,0.5)',
                      letterSpacing: '-0.02em',
@@ -588,7 +588,7 @@ export default function Home() {
               </div>
               
               {/* Title */}
-              <h3 className="text-gray-400 text-lg sm:text-xl md:text-[1.225rem] lg:text-[1.4rem] font-semibold mb-4 text-center tracking-tight"
+              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
                   style={{ 
                     textShadow: '0 2px 12px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.01em',
@@ -598,7 +598,7 @@ export default function Home() {
               </h3>
               
               {/* Counter */}
-              <div className="text-3xl sm:text-4xl md:text-5xl lg:text-[2.8rem] font-bold text-white drop-shadow-lg tracking-tight"
+              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
                    style={{ 
                      textShadow: '0 2px 16px rgba(0,0,0,0.5)',
                      letterSpacing: '-0.02em',
@@ -616,7 +616,7 @@ export default function Home() {
             
             <div className="relative z-10">
               {/* Title with Apple-like typography */}
-              <h2 className="text-white text-[1.75rem] sm:text-4xl md:text-5xl lg:text-[2.2rem] font-semibold mb-8 leading-[1.1] tracking-tight animate-fade-up"
+              <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold mb-8 leading-relaxed tracking-tight animate-fade-up"
                   style={{ 
                     textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.02em',
@@ -627,7 +627,7 @@ export default function Home() {
               
               {/* Big Counter - Premium Style */}
               <div className="inline-block mb-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-                <div className="text-[2.5rem] sm:text-5xl md:text-6xl lg:text-[3.5rem] font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-[1.1]"
+                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
                      style={{ 
                        WebkitTextStroke: '1px rgba(7, 113, 36, 0.3)',
                        textShadow: '0 0 80px rgba(7, 113, 36, 0.5)',
@@ -640,7 +640,7 @@ export default function Home() {
               
               {/* Subtitle texts */}
               <div className="max-w-2xl mx-auto space-y-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-                <p className="text-base sm:text-lg md:text-xl lg:text-[1.4rem] text-gray-400 font-normal leading-[1.4]"
+                <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
                    style={{ 
                      textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                      letterSpacing: '-0.01em',
@@ -648,7 +648,7 @@ export default function Home() {
                    }}>
                   And counting...
                 </p>
-                <p className="text-base sm:text-lg md:text-xl lg:text-[1.4rem] text-gray-400 font-normal leading-[1.5]"
+                <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
                    style={{ 
                      textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                      letterSpacing: '-0.01em',
@@ -688,7 +688,7 @@ export default function Home() {
           {/* Content wrapper */}
           <div className="relative z-10 w-full py-20 md:py-24 px-4">
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-white text-center text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold mb-4"
+              <h2 className="text-white text-center text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
                   style={{ 
                     textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.02em',
@@ -696,7 +696,7 @@ export default function Home() {
                   }}>
                 Stop Leaving Money On The Table
               </h2>
-              <p className="text-gray-400 text-center text-base sm:text-lg md:text-xl lg:text-[1.4rem] mb-16 font-normal"
+              <p className="text-gray-400 text-center text-base md:text-lg mb-20 font-normal leading-relaxed"
                  style={{ 
                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                    letterSpacing: '-0.01em',
@@ -706,7 +706,7 @@ export default function Home() {
               </p>
           
           {/* Deals Grid - 3 columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-auto">
 
             {/* Deal 2: PARTYPOKER - Primeira Linha */}
             <DealCardWithGeo dealId={2}>
@@ -967,11 +967,11 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS SECTION - 3 Simple Steps */}
-      <section id="how-it-works" className="relative bg-black w-full py-16 md:py-20 px-4">
+      <section id="how-it-works" className="relative bg-black w-full py-24 md:py-32 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <h2 className="text-white text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold mb-4"
+          <div className="text-center mb-20">
+            <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
                 style={{ 
                   textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                   letterSpacing: '-0.02em',
@@ -979,7 +979,7 @@ export default function Home() {
                 }}>
               How It Works - 3 Simple Steps
             </h2>
-            <p className="text-gray-400 text-base sm:text-lg md:text-xl lg:text-[1.4rem] max-w-3xl mx-auto font-normal"
+            <p className="text-gray-400 text-base sm:text-base md:text-lg lg:text-lg max-w-3xl mx-auto font-normal leading-relaxed"
                style={{ 
                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                  letterSpacing: '-0.01em',
@@ -998,7 +998,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
               
               {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-10 flex flex-col min-h-[420px]">
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
                 {/* Background subtle effects */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
                 
@@ -1013,7 +1013,7 @@ export default function Home() {
                 </div>
                 
                 {/* Title */}
-                <h3 className="relative text-white text-xl md:text-2xl font-bold mb-4 text-center z-10 tracking-tight"
+                <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
                     style={{ 
                       textShadow: '0 2px 12px rgba(0,0,0,0.4)',
                       letterSpacing: '-0.01em',
@@ -1024,8 +1024,8 @@ export default function Home() {
                 
                 {/* Description */}
                 <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p>We partner with the top poker sites.</p>
-                  <p>Pick one you already play on or try a new one with a better offer.</p>
+                  <p className="leading-relaxed">We partner with the top poker sites.</p>
+                  <p className="leading-relaxed">Pick one you already play on or try a new one with a better offer.</p>
                 </div>
               </div>
             </div>
@@ -1036,7 +1036,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
               
               {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-10 flex flex-col min-h-[420px]">
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
                 {/* Background subtle effects */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
                 
@@ -1062,8 +1062,8 @@ export default function Home() {
                 
                 {/* Description */}
                 <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p>Create a new account through us and you&apos;re automatically accepted.</p>
-                  <p>Already have an account? Apply to join our deal and we&apos;ll review it on a case-by-case basis.</p>
+                  <p className="leading-relaxed">Create a new account through us and you&apos;re automatically accepted.</p>
+                  <p className="leading-relaxed">Already have an account? Apply to join our deal and we&apos;ll review it on a case-by-case basis.</p>
                 </div>
               </div>
             </div>
@@ -1074,7 +1074,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
               
               {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-10 flex flex-col min-h-[420px]">
+              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
                 {/* Background subtle effects */}
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
                 
@@ -1089,7 +1089,7 @@ export default function Home() {
                 </div>
                 
                 {/* Title */}
-                <h3 className="relative text-white text-xl md:text-2xl font-bold mb-4 text-center z-10 tracking-tight"
+                <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
                     style={{ 
                       textShadow: '0 2px 12px rgba(0,0,0,0.4)',
                       letterSpacing: '-0.01em',
@@ -1100,8 +1100,8 @@ export default function Home() {
                 
                 {/* Description */}
                 <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p>Nothing changes about how you play.</p>
-                  <p>You&apos;ll still receive the poker sites rewards, plus extra cashback from us on top.</p>
+                  <p className="leading-relaxed">Nothing changes about how you play.</p>
+                  <p className="leading-relaxed">You&apos;ll still receive the poker sites rewards, plus extra cashback from us on top.</p>
                 </div>
               </div>
             </div>
@@ -1114,7 +1114,7 @@ export default function Home() {
       <section id="partners" className="relative bg-black w-full py-6 md:py-8 px-3 md:px-4 overflow-hidden select-none">
         {/* Content wrapper */}
         <div className="relative w-full py-20 md:py-24 px-4 flex flex-col items-center">
-            <h2 className="text-white text-center text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold mb-2 px-4"
+            <h2 className="text-white text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-2 px-4"
                 style={{ 
                   textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                   letterSpacing: '-0.02em',
@@ -1122,7 +1122,7 @@ export default function Home() {
                 }}>
               Our Partners
             </h2>
-            <p className="text-gray-400 text-center text-base sm:text-lg md:text-xl lg:text-[1.4rem] mb-16 px-4 font-normal"
+            <p className="text-gray-400 text-center text-base sm:text-base md:text-lg lg:text-lg mb-16 px-4 font-normal leading-relaxed"
                style={{ 
                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                  letterSpacing: '-0.01em',
@@ -1146,9 +1146,9 @@ export default function Home() {
                     height={350}
                   />
                 </div>
-                <h3 className="text-white text-2xl md:text-3xl font-bold mb-2">{testimonial.name}</h3>
+                <h3 className="text-white text-xl md:text-2xl font-bold mb-2">{testimonial.name}</h3>
                 {testimonial.meta && (
-                  <p className="text-gray-400 text-base md:text-lg mb-4">{testimonial.meta}</p>
+                  <p className="text-gray-400 text-base md:text-lg mb-4 leading-relaxed">{testimonial.meta}</p>
                 )}
                 {!testimonial.meta && <div className="mb-4"></div>}
                 <p className="text-white text-sm md:text-base leading-relaxed px-4">
@@ -1177,11 +1177,11 @@ export default function Home() {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="relative bg-black w-full py-16 md:py-20 px-4">
+      <section id="faq" className="relative bg-black w-full py-24 md:py-32 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-white text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold mb-4"
+          <div className="text-center mb-16">
+            <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
                 style={{ 
                   textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                   letterSpacing: '-0.02em',
@@ -1201,9 +1201,9 @@ export default function Home() {
                 {/* Question Button */}
                 <button
                   onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between py-6 text-left transition-all duration-300 hover:opacity-80"
+                  className="w-full flex items-center justify-between py-8 text-left transition-all duration-300 hover:opacity-80"
                 >
-                  <span className="text-white text-base sm:text-lg md:text-xl lg:text-[1.4rem] font-semibold pr-8"
+                  <span className="text-white text-base sm:text-base md:text-lg lg:text-lg font-semibold pr-8"
                         style={{ 
                           textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                           letterSpacing: '-0.01em'
@@ -1239,7 +1239,7 @@ export default function Home() {
                   }`}
                 >
                   <div className="pb-2">
-                    <p className="text-gray-400 text-base md:text-lg leading-relaxed"
+                    <p className="text-sm md:text-base leading-relaxed text-gray-400"
                        style={{ 
                          textShadow: '0 1px 4px rgba(0,0,0,0.2)',
                          letterSpacing: '-0.005em'
@@ -1257,7 +1257,7 @@ export default function Home() {
       {/* LATEST NEWS SECTION */}
       <section id="news" className="relative bg-black w-full py-12 md:py-16 px-3 md:px-4">
         <div className="w-full py-8 md:py-12 px-4">
-            <h2 className="text-white text-center text-[1.75rem] sm:text-3xl md:text-4xl lg:text-[2.4rem] font-bold mb-4"
+            <h2 className="text-white text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
                 style={{ 
                   textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                   letterSpacing: '-0.02em',
@@ -1265,7 +1265,7 @@ export default function Home() {
                 }}>
               Latest News & Updates
             </h2>
-            <p className="text-gray-400 text-center text-base sm:text-lg md:text-xl lg:text-[1.4rem] mb-12 px-4 font-normal"
+            <p className="text-gray-400 text-center text-base sm:text-base md:text-lg lg:text-lg mb-12 px-4 font-normal leading-relaxed"
                style={{ 
                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                  letterSpacing: '-0.01em',
@@ -1295,7 +1295,7 @@ export default function Home() {
                   </Link>
 
                   {/* Content */}
-            <div className="p-6">
+            <div className="p-8">
                     {/* Date & Category */}
                     <div className="flex items-center gap-3 mb-3">
                       <time className="text-xs text-zinc-400 font-medium">{post.date}</time>
@@ -1305,7 +1305,7 @@ export default function Home() {
 
                     {/* Title */}
                     <Link href={post.url}>
-                      <h3 className="text-white text-lg font-bold mb-4 line-clamp-2 group-hover:text-[#077124] transition-colors duration-300 leading-snug">
+                      <h3 className="text-white text-base font-semibold mb-4 line-clamp-2 group-hover:text-[#077124] transition-colors duration-300 leading-snug">
                         {post.title}
                       </h3>
                     </Link>

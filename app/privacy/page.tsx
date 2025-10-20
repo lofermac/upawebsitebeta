@@ -30,12 +30,6 @@ export default function PrivacyPage() {
                 }}>
               Privacy Policy
             </h1>
-            <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed mb-2">
-              <strong>Effective date: April 25, 2018</strong>
-            </p>
-            <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Universal Affiliates Ltd (&quot;us&quot;, &quot;we&quot;, or &quot;our&quot;) operates the website (the &quot;Service&quot;).
-            </p>
           </div>
 
           {/* Privacy Content */}
@@ -48,6 +42,16 @@ export default function PrivacyPage() {
             
             {/* Content */}
             <div className="relative z-10 p-6 md:p-10 space-y-8">
+              
+              {/* Effective Date and Company Info */}
+              <section className="space-y-3 text-center border-b border-white/10 pb-6">
+                <p className="text-base text-gray-400 leading-relaxed">
+                  <strong>Effective date: April 25, 2018</strong>
+                </p>
+                <p className="text-base text-gray-400 leading-relaxed">
+                  Universal Affiliates Ltd (&quot;us&quot;, &quot;we&quot;, or &quot;our&quot;) operates the website (the &quot;Service&quot;).
+                </p>
+              </section>
               
               {/* Introduction */}
               <section className="space-y-3">
