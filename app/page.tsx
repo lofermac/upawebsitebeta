@@ -385,11 +385,26 @@ export default function Home() {
           <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
       <Header />
           </div>
-          {/* Background with gradient - tom intermediÃ¡rio entre preto e cinza */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/hero:from-[#0e0e0e] group-hover/hero:via-[#131313] group-hover/hero:to-[#0e0e0e]"></div>
+          
+          {/* Background Video */}
+          <video 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            <source src="/videos/hero-bg.mp4" type="video/mp4" />
+          </video>
+          
+          {/* Dark overlay semi-transparent - por cima do vídeo */}
+          <div className="absolute inset-0 bg-black/60"></div>
+          
+          {/* Background with gradient - tom intermediÃ¡rio entre preto e cinza (fallback se vídeo não carregar) */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/hero:from-[#0e0e0e] group-hover/hero:via-[#131313] group-hover/hero:to-[#0e0e0e] -z-10"></div>
           
           {/* Subtle border effect - borda completa ao redor */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/hero:border-white/[0.09] group-hover/hero:shadow-black/60"></div>
+          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/hero:border-white/[0.09] group-hover/hero:shadow-black/60 pointer-events-none"></div>
           
           {/* Inner glow effect - brilho interno sutil */}
           <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/hero:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>

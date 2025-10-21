@@ -150,6 +150,11 @@ html {
     }
   }
   
+  .animate-fade-up {
+    animation: fade-up 0.8s ease-out forwards;
+    opacity: 0;
+  }
+  
   .animate-fade-up-delay-800 {
     animation: fade-up 0.8s ease-out 0.8s both;
   }

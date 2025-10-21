@@ -1,93 +1,93 @@
 'use client'
 
+import { useState } from 'react';
+import Image from 'next/image';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import HeaderWithAuth from '@/app/components/HeaderWithAuth';
 import Footer from '@/app/components/Footer';
+import DealDetailsModal from '@/components/DealDetailsModal';
 import { 
-  Link as LinkIcon, 
-  DollarSign,
-  TrendingUp,
-  Clock,
-  Shield,
-  Star,
-  Trophy,
   ChevronRight,
   HelpCircle
 } from 'lucide-react';
 
 // Mock earnings data
 const earningsData = [
-  { id: 1, platform: 'Betfair', period: 'Sep 2025', grossRake: '€125.00', netRake: '€81.25', updated: '30-Sep-2025' },
-  { id: 2, platform: 'Champion', period: 'Sep 2025', grossRake: '€89.15', netRake: '€62.41', updated: '30-Sep-2025' },
-  { id: 3, platform: 'WPT Global', period: 'Sep 2025', grossRake: '€78.50', netRake: '€47.10', updated: '29-Sep-2025' },
-  { id: 4, platform: 'Betfair', period: 'Aug 2025', grossRake: '€340.00', netRake: '€221.00', updated: '31-Aug-2025' },
-  { id: 5, platform: 'Champion', period: 'Aug 2025', grossRake: '€156.00', netRake: '€109.20', updated: '31-Aug-2025' },
+  { id: 1, platform: 'Betfair Poker', period: 'Oct 2025', grossRake: '€156.00', netRake: '€101.40', updated: '21-Oct-2025', paymentMade: null },
+  { id: 2, platform: 'Champion Poker', period: 'Oct 2025', grossRake: '€94.50', netRake: '€66.15', updated: '21-Oct-2025', paymentMade: null },
+  { id: 3, platform: 'WPT Global', period: 'Oct 2025', grossRake: '€112.30', netRake: '€67.38', updated: '20-Oct-2025', paymentMade: null },
+  { id: 4, platform: 'Betfair Poker', period: 'Sep 2025', grossRake: '€125.00', netRake: '€81.25', updated: '30-Sep-2025', paymentMade: '05-Oct-2025' },
+  { id: 5, platform: 'Champion Poker', period: 'Sep 2025', grossRake: '€89.15', netRake: '€62.41', updated: '30-Sep-2025', paymentMade: '03-Oct-2025' },
+  { id: 6, platform: 'WPT Global', period: 'Sep 2025', grossRake: '€78.50', netRake: '€47.10', updated: '29-Sep-2025', paymentMade: '08-Oct-2025' },
+  { id: 7, platform: 'Betfair Poker', period: 'Aug 2025', grossRake: '€340.00', netRake: '€221.00', updated: '31-Aug-2025', paymentMade: '05-Sep-2025' },
+  { id: 8, platform: 'Champion Poker', period: 'Aug 2025', grossRake: '€156.00', netRake: '€109.20', updated: '31-Aug-2025', paymentMade: '02-Sep-2025' },
 ];
 
 // Mock connected deals
 const connectedDeals = [
   { 
     id: 1, 
-    platform: 'Betfair', 
-    icon: Shield, 
-    deal: '35% cashback + €50,000 races', 
+    platform: 'Betfair Poker', 
+    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp',
+    deal: 'Instant VIP Upgrade To 35% Cashback + €50k In Races', 
+    description: 'Premium VIP treatment from day one',
     status: 'Connected',
-    rakeback: '35%'
+    rakeback: '35%',
+    username: 'player_betfair_2025',
+    paymentSchedule: 'Monthly (1st of month)',
+    currency: 'EUR (€)',
+    nextPayment: 'Nov 1, 2025',
+    paymentMethod: 'Bank Transfer'
   },
   { 
     id: 2, 
     platform: 'WPT Global', 
-    icon: Star, 
-    deal: '60% rakeback + VIP upgrades', 
+    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp',
+    deal: 'Get Up To An Extra 40% Cashback Every Month', 
+    description: 'Play on the official World Poker Tour platform',
     status: 'Connected',
-    rakeback: '60%'
+    rakeback: '40%',
+    username: 'wptplayer2025',
+    paymentSchedule: 'Monthly (5th of month)',
+    currency: 'USD ($)',
+    nextPayment: 'Nov 5, 2025',
+    paymentMethod: 'Skrill'
   },
   { 
     id: 3, 
-    platform: 'Champion', 
-    icon: Trophy, 
-    deal: '€1,000 first deposit bonus', 
+    platform: 'Champion Poker', 
+    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp',
+    deal: 'Get An Instant Upgrade To 30% Cashback + All On-Site Promotions', 
+    description: 'Rising star in the poker network scene',
     status: 'Connected',
-    rakeback: '45%'
+    rakeback: '30%',
+    username: 'champion_player_uk',
+    paymentSchedule: 'Bi-weekly (1st and 15th)',
+    currency: 'EUR (€)',
+    nextPayment: 'Nov 1, 2025',
+    paymentMethod: 'Neteller'
   },
 ];
 
 export default function PlayerDashboard() {
+  const [selectedDeal, setSelectedDeal] = useState<typeof connectedDeals[0] | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
-  const stats = [
-    { 
-      title: 'Total Deals Connected',
-      label: 'Active Platforms', 
-      value: '3', 
-      change: '+1 this month', 
-      icon: LinkIcon,
-      color: 'from-blue-500 to-blue-600'
-    },
-    { 
-      title: 'Total Rakeback',
-      label: 'Average Rakeback', 
-      value: '32.5%', 
-      change: 'Across all deals', 
-      icon: DollarSign,
-      color: 'from-green-500 to-green-600'
-    },
-    { 
-      title: 'This Month Earnings',
-      label: 'September 2025', 
-      value: '€156.42', 
-      change: '+€45 vs last month', 
-      icon: TrendingUp,
-      color: 'from-emerald-500 to-emerald-600'
-    },
-    { 
-      title: 'Pending Payments',
-      label: 'To be processed', 
-      value: '€89.15', 
-      change: '2 platforms', 
-      icon: Clock,
-      color: 'from-orange-500 to-orange-600'
-    },
-  ];
+  const handleViewDetails = (deal: typeof connectedDeals[0]) => {
+    setSelectedDeal(deal);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedDeal(null), 200); // Delay to allow animation
+  };
+
+  // Filter earnings based on selected month
+  const filteredEarnings = selectedMonth === 'all' 
+    ? earningsData 
+    : earningsData.filter(earning => earning.period === selectedMonth);
 
   return (
     <ProtectedRoute allowedUserType="player">
@@ -114,64 +114,52 @@ export default function PlayerDashboard() {
               </p>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {stats.map((stat, index) => (
-                <div
-                  key={index}
-                  className="relative group/card overflow-hidden rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-white/[0.12] transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color}`}>
-                      <stat.icon size={24} className="text-white" />
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">{stat.title}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1">{stat.value}</h3>
-                  <p className="text-sm text-gray-400 mb-2">{stat.label}</p>
-                  <p className={`text-xs font-semibold ${stat.change.startsWith('+') ? 'text-green-400' : 'text-gray-400'}`}>{stat.change}</p>
-                </div>
-              ))}
-            </div>
-
             {/* Your Connected Deals Section */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Your Connected Deals</h2>
-                <span className="text-sm text-gray-400">{connectedDeals.length} active platforms</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-300">
+                    {connectedDeals.length} <span className="text-gray-500">Active Deals</span>
+                  </span>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {connectedDeals.map((deal) => (
                   <div
                     key={deal.id}
-                    className="relative group/deal overflow-hidden rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-[#10b981]/30 transition-all duration-300"
+                    className="relative group/deal overflow-hidden rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-[#10b981]/30 hover:shadow-xl hover:shadow-[#10b981]/10 transition-all duration-300"
                   >
-                    {/* Platform Icon */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-[#10b981]/20 to-[#10b981]/10 border border-[#10b981]/20">
-                        <deal.icon size={24} className="text-[#10b981]" />
+                    {/* Ambient glow effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#10b981]/0 via-[#10b981]/0 to-[#10b981]/5 opacity-0 group-hover/deal:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
+                    
+                    {/* Platform Logo & Status */}
+                    <div className="relative flex items-start justify-between mb-6">
+                      <div className="h-10 flex items-center">
+                        <Image 
+                          src={deal.logo} 
+                          alt={`${deal.platform} logo`}
+                          width={128}
+                          height={40}
+                          className="h-8 w-auto object-contain brightness-110 transition-transform duration-300 group-hover/deal:scale-105"
+                        />
                       </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-400/10 text-green-400 border border-green-400/20">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10">
                         {deal.status}
                       </span>
                     </div>
                     
-                    {/* Platform Name */}
-                    <h3 className="text-xl font-bold text-white mb-2">{deal.platform}</h3>
-                    
-                    {/* Deal Summary */}
-                    <p className="text-sm text-gray-400 mb-4 line-clamp-2">{deal.deal}</p>
-                    
-                    {/* Rakeback Badge */}
-                    <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-                      <span className="text-xs text-gray-500">Rakeback:</span>
-                      <span className="text-sm font-bold text-[#10b981]">{deal.rakeback}</span>
-                    </div>
+                    {/* Deal Summary - Fixed 2 lines */}
+                    <p className="relative text-sm text-gray-400 mb-6 h-10 line-clamp-2 leading-5 font-medium">{deal.deal}</p>
                     
                     {/* Details Button */}
-                    <button className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 text-sm text-gray-300 hover:text-white group/btn">
+                    <button 
+                      onClick={() => handleViewDetails(deal)}
+                      className="relative w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-br from-white/[0.05] to-white/[0.02] hover:from-white/[0.08] hover:to-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-300 text-sm font-semibold text-gray-300 hover:text-white group/btn shadow-lg shadow-black/20"
+                    >
                       <span>View Details</span>
-                      <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                      <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" strokeWidth={2.5} />
                     </button>
                   </div>
                 ))}
@@ -181,8 +169,31 @@ export default function PlayerDashboard() {
             {/* Earnings Breakdown Table */}
             <div className="rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] overflow-hidden mb-8">
               <div className="p-6 border-b border-white/[0.06]">
-                <h2 className="text-2xl font-bold text-white">Earnings Breakdown</h2>
-                <p className="text-sm text-gray-400 mt-1">Your rakeback earnings by platform and period</p>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">Earnings Breakdown</h2>
+                    <p className="text-sm text-gray-400 mt-1">Your rakeback earnings by platform and period</p>
+                  </div>
+                  
+                  {/* Month Filter */}
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      Filter:
+                    </label>
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => setSelectedMonth(e.target.value)}
+                      className="px-3 py-2 text-sm font-medium text-white bg-black/40 border border-white/[0.08] rounded-lg hover:border-white/[0.15] focus:outline-none focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 transition-all duration-300 cursor-pointer"
+                      style={{ boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)' }}
+                    >
+                      <option value="all" className="bg-[#0d0d0d]">All Months</option>
+                      <option value="Oct 2025" className="bg-[#0d0d0d]">October 2025</option>
+                      <option value="Sep 2025" className="bg-[#0d0d0d]">September 2025</option>
+                      <option value="Aug 2025" className="bg-[#0d0d0d]">August 2025</option>
+                      <option value="Jul 2025" className="bg-[#0d0d0d]">July 2025</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -200,33 +211,62 @@ export default function PlayerDashboard() {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Net Rake
                       </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider group/tooltip relative">
+                        <span className="border-b border-dotted border-gray-500 cursor-help">Updated</span>
+                        {/* Tooltip */}
+                        <div className="absolute left-0 top-full mt-2 px-3 py-2 bg-black/95 border border-white/[0.15] rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none z-10 whitespace-nowrap">
+                          <p className="text-xs text-gray-300">Updated once per week</p>
+                          <div className="absolute left-6 bottom-full w-2 h-2 bg-black/95 border-l border-t border-white/[0.15] transform rotate-45 -mb-1"></div>
+                        </div>
+                      </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Updated
+                        Payment Made
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.06]">
-                    {earningsData.map((earning) => (
-                      <tr key={earning.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <div className="text-sm font-semibold text-white">{earning.platform}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-400">{earning.period}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-gray-300 font-medium">{earning.grossRake}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-bold text-[#10b981]">{earning.netRake}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {earning.updated}
+                    {filteredEarnings.length > 0 ? (
+                      filteredEarnings.map((earning) => (
+                        <tr key={earning.id} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              <div className="text-sm font-semibold text-white">{earning.platform}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-400">{earning.period}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm text-gray-300 font-medium">{earning.grossRake}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-bold text-[#10b981]">{earning.netRake}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.03] text-gray-400 border border-white/[0.06]">
+                              {earning.updated}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {earning.paymentMade ? (
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-sm">
+                                {earning.paymentMade}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-br from-orange-400/10 to-orange-400/5 text-orange-400 border border-orange-400/20 shadow-sm">
+                                Pending
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-12 text-center">
+                          <p className="text-gray-400 text-sm">No earnings found for the selected period</p>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -246,7 +286,7 @@ export default function PlayerDashboard() {
                   href="/contact-us"
                   className="px-6 py-3 rounded-lg bg-[#10b981] hover:bg-[#0a9b30] text-white font-semibold transition-all duration-300 hover:scale-[1.02] whitespace-nowrap"
                 >
-                  Contact Us
+                  Contact Country Manager
                 </a>
               </div>
             </div>
@@ -256,6 +296,13 @@ export default function PlayerDashboard() {
         {/* Site Footer */}
         <Footer />
       </div>
+
+      {/* Deal Details Modal */}
+      <DealDetailsModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        deal={selectedDeal}
+      />
     </ProtectedRoute>
   );
 }

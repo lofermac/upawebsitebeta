@@ -15,12 +15,13 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const success = login(email, password);
-    if (!success) {
+    try {
+      await login(email, password);
+    } catch (err) {
       setError('Invalid credentials');
     }
   };

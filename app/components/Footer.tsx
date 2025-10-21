@@ -117,6 +117,12 @@ export default function Footer() {
                   Privacy Policy
                 </a>
               </li>
+              <li>
+                <a href="/team" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                  Meet The Team
+                </a>
+              </li>
             </ul>
           </div>
 
