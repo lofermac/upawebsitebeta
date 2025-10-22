@@ -15,11 +15,11 @@ export default function TermsPage() {
       </section>
 
       {/* Main Content */}
-      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1">
+      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1 z-10">
         <div className="max-w-5xl mx-auto px-4">
           
           {/* Page Header */}
-          <div className="text-center mb-12 animate-fade-up">
+          <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#077124]/20 to-emerald-500/10 border border-[#077124]/20 mb-6">
               <FileText className="h-8 w-8 text-[#077124]" strokeWidth={2} />
             </div>
@@ -33,7 +33,7 @@ export default function TermsPage() {
           </div>
 
           {/* Terms Content */}
-          <div className="relative group animate-fade-up-delay-400">
+          <div className="relative group">
             {/* Background effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] rounded-[2rem]"></div>
             <div className="absolute inset-0 rounded-[2rem] border border-white/[0.06] shadow-2xl shadow-black/50"></div>
@@ -237,7 +237,7 @@ export default function TermsPage() {
           </div>
 
           {/* Important Notice */}
-          <div className="relative rounded-2xl overflow-hidden mt-8 animate-fade-up-delay-200">
+          <div className="relative rounded-2xl overflow-hidden mt-8">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/5"></div>
             <div className="relative border border-amber-500/20 rounded-2xl p-6 bg-black/40 backdrop-blur-sm">
               <div className="flex items-start gap-4">
@@ -260,30 +260,6 @@ export default function TermsPage() {
       {/* Footer */}
       <Footer />
 
-      <style jsx global>{`
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-up {
-          animation: fade-up 0.8s ease-out;
-        }
-        
-        .animate-fade-up-delay-200 {
-          animation: fade-up 0.8s ease-out 0.2s both;
-        }
-        
-        .animate-fade-up-delay-400 {
-          animation: fade-up 0.8s ease-out 0.4s both;
-        }
-      `}</style>
     </div>
   );
 }

@@ -1,15 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import type { Metadata } from 'next';
+import { Send } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: 'Meet Our Team - Universal Poker',
-  description: 'Welcome to the heart of our operation, where passion for poker and dedication to help grow our wonderful community come together to create an extraordinary team.',
-};
-
-// Team Members Data
+// Team Members Data - In Order: Andy, Chris, Misha, Tim, Leonardo, Paul
 const teamMembers = [
   {
     id: 1,
@@ -34,49 +31,48 @@ const teamMembers = [
   },
   {
     id: 4,
-    name: 'Paul',
-    position: 'Finance Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'My name is Paul, the Finance Manager at Universal Poker. I have been with Universal since day one, bringing a wealth of experience in Poker, Banking and Finance industries.',
-  },
-  {
-    id: 5,
     name: 'Tim',
     position: 'Operations Manager',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
     description: 'I\'m Tim, the Operations Manager at Universal Poker. I have always been in the poker scene, with the vast majority of my time spent as the Poker Manager at Ladbrokes.',
   },
   {
-    id: 6,
-    name: 'Stephen',
-    position: 'Affiliate Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'Hello, I\'m Stephen! I\'m one of the Affiliate Managers at Universal Poker. I\'m currently looking after UK and Ireland based players within our network!',
-  },
-  {
-    id: 7,
-    name: 'Jacob',
-    position: 'Support Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'I\'m Jacob, the Support Manager at Universal Poker. I oversee our support channels, ensuring that player queries are addressed promptly and efficiently.',
-  },
-  {
-    id: 8,
-    name: 'Peter',
-    position: 'Digital Marketing',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'Hi, I\'m Peter, the Digital Marketing expert! I specialise in Universal Poker\'s online footprint, primarily specialising in SEO.',
-  },
-  {
-    id: 9,
+    id: 5,
     name: 'Leonardo',
     position: 'Data Analyst',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
     description: 'I\'m Leonardo, one of the Data Analysts at Universal Poker. My role inside the company is to provide the best insights for the staff to make the best decisions.',
   },
+  {
+    id: 6,
+    name: 'Paul',
+    position: 'Finance Manager',
+    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
+    description: 'My name is Paul, the Finance Manager at Universal Poker. I have been with Universal since day one, bringing a wealth of experience in Poker, Banking and Finance industries.',
+  },
 ];
 
 export default function TeamPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Contact form logic will be implemented later
+    console.log(formData);
+  };
+
   return (
     <div className="bg-black min-h-screen flex flex-col">
       {/* HEADER */}
@@ -96,39 +92,22 @@ export default function TeamPage() {
           
           <div className="relative z-10 text-center mb-20">
             {/* Title */}
-            <h1 className="text-white text-center text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight mb-4 animate-fade-up" 
+            <h1 className="text-white text-center text-2xl md:text-3xl font-bold leading-tight mb-4 animate-fade-up" 
                 style={{ 
-                  textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-                  letterSpacing: '-0.02em'
+                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                  letterSpacing: '-0.01em'
                 }}>
               Meet Our Team
             </h1>
             
             {/* Description */}
-            <p className="text-gray-400 text-center text-lg md:text-xl lg:text-[1.35rem] max-w-5xl mx-auto leading-relaxed font-normal animate-fade-up"
+            <p className="text-gray-400 text-center text-base max-w-5xl mx-auto leading-relaxed font-normal animate-fade-up"
                style={{ 
                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                  letterSpacing: '-0.01em',
                  animationDelay: '0.2s'
                }}>
               Welcome to the heart of our operation, where passion for poker and dedication to help grow our wonderful community come together to create an extraordinary team.
-            </p>
-
-            {/* Call to Action */}
-            <p className="text-gray-400 text-center text-base md:text-lg lg:text-xl max-w-4xl mx-auto leading-relaxed font-normal mt-4 animate-fade-up"
-               style={{ 
-                 textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                 letterSpacing: '-0.01em',
-                 animationDelay: '0.4s'
-               }}>
-              Do you think you could be a good fit for Universal Poker?
-              <br />
-              <Link 
-                href="/contact-us" 
-                className="text-[#077124] hover:text-emerald-400 font-semibold transition-colors duration-300"
-              >
-                Contact Us
-              </Link>
             </p>
           </div>
 
@@ -190,6 +169,157 @@ export default function TeamPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* VACANCY SECTION WITH CONTACT FORM */}
+      <section className="relative bg-black w-full py-20 px-4 border-t border-white/[0.08]">
+        <div className="max-w-4xl mx-auto">
+          {/* Ambient glow effect */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#077124]/[0.06] rounded-full blur-[120px] animate-pulse-slow pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <h2 className="text-white text-2xl md:text-3xl font-bold mb-4"
+                  style={{ 
+                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                    letterSpacing: '-0.01em'
+                  }}>
+                Join Our Team
+              </h2>
+              <p className="text-gray-400 text-base leading-relaxed max-w-2xl mx-auto">
+                Think you could be a good fit for our team? Contact us and enquire about current opportunities.
+              </p>
+            </div>
+
+            {/* Contact Form */}
+            <div className="relative group/form max-w-2xl mx-auto">
+              {/* Background effects */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] rounded-[2rem] transition-all duration-700"></div>
+              <div className="absolute inset-0 rounded-[2rem] border border-white/[0.06] shadow-2xl shadow-black/50 pointer-events-none"></div>
+              <div className="absolute inset-0 rounded-[2rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)]"></div>
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2rem]"></div>
+              
+              {/* Ambient glow */}
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
+              
+              {/* Content */}
+              <div className="relative z-10 p-6 md:p-8">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                      Name <span className="text-[#10b981]">*</span>
+                    </label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                        placeholder="Your name"
+                        required
+                        style={{
+                          boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                      Email <span className="text-[#10b981]">*</span>
+                    </label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
+                        placeholder="email@example.com"
+                        required
+                        style={{
+                          boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Message Field */}
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="block text-sm font-semibold text-gray-300 tracking-tight">
+                      Message <span className="text-[#10b981]">*</span>
+                    </label>
+                    <div className="relative group/input">
+                      <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within/input:opacity-100 transition-opacity duration-300 blur-xl bg-[#077124]/10"></div>
+                      <textarea
+                        id="message"
+                        name="message"
+                        value={formData.message}
+                        onChange={handleChange}
+                        rows={4}
+                        className="relative w-full px-4 py-3 bg-black/40 border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50 resize-none"
+                        placeholder="Tell us about yourself and why you'd be a good fit for our team..."
+                        required
+                        style={{
+                          boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="flex justify-center mt-6">
+                    <button
+                      type="submit"
+                      className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                      style={{
+                        boxShadow: `
+                          0 0 0 1px rgba(255,255,255,0.1),
+                          0 1px 3px 0 rgba(0,0,0,0.5),
+                          0 4px 12px rgba(7,113,36,0.3),
+                          0 8px 32px rgba(7,113,36,0.25),
+                          0 16px 64px rgba(7,113,36,0.2),
+                          inset 0 1px 1px rgba(255,255,255,0.3),
+                          inset 0 -1px 1px rgba(0,0,0,0.2)
+                        `
+                      }}
+                    >
+                      {/* Glow layers */}
+                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                      
+                      {/* Glass reflection */}
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                      
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                      
+                      {/* Inner shadow */}
+                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                      
+                      {/* Button content */}
+                      <span className="relative z-10 tracking-wide drop-shadow-lg">Send Enquiry</span>
+                      <Send className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                      
+                      {/* Edge highlights */}
+                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
+                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </section>

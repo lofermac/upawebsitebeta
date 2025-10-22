@@ -75,17 +75,19 @@ export default function ContactUsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 max-w-6xl mx-auto">
             
             {/* Left Column - Contact Methods */}
-            <div className="space-y-8 animate-fade-up-delay-400">
+            <div className="space-y-8 animate-fade-up-delay-400 pt-6 md:pt-8">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6"
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-2"
                     style={{ 
                       textShadow: '0 1px 8px rgba(0,0,0,0.3)',
                       letterSpacing: '-0.01em'
                     }}>
                   Quick Contact
                 </h2>
-                <p className="text-base text-gray-400 mb-8 leading-relaxed">
-                  Connect with us instantly through your favorite platform. Our team is ready to assist you with any questions or concerns.
+                <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+                  Connect with us instantly through your favorite platform.
+                  <br />
+                  Our team is ready to assist you with any questions or concerns.
                 </p>
               </div>
 
@@ -134,9 +136,11 @@ export default function ContactUsPage() {
                       <MessageCircle className="h-5 w-5 text-[#077124]" strokeWidth={2} />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-white mb-2">Need immediate assistance?</h3>
+                      <h3 className="text-sm font-semibold text-white mb-2">Need immediate assistance?</h3>
                       <p className="text-sm text-gray-400 leading-relaxed">
-                        Our support team typically responds within 24 hours. For urgent matters, please reach out via WhatsApp or Discord.
+                        Our support team typically responds within 24 hours.
+                        <br />
+                        For urgent matters, please reach out via WhatsApp or Discord.
                       </p>
                     </div>
                   </div>

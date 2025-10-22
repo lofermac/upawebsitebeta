@@ -430,7 +430,7 @@ export default function RegisterPage() {
 
                 {/* Terms and Conditions - Horizontal Compact Layout */}
                 <div className="pt-6 border-t border-white/[0.06]">
-                  <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+                  <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
                     {/* Terms Checkbox */}
                     <label className="flex items-start cursor-pointer group/checkbox flex-1 min-w-0">
                       <div className="relative flex-shrink-0">
@@ -439,14 +439,14 @@ export default function RegisterPage() {
                           name="agreeTerms"
                           checked={formData.agreeTerms}
                           onChange={handleChange}
-                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                          className="mt-[2px] w-4 h-4 rounded border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
                           required
                         />
                       </div>
-                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                      <span className="ml-2 text-xs text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
                         I agree to the{' '}
-                        <a href="#terms" className="text-[#077124] hover:text-[#0a9b30] font-semibold transition-colors duration-300 underline-offset-4 hover:underline whitespace-nowrap">
-                          Terms & Conditions
+                        <a href="/terms" className="text-[#077124] hover:text-[#0a9b30] font-medium transition-colors duration-300 underline-offset-2 hover:underline whitespace-nowrap">
+                          Universal Terms & Conditions
                         </a>
                       </span>
                     </label>
@@ -459,14 +459,14 @@ export default function RegisterPage() {
                           name="agreePrivacy"
                           checked={formData.agreePrivacy}
                           onChange={handleChange}
-                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                          className="mt-[2px] w-4 h-4 rounded border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
                           required
                         />
                       </div>
-                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                      <span className="ml-2 text-xs text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
                         I agree to the{' '}
-                        <a href="#privacy" className="text-[#077124] hover:text-[#0a9b30] font-semibold transition-colors duration-300 underline-offset-4 hover:underline whitespace-nowrap">
-                          Privacy Policy
+                        <a href="/privacy" className="text-[#077124] hover:text-[#0a9b30] font-medium transition-colors duration-300 underline-offset-2 hover:underline whitespace-nowrap">
+                          Universal Privacy Policy
                         </a>
                       </span>
                     </label>
@@ -479,11 +479,11 @@ export default function RegisterPage() {
                           name="receivePromotions"
                           checked={formData.receivePromotions}
                           onChange={handleChange}
-                          className="mt-0.5 w-5 h-5 rounded-md border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
+                          className="mt-[2px] w-4 h-4 rounded border-2 border-white/[0.12] bg-black/40 text-[#077124] focus:ring-2 focus:ring-[#077124]/30 focus:ring-offset-0 transition-all duration-300 cursor-pointer checked:bg-[#077124] checked:border-[#077124]"
                         />
                       </div>
-                      <span className="ml-3 text-sm lg:text-base text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
-                        Get contacted about latest deals
+                      <span className="ml-2 text-xs text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
+                        Get Updates and Deals from Universal Poker.<br />You can unsubscribe anytime.
                       </span>
                     </label>
                   </div>

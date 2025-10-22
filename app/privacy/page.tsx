@@ -15,11 +15,11 @@ export default function PrivacyPage() {
       </section>
 
       {/* Main Content */}
-      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1">
+      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1 z-10">
         <div className="max-w-5xl mx-auto px-4">
           
           {/* Page Header */}
-          <div className="text-center mb-12 animate-fade-up">
+          <div className="text-center mb-12">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#077124]/20 to-emerald-500/10 border border-[#077124]/20 mb-6">
               <Shield className="h-8 w-8 text-[#077124]" strokeWidth={2} />
             </div>
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           </div>
 
           {/* Privacy Content */}
-          <div className="relative group animate-fade-up-delay-400">
+          <div className="relative group">
             {/* Background effects */}
             <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] rounded-[2rem]"></div>
             <div className="absolute inset-0 rounded-[2rem] border border-white/[0.06] shadow-2xl shadow-black/50"></div>
@@ -237,6 +237,49 @@ export default function PrivacyPage() {
                     <p>Technical, Transactional and Contact Data from the following parties:</p>
                     <p>a) Affiliate Networks based both inside and outside the EU</p>
                   </div>
+                </div>
+              </section>
+
+              {/* Mailing List and Email Communications */}
+              <section className="space-y-3">
+                <h2 className="text-xl md:text-2xl font-bold text-white"
+                    style={{ 
+                      textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                      letterSpacing: '-0.01em'
+                    }}>
+                  Mailing List and Email Communications
+                </h2>
+                <div className="text-sm md:text-base text-gray-300 leading-relaxed space-y-4">
+                  <p>
+                    When you subscribe to our mailing list, we collect your full name, email address, and country.
+                  </p>
+                  <p>We use this information to:</p>
+                  <ul className="list-disc list-inside space-y-2 ml-4">
+                    <li>Identify who we&apos;re contacting.</li>
+                    <li>Send you relevant promotions, partner offers, and updates about Universal Poker.</li>
+                    <li>Ensure that promotions are appropriate for your location, as some offers may have regional restrictions.</li>
+                  </ul>
+                  <p>
+                    We rely on your consent as the lawful basis for this processing.
+                  </p>
+                  <p>
+                    You provide this consent when you opt in to our mailing list on our website.
+                  </p>
+                  <p>
+                    You can withdraw your consent at any time by clicking the unsubscribe link in any email you receive from us. Once you unsubscribe, you will no longer receive marketing communications from us.
+                  </p>
+                  <p>
+                    We use SendinBlue (Brevo) to manage and send our email campaigns. SendinBlue acts as our data processor, handling your information on our behalf and in accordance with their own privacy and security policies.
+                  </p>
+                  <p>
+                    We also securely store subscriber data in Supabase, which we use to manage our database and website infrastructure.
+                  </p>
+                  <p>
+                    We do not share your personal data with any other third parties for their own marketing purposes.
+                  </p>
+                  <p>
+                    Some of our service providers (such as SendinBlue or Supabase) may store or process data outside your country of residence. We ensure that appropriate safeguards are in place to protect your information, such as standard contractual clauses approved by the European Commission.
+                  </p>
                 </div>
               </section>
 
@@ -551,7 +594,7 @@ export default function PrivacyPage() {
           </div>
 
           {/* Important Notice */}
-          <div className="relative rounded-2xl overflow-hidden mt-8 animate-fade-up-delay-200">
+          <div className="relative rounded-2xl overflow-hidden mt-8">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/5"></div>
             <div className="relative border border-amber-500/20 rounded-2xl p-6 bg-black/40 backdrop-blur-sm">
               <div className="flex items-start gap-4">
@@ -574,30 +617,6 @@ export default function PrivacyPage() {
       {/* Footer */}
       <Footer />
 
-      <style jsx global>{`
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-up {
-          animation: fade-up 0.8s ease-out;
-        }
-        
-        .animate-fade-up-delay-200 {
-          animation: fade-up 0.8s ease-out 0.2s both;
-        }
-        
-        .animate-fade-up-delay-400 {
-          animation: fade-up 0.8s ease-out 0.4s both;
-        }
-      `}</style>
     </div>
   );
 }

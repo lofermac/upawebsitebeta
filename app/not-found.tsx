@@ -16,11 +16,11 @@ export default function NotFound() {
       </section>
 
       {/* Main Content */}
-      <main className="relative bg-black w-full pt-32 pb-16 flex-1 flex items-center justify-center">
+      <main className="relative bg-black w-full pt-32 pb-16 flex-1 flex items-center justify-center z-10">
         <div className="max-w-4xl mx-auto px-4 text-center">
           
           {/* 404 Animation Container */}
-          <div className="relative mb-8 animate-fade-up">
+          <div className="relative mb-8">
             {/* Glowing background effect */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#077124]/10 rounded-full blur-[100px] animate-pulse-slow"></div>
             
@@ -43,7 +43,7 @@ export default function NotFound() {
           </div>
 
           {/* Error Message */}
-          <div className="space-y-3 mb-8 animate-fade-up-delay-200">
+          <div className="space-y-3 mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-[#077124]/20 to-emerald-500/10 border border-[#077124]/30 mb-2">
               <Search className="h-7 w-7 text-[#077124]" strokeWidth={2} />
             </div>
@@ -62,7 +62,7 @@ export default function NotFound() {
           </div>
 
           {/* Action Button */}
-          <div className="flex items-center justify-center mb-10 animate-fade-up-delay-400">
+          <div className="flex items-center justify-center mb-10">
             {/* Home Button */}
             <Link
               href="/"
@@ -100,7 +100,7 @@ export default function NotFound() {
           </div>
 
           {/* Help Section */}
-          <div className="relative rounded-2xl overflow-hidden max-w-2xl mx-auto animate-fade-up-delay-600">
+          <div className="relative rounded-2xl overflow-hidden max-w-2xl mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/5"></div>
             <div className="relative border border-blue-500/20 rounded-2xl p-5 bg-black/40 backdrop-blur-sm">
               <div className="flex items-start gap-3">
@@ -127,7 +127,7 @@ export default function NotFound() {
           </div>
 
           {/* Suggested Links */}
-          <div className="mt-8 animate-fade-up-delay-800">
+          <div className="mt-8">
             <h3 className="text-sm font-semibold text-gray-400 mb-4">You might be looking for:</h3>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Link href="/deals" className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-full text-xs text-gray-300 hover:text-white transition-all duration-300">
@@ -152,37 +152,6 @@ export default function NotFound() {
       <Footer />
 
       <style jsx global>{`
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-fade-up {
-          animation: fade-up 0.8s ease-out;
-        }
-        
-        .animate-fade-up-delay-200 {
-          animation: fade-up 0.8s ease-out 0.2s both;
-        }
-        
-        .animate-fade-up-delay-400 {
-          animation: fade-up 0.8s ease-out 0.4s both;
-        }
-        
-        .animate-fade-up-delay-600 {
-          animation: fade-up 0.8s ease-out 0.6s both;
-        }
-        
-        .animate-fade-up-delay-800 {
-          animation: fade-up 0.8s ease-out 0.8s both;
-        }
-        
         @keyframes pulse-slow {
           0%, 100% { opacity: 0.5; }
           50% { opacity: 0.8; }

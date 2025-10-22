@@ -4,7 +4,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Blog Posts Data - todas as notícias
 const blogPosts = [
@@ -134,6 +134,7 @@ export default function NewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
   const postsPerPage = 12; // Grid 3x4 (3 colunas × 4 linhas)
   
   // Categorias de filtro
@@ -168,6 +169,24 @@ export default function NewsPage() {
     setCurrentPage(1); // Reset para primeira página ao trocar categoria
     setIsFilterOpen(false); // Fechar o filtro após selecionar
   };
+  
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setIsFilterOpen(false);
+      }
+    };
+
+    if (isFilterOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isFilterOpen]);
+  
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section - Black Background */}
@@ -227,7 +246,7 @@ export default function NewsPage() {
           
           {/* Minimalist Filter Button - Top Right */}
           <div className="flex justify-end mb-6">
-            <div className="relative">
+            <div className="relative" ref={filterRef}>
               {/* Filter Toggle Button */}
               <button
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -248,15 +267,7 @@ export default function NewsPage() {
 
               {/* Dropdown Filter Menu */}
               {isFilterOpen && (
-                <>
-                  {/* Overlay para fechar ao clicar fora */}
-                  <div 
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsFilterOpen(false)}
-                  ></div>
-
-                  {/* Filter Dropdown */}
-                  <div className="absolute right-0 mt-2 w-80 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-2 w-80 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="relative group/dropdown">
                       {/* Background Glow */}
                       <div className="absolute -inset-1 bg-gradient-to-r from-[#077124]/20 to-emerald-500/20 rounded-2xl blur-xl opacity-50"></div>
@@ -325,8 +336,7 @@ export default function NewsPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </>
+                </div>
               )}
             </div>
           </div>
