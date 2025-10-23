@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import TableOfContents from "../../components/TableOfContents";
@@ -63,8 +63,12 @@ const ACCEPTED_COUNTRIES = ["BR", "CA", "DE", "PT", "IN", "MX", "AR", "CL", "PE"
 // Para demonstração, forçar Brasil
 const DEMO_COUNTRY = "BR";
 
+interface FlagsModule {
+  [key: string]: React.ComponentType<{ className?: string }>;
+}
+
 export default function GGPokerDealPage() {
-  const { userCountry: detectedCountry, isLoading: geoLoading } = useGeoLocation();
+  const { isLoading: geoLoading } = useGeoLocation();
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   
   // Para demonstração, usar Brasil ao invés do país detectado
@@ -74,7 +78,7 @@ export default function GGPokerDealPage() {
   const isCountryAccepted = userCountry ? ACCEPTED_COUNTRIES.includes(userCountry) : true;
   
   // Pegar componente de bandeira do país
-  const CountryFlag = userCountry ? (flags as any)[userCountry] : null;
+  const CountryFlag = userCountry ? (flags as FlagsModule)[userCountry] : null;
   
   // Detectar nome do país
   const getCountryName = (code: string | null) => {

@@ -425,10 +425,10 @@ export default function AdminDashboard() {
                  </div>
                </div>
                
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                 {platformsData.map((platform, index) => (
-                  <div
-                    key={platform.id}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {platformsData.map((platform) => (
+                 <div
+                   key={platform.id}
                      className="relative bg-[#0f1419] border border-white/[0.06] rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.4)] hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.6)] transition-all duration-300"
                    >
                      {/* Header with Logo */}

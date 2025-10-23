@@ -250,14 +250,17 @@ export default function Home() {
   useEffect(() => {
     // Esperar o Flickity carregar
     const initFlickity = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (typeof window !== 'undefined' && (window as any).Flickity && carouselRef.current) {
         // Destruir instância anterior se existir
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existingFlickity = (window as any).Flickity.data(carouselRef.current);
         if (existingFlickity) {
           existingFlickity.destroy();
         }
 
         // Criar nova instância
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         new (window as any).Flickity(carouselRef.current, {
           wrapAround: true,
           cellAlign: 'center',
@@ -277,10 +280,14 @@ export default function Home() {
     // Fallback: tentar novamente após 100ms
     const timer = setTimeout(initFlickity, 100);
 
+    const currentCarouselRef = carouselRef.current;
+
     return () => {
       clearTimeout(timer);
-      if (carouselRef.current && (window as any).Flickity) {
-        const flickity = (window as any).Flickity.data(carouselRef.current);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (currentCarouselRef && (window as any).Flickity) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const flickity = (window as any).Flickity.data(currentCarouselRef);
         if (flickity) {
           flickity.destroy();
         }

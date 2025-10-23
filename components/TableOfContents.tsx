@@ -169,7 +169,7 @@ export default function TableOfContents({ sections }: TableOfContentsProps) {
 
       {/* Lista de seções */}
       <ul className={`pt-4 ${isExpanded ? "block" : "hidden"} lg:block`}>
-        {detectedSections.map((section, index) => {
+        {detectedSections.map((section) => {
           const isActive = activeSection === section.id;
           
           return (

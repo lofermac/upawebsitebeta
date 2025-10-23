@@ -40,7 +40,6 @@ export default function PartyPokerBirminghamNewsPage() {
 
   const handleShare = (platform: string) => {
     const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent("PartyPoker Tour Returns to Birmingham this October");
     const text = encodeURIComponent("Check out this article: PartyPoker Tour Returns to Birmingham this October");
     
     let shareUrl = "";
