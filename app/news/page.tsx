@@ -1,6 +1,6 @@
 "use client";
 
-import Header from "../components/Header";
+import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
@@ -215,7 +215,7 @@ export default function NewsPage() {
           
           {/* Header */}
           <div className="relative z-10 pt-6 px-4">
-            <Header />
+            <HeaderWithAuth />
           </div>
           
           {/* Hero Content - Title and Subtitle */}

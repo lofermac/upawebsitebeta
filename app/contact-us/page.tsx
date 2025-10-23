@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Header from "../components/Header";
+import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import { Send, MessageCircle } from "lucide-react";
 
@@ -64,7 +64,7 @@ export default function ContactUsPage() {
       {/* Header Section */}
       <section className="relative bg-[#1E1E1E] w-full px-3 md:px-4 pt-6">
         <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
-          <Header />
+          <HeaderWithAuth />
         </div>
       </section>
 
@@ -247,10 +247,9 @@ export default function ContactUsPage() {
                     <div className="flex justify-center mt-6">
                       <button
                         type="submit"
-                        className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                        className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
                         style={{
                           boxShadow: `
-                            0 0 0 1px rgba(255,255,255,0.1),
                             0 1px 3px 0 rgba(0,0,0,0.5),
                             0 4px 12px rgba(7,113,36,0.3),
                             0 8px 32px rgba(7,113,36,0.25),
@@ -277,10 +276,6 @@ export default function ContactUsPage() {
                         {/* Button content */}
                         <span className="relative z-10 tracking-wide drop-shadow-lg">Send Message</span>
                         <Send className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
-                        
-                        {/* Edge highlights */}
-                        <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                        <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                       </button>
                     </div>
                   </form>

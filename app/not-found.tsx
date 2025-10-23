@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Header from "./components/Header";
+import HeaderWithAuth from "./components/HeaderWithAuth";
 import Footer from "./components/Footer";
 import { Search, Home, HelpCircle } from "lucide-react";
 
@@ -11,7 +11,7 @@ export default function NotFound() {
       {/* Header Section */}
       <section className="relative bg-black w-full px-3 md:px-4 pt-6">
         <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
-          <Header />
+          <HeaderWithAuth />
         </div>
       </section>
 

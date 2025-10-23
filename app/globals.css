@@ -231,126 +231,6 @@ html {
     will-change: transform;
   }
 
-  /* Embla Carousel - Netflix Style with Peek Effect */
-  .embla {
-    overflow: hidden; /* Hide overflow to show only immediate neighbors */
-    cursor: grab;
-    position: relative;
-    max-width: 100%;
-  }
-  
-  .embla:active {
-    cursor: grabbing;
-  }
-  
-  .embla__container {
-    display: flex;
-    touch-action: pan-y;
-    backface-visibility: hidden;
-    will-change: transform;
-    gap: 3rem; /* Spacing between slides */
-    padding: 0 25%; /* More padding to make neighbors smaller */
-    margin: 0; /* Ensure no margin on container */
-  }
-  
-  /* Ensure uniform spacing for all slides including clones */
-  .embla__slide:first-child,
-  .embla__slide:last-child {
-    margin: 0 !important;
-  }
-  
-  @media (max-width: 1280px) {
-    .embla__container {
-      padding: 0 20%;
-      gap: 2.5rem;
-    }
-  }
-  
-  @media (max-width: 1024px) {
-    .embla__container {
-      padding: 0 15%; /* Less padding on tablets */
-      gap: 2rem;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .embla__container {
-      padding: 0 10%; /* Less padding on mobile */
-      gap: 1.5rem;
-    }
-  }
-  
-  .embla__slide {
-    flex: 0 0 50%; /* Smaller base width - neighbors will be even smaller */
-    min-width: 0;
-    position: relative;
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* Smoother easing */
-    will-change: transform, opacity, filter;
-    transform: translateZ(0) scale(0.65); /* Much smaller side slides */
-    backface-visibility: hidden;
-    opacity: 0.35; /* More dimmed */
-    filter: blur(1.5px); /* Slight blur */
-  }
-  
-  @media (max-width: 1280px) {
-    .embla__slide {
-      flex: 0 0 60%;
-      transform: translateZ(0) scale(0.7);
-    }
-  }
-  
-  @media (max-width: 1024px) {
-    .embla__slide {
-      flex: 0 0 70%; /* Larger on tablets */
-      transform: translateZ(0) scale(0.75);
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .embla__slide {
-      flex: 0 0 80%; /* Even larger on mobile */
-      transform: translateZ(0) scale(0.85);
-      opacity: 0.4;
-    }
-  }
-  
-  /* Active slide (center) - full size, sharp, bright */
-  .embla__slide.is-active {
-    opacity: 1 !important;
-    transform: translateZ(0) scale(1) !important;
-    filter: blur(0) !important;
-    z-index: 10;
-  }
-  
-  /* Inactive slides (sides) - smaller, dimmed, blurred */
-  .embla__slide.is-inactive {
-    opacity: 0.35;
-    transform: translateZ(0) scale(0.65);
-    filter: blur(1.5px);
-    z-index: 1;
-  }
-  
-  @media (max-width: 1280px) {
-    .embla__slide.is-inactive {
-      transform: translateZ(0) scale(0.7);
-      opacity: 0.35;
-    }
-  }
-  
-  @media (max-width: 1024px) {
-    .embla__slide.is-inactive {
-      transform: translateZ(0) scale(0.75);
-      opacity: 0.4;
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .embla__slide.is-inactive {
-      transform: translateZ(0) scale(0.85);
-      opacity: 0.4;
-    }
-  }
-
   /* Premium Header Effects */
   @keyframes shimmer {
     0% { background-position: -1000px 0; }
@@ -414,5 +294,190 @@ html {
 
   .animate-scale-in {
     animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* ============================================
+   OUR PARTNERS - FLICKITY VANILLA
+   ============================================ */
+
+.section-partners {
+  position: relative;
+  background: black;
+  width: 100%;
+  padding: 80px 20px;
+}
+
+.section-intro {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Container do Flickity */
+.partners-slideshow {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Slide individual */
+.slideshow-slide {
+  width: 70%;
+  margin: 0 15px;
+}
+
+/* Item do testimonial */
+.testimonial-item {
+  background: rgba(30, 30, 30, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  height: 550px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.testimonial-image {
+  margin-bottom: 24px;
+}
+
+.testimonial-image img {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.testimonial-content {
+  max-width: 600px;
+}
+
+.testimonial-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.testimonial-meta {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.testimonial-quote {
+  font-size: 1rem;
+  color: #d1d5db;
+  line-height: 1.6;
+}
+
+/* Customização dos botões - posicionados no fundo preto */
+.partners-slideshow .flickity-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.partners-slideshow .flickity-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.partners-slideshow .flickity-button:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Posicionar as setas bem afastadas, alinhadas com os cards laterais */
+.partners-slideshow .flickity-button.previous {
+  left: 5%;
+}
+
+.partners-slideshow .flickity-button.next {
+  right: 5%;
+}
+
+/* Ícone branco por padrão, verde no hover */
+.partners-slideshow .flickity-button-icon {
+  fill: white;
+  transition: fill 0.3s ease;
+}
+
+.partners-slideshow .flickity-button:hover .flickity-button-icon {
+  fill: #10b981;
+}
+
+/* Ajustes responsivos para as setas */
+@media (max-width: 1400px) {
+  .partners-slideshow .flickity-button.previous {
+    left: 2%;
+  }
+  
+  .partners-slideshow .flickity-button.next {
+    right: 2%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .partners-slideshow .flickity-button.previous {
+    left: 1%;
+  }
+  
+  .partners-slideshow .flickity-button.next {
+    right: 1%;
+  }
+}
+
+@media (max-width: 768px) {
+  .partners-slideshow .flickity-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .partners-slideshow .flickity-button.previous {
+    left: 10px;
+  }
+  
+  .partners-slideshow .flickity-button.next {
+    right: 10px;
+  }
+}
+
+/* Customização dos dots */
+.partners-slideshow .flickity-page-dots {
+  bottom: -50px;
+}
+
+.partners-slideshow .flickity-page-dots .dot {
+  background: rgba(255, 255, 255, 0.3);
+  width: 10px;
+  height: 10px;
+}
+
+.partners-slideshow .flickity-page-dots .dot.is-selected {
+  background: white;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
+  .slideshow-slide {
+    width: 80%;
+  }
+}
+
+@media (max-width: 768px) {
+  .slideshow-slide {
+    width: 90%;
+    margin: 0 10px;
+  }
+  
+  .testimonial-item {
+    padding: 30px 20px;
+    height: 500px;
+  }
+  
+  .section-title {
+    font-size: 2rem;
   }
 }

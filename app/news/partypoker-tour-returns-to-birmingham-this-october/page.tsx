@@ -1,7 +1,9 @@
 "use client";
 
-import Header from "../../components/Header";
+import HeaderWithAuth from "../../components/HeaderWithAuth";
 import Footer from "../../components/Footer";
+import TableOfContents from "../../../components/TableOfContents";
+import RelatedNews from "../../../components/RelatedNews";
 import Link from "next/link";
 import { ArrowLeft, Calendar, User, Link2, Check, Share2 } from "lucide-react";
 import { useState } from "react";
@@ -70,16 +72,16 @@ export default function PartyPokerBirminghamNewsPage() {
       {/* Header Section */}
       <section className="relative bg-[#1E1E1E] w-full px-3 md:px-4 pt-6">
         <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
-          <Header />
+          <HeaderWithAuth />
         </div>
       </section>
 
       {/* Main Content */}
-      <main className="relative bg-[#1E1E1E] w-full pt-32 pb-24 flex-1">
+      <main className="relative bg-[#1E1E1E] w-full pt-20 pb-24 flex-1">
         <div className="max-w-7xl mx-auto px-4">
           
           {/* Go Back Button */}
-          <div className="mb-8">
+          <div className="mt-6 mb-8">
             <Link href="/news" className="inline-flex items-center gap-2 text-gray-400 hover:text-[#077124] transition-colors duration-300 text-sm font-medium group">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
               <span>Go back</span>
@@ -87,13 +89,13 @@ export default function PartyPokerBirminghamNewsPage() {
           </div>
 
           {/* Hero Section: Title + Sidebar + Image */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
             
             {/* Left Column - Empty space to align with sidebar below */}
             <div className="lg:col-span-3 hidden lg:block"></div>
 
             {/* Right Column - Title and Subtitle aligned with image */}
-            <div className="lg:col-span-9 mb-8 lg:mb-12">
+            <div className="lg:col-span-9 mb-6 lg:mb-8">
               <h1 className="text-white text-3xl md:text-4xl lg:text-5xl font-bold leading-tight" 
                   style={{ 
                     textShadow: '0 2px 16px rgba(0,0,0,0.4)',
@@ -102,7 +104,7 @@ export default function PartyPokerBirminghamNewsPage() {
                 PartyPoker Tour Returns to Birmingham this October
               </h1>
               {/* Subtitle/Description */}
-              <p className="text-gray-400 text-lg md:text-xl mt-6 leading-relaxed">
+              <p className="text-gray-400 text-lg md:text-xl mt-4 leading-relaxed">
                 Five key numbers to keep tabs on your whole-body health.
               </p>
             </div>
@@ -222,8 +224,12 @@ export default function PartyPokerBirminghamNewsPage() {
 
           {/* Article Body - Aligned with image */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column - Empty space */}
-            <div className="lg:col-span-3 hidden lg:block"></div>
+            {/* Left Column - Sticky Sidebar with TableOfContents */}
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-[120px] mb-8 lg:mb-0">
+                <TableOfContents />
+              </div>
+            </aside>
 
             {/* Right Column - Article content aligned with image */}
             <article className="lg:col-span-9">
@@ -237,11 +243,13 @@ export default function PartyPokerBirminghamNewsPage() {
 
             {/* Festival Highlights Section */}
             <div className="mb-12">
-              <h2 className="text-white text-2xl md:text-3xl font-bold mb-6"
-                  style={{ 
-                    textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.015em'
-                  }}>
+              <h2 
+                id="festival-highlights-key-events"
+                className="text-white text-2xl md:text-3xl font-bold mb-6"
+                style={{ 
+                  textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                  letterSpacing: '-0.015em'
+                }}>
                 Festival Highlights & Key Events
               </h2>
               <p className="text-gray-300 text-lg leading-relaxed mb-6" style={{ lineHeight: '1.8' }}>
@@ -304,11 +312,39 @@ export default function PartyPokerBirminghamNewsPage() {
 
             {/* Qualifying Section */}
             <div className="mb-12">
+              <h2 
+                id="how-to-qualify"
+                className="text-white text-2xl md:text-3xl font-bold mb-6"
+                style={{ 
+                  textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                  letterSpacing: '-0.015em'
+                }}>
+                How to Qualify
+              </h2>
               <p className="text-gray-300 text-lg leading-relaxed mb-6" style={{ lineHeight: '1.8' }}>
                 You can qualify to visit Birmingham for an extremely low cost by playing satellites on partypoker, starting from just $1!
               </p>
               <p className="text-gray-300 text-lg leading-relaxed" style={{ lineHeight: '1.8' }}>
                 Want to get involved? Make sure you create or link your account to Universal Poker to claim the excellent benefits we provide:
+              </p>
+            </div>
+
+            {/* Benefits Section */}
+            <div className="mb-12">
+              <h2 
+                id="universal-poker-benefits"
+                className="text-white text-2xl md:text-3xl font-bold mb-6"
+                style={{ 
+                  textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                  letterSpacing: '-0.015em'
+                }}>
+                Universal Poker Benefits
+              </h2>
+              <p className="text-gray-300 text-lg leading-relaxed mb-6" style={{ lineHeight: '1.8' }}>
+                As a Universal Poker member, you gain access to exclusive deals and enhanced rakeback on PartyPoker. Our team provides personalized support to help you maximize your poker journey, whether you&apos;re a recreational player or a seasoned pro.
+              </p>
+              <p className="text-gray-300 text-lg leading-relaxed" style={{ lineHeight: '1.8' }}>
+                Join thousands of players who trust Universal Poker for their poker affiliations and start enjoying premium benefits today.
               </p>
             </div>
 
@@ -364,6 +400,9 @@ export default function PartyPokerBirminghamNewsPage() {
 
         </div>
       </main>
+
+      {/* Related News Section */}
+      <RelatedNews currentArticleId="birmingham-tour" />
 
       {/* Footer */}
       <Footer />

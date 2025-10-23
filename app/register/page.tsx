@@ -483,7 +483,7 @@ export default function RegisterPage() {
                         />
                       </div>
                       <span className="ml-2 text-xs text-gray-400 group-hover/checkbox:text-gray-300 transition-colors duration-300 font-normal leading-tight">
-                        Get Updates and Deals from Universal Poker.<br />You can unsubscribe anytime.
+                        Get updates and deals from Universal Poker.<br />You can unsubscribe anytime.
                       </span>
                     </label>
                   </div>
@@ -496,7 +496,6 @@ export default function RegisterPage() {
                     className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                     style={{
                       boxShadow: `
-                        0 0 0 1px rgba(255,255,255,0.1),
                         0 1px 3px 0 rgba(0,0,0,0.5),
                         0 4px 12px rgba(7,113,36,0.3),
                         0 8px 32px rgba(7,113,36,0.25),
@@ -532,12 +531,6 @@ export default function RegisterPage() {
                     
                     {/* Animated arrow */}
                     <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
-                    
-                    {/* Top edge highlight */}
-                    <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                    
-                    {/* Bottom edge shadow */}
-                    <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                   </button>
                 </div>
 

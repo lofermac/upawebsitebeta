@@ -1,13 +1,11 @@
 ﻿ 'use client'
 
-import Header from "./components/Header";
+import HeaderWithAuth from "./components/HeaderWithAuth";
 import Footer from "./components/Footer";
 import Link from "next/link";
 import { ArrowRight, Users, Calendar, Award } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
+import { useEffect, useState, useRef } from "react";
 import DealCardWithGeo from "@/components/DealCardWithGeo";
 import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
@@ -160,35 +158,14 @@ const faqData = [
   }
 ];
 
-// Testimonials data with manual clones for seamless infinite loop
+// Testimonials data
 const testimonials = [
-  // CLONES at beginning (for left peek)
-  {
-    id: 'clone-8',
-    name: 'PÃ©ter Traply',
-    meta: 'Belabasci',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174831/p2j-test.webp',
-    quote: 'I really like working with Universal. They are always helpful, fast with their responses and even helped me with some unique requests. They have very good connections in the poker business which can be really helpful. Would recommend them for any serious player/stable.',
-    isClone: true,
-    realIndex: 8
-  },
-  {
-    id: 'clone-9',
-    name: 'Raise Your Edge',
-    meta: null,
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174840/rye-test.webp',
-    quote: 'Universal includes one of the most knowledgeable guys around when it comes to affiliation AND poker in general. Their advice and knowledge are a constant source of inspiration for Raise Your Edge members and the poker community as a whole.',
-    isClone: true,
-    realIndex: 9
-  },
-  // ORIGINAL 9 SLIDES
   {
     id: '1',
     name: "Ryan O'Donnell",
     meta: 'Moca choca89',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/05/22160615/53224561601_8aa1359351_o-scaled-e1747930080750-1024x1020.jpg',
     quote: 'Universal Poker, an affiliate that\'s truly exceptional, a must-have for every poker player seeking exceptional rewards, benefits, and support.',
-    isClone: false
   },
   {
     id: '2',
@@ -196,7 +173,6 @@ const testimonials = [
     meta: null,
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144142/ss-2.png',
     quote: 'Seeing how Universal Poker use their experience to offer excellent opportunities to poker communities such as Smart Spin is inspiring. What makes them stand out is that they perfectly understand players\' needs and their expectations.',
-    isClone: false
   },
   {
     id: '3',
@@ -204,15 +180,13 @@ const testimonials = [
     meta: 'Owner of Nemesis Backing',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174836/9hg8_hKo_400x400-test.webp',
     quote: 'Universal is a long term focused affiliate who values their players and understands the industry from their perspective. As a player and as a staking group owner I haven\'t gotten a better experience elsewhere in the affiliate industry.',
-    isClone: false
   },
   {
     id: '4',
     name: 'Douglas Ferreira',
     meta: 'Dowgh-Santos',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174834/dowgh-santos-test.webp',
-    quote: 'Universal Ã© a melhor empresa de afiliados pois tem uma politica de transparencia muito grande, sempre cumprindo os prazos e dando um suporte VP aos afiliados atravÃ©s do grupo do Discord.',
-    isClone: false
+    quote: 'Universal é a melhor empresa de afiliados pois tem uma política de transparência muito grande, sempre cumprindo os prazos e dando um suporte VP aos afiliados através do grupo do Discord.',
   },
   {
     id: '5',
@@ -220,7 +194,6 @@ const testimonials = [
     meta: 'MissOracle',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174833/david-yan-win-test.webp',
     quote: 'Finding poker deals can be annoying because the affiliate industry aren\'t always the best to deal with. In my experience, Universal offer the best deals. I like that they act honestly and reliably. They understand the value of their players and treat them accordingly.',
-    isClone: false
   },
   {
     id: '6',
@@ -228,7 +201,6 @@ const testimonials = [
     meta: 'HS LHE Crusher',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174624/picturemessage_xfrlthne.dfz_webp.webp',
     quote: 'Universal Poker Affiliates are the nicest people in the affiliate business!',
-    isClone: false
   },
   {
     id: '7',
@@ -236,15 +208,13 @@ const testimonials = [
     meta: 'Slayerv1fanpoker',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174838/unnamed-e1697105067784-test-1024x1019.webp',
     quote: 'Universal Affiliates is the best affiliate company I\'ve ever had a deal through. They\'re super timely with payments and quick to respond to any question or issue, quickly getting me a solution within their own house or through their top tier connections with the poker site itself. I\'m grateful to work with Universal!',
-    isClone: false
   },
   {
     id: '8',
-    name: 'PÃ©ter Traply',
+    name: 'Péter Traply',
     meta: 'Belabasci',
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174831/p2j-test.webp',
     quote: 'I really like working with Universal. They are always helpful, fast with their responses and even helped me with some unique requests. They have very good connections in the poker business which can be really helpful. Would recommend them for any serious player/stable.',
-    isClone: false
   },
   {
     id: '9',
@@ -252,105 +222,71 @@ const testimonials = [
     meta: null,
     image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174840/rye-test.webp',
     quote: 'Universal includes one of the most knowledgeable guys around when it comes to affiliation AND poker in general. Their advice and knowledge are a constant source of inspiration for Raise Your Edge members and the poker community as a whole.',
-    isClone: false
   },
-  // CLONES at end (for right peek)
-  {
-    id: 'clone-1',
-    name: "Ryan O'Donnell",
-    meta: 'Moca choca89',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/05/22160615/53224561601_8aa1359351_o-scaled-e1747930080750-1024x1020.jpg',
-    quote: 'Universal Poker, an affiliate that\'s truly exceptional, a must-have for every poker player seeking exceptional rewards, benefits, and support.',
-    isClone: true,
-    realIndex: 1
-  },
-  {
-    id: 'clone-2',
-    name: 'Smart Spin',
-    meta: null,
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144142/ss-2.png',
-    quote: 'Seeing how Universal Poker use their experience to offer excellent opportunities to poker communities such as Smart Spin is inspiring. What makes them stand out is that they perfectly understand players\' needs and their expectations.',
-    isClone: true,
-    realIndex: 2
-  }
 ];
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
   const authModal = useAuthModal();
   const [cardsVisible, setCardsVisible] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(2); // Start at first real slide (Ryan)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
   const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault(); // Sempre previne navegação
+    
     if (!isLoggedIn) {
-      e.preventDefault();
       authModal.openLogin('888Poker'); // Passa o nome do deal
+    } else {
+      // Se já está logado, abre direto o JoinDealModal
+      authModal.openJoinDeal('888Poker');
     }
-    // Se logado, link funciona normalmente
   };
 
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    {
-      align: 'center',
-      loop: false, // Disable auto-loop, we handle it manually
-      skipSnaps: false,
-      dragFree: false,
-      duration: 30, // Smooth transition speed
-      containScroll: false,
-      slidesToScroll: 1,
-      startIndex: 2, // Start at index 2 (first real Ryan, after clones)
-      watchDrag: true,
-      dragThreshold: 10,
-      watchResize: true,
-    },
-    [
-      Autoplay({ 
-        delay: 7000,
-        stopOnInteraction: true,
-        stopOnMouseEnter: true,
-        playOnInit: true,
-      })
-    ]
-  );
+  // Ref para o carousel Flickity
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    const selectedIndex = emblaApi.selectedScrollSnap();
-    
-    // Map clone indices to real indices for dot navigation display
-    let displayIndex = selectedIndex;
-    if (selectedIndex === 0) displayIndex = 8; // Clone PÃ©ter â†' real PÃ©ter
-    else if (selectedIndex === 1) displayIndex = 9; // Clone RYE â†' real RYE
-    else if (selectedIndex === 11) displayIndex = 2; // Clone Ryan â†' real Ryan
-    else if (selectedIndex === 12) displayIndex = 3; // Clone Smart Spin â†' real Smart Spin
-    
-    setCurrentSlide(displayIndex);
-    
-    // Add 'is-active' class to center slide for peek effect
-    const slides = emblaApi.slideNodes();
-    slides.forEach((slide, index) => {
-      if (index === selectedIndex) {
-        slide.classList.add('is-active');
-        slide.classList.remove('is-inactive');
-      } else {
-        slide.classList.remove('is-active');
-        slide.classList.add('is-inactive');
-      }
-    });
-  }, [emblaApi]);
-
+  // Inicialização do Flickity Vanilla
   useEffect(() => {
-    if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-    return () => {
-      emblaApi.off('select', onSelect);
-      emblaApi.off('reInit', onSelect);
+    // Esperar o Flickity carregar
+    const initFlickity = () => {
+      if (typeof window !== 'undefined' && (window as any).Flickity && carouselRef.current) {
+        // Destruir instância anterior se existir
+        const existingFlickity = (window as any).Flickity.data(carouselRef.current);
+        if (existingFlickity) {
+          existingFlickity.destroy();
+        }
+
+        // Criar nova instância
+        new (window as any).Flickity(carouselRef.current, {
+          wrapAround: true,
+          cellAlign: 'center',
+          autoPlay: 7000,
+          pauseAutoPlayOnHover: true,
+          prevNextButtons: true,
+          pageDots: true,
+          draggable: true,
+          contain: false
+        });
+      }
     };
-  }, [emblaApi, onSelect]);
+
+    // Tentar inicializar imediatamente
+    initFlickity();
+
+    // Fallback: tentar novamente após 100ms
+    const timer = setTimeout(initFlickity, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (carouselRef.current && (window as any).Flickity) {
+        const flickity = (window as any).Flickity.data(carouselRef.current);
+        if (flickity) {
+          flickity.destroy();
+        }
+      }
+    };
+  }, []);
 
   // Intersection Observer for How It Works cards animation
   useEffect(() => {
@@ -383,7 +319,7 @@ export default function Home() {
         <div className="relative w-full h-[calc(100vh-3rem)] rounded-[2.5rem] overflow-hidden group/hero transition-all duration-700">
           {/* Header dentro do card */}
           <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
-      <Header />
+      <HeaderWithAuth />
           </div>
           
           {/* Background Video */}
@@ -394,7 +330,7 @@ export default function Home() {
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src="/videos/hero-bg.mp4" type="video/mp4" />
+            <source src="/videos/hero-bg.mp4?v=2" type="video/mp4" />
           </video>
           
           {/* Dark overlay semi-transparent - por cima do vídeo */}
@@ -462,7 +398,6 @@ export default function Home() {
                   className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                   style={{
                     boxShadow: `
-                      0 0 0 1px rgba(255,255,255,0.1),
                       0 1px 3px 0 rgba(0,0,0,0.5),
                       0 4px 12px rgba(7,113,36,0.3),
                       0 8px 32px rgba(7,113,36,0.25),
@@ -506,12 +441,6 @@ export default function Home() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                  
-                  {/* Top edge highlight */}
-                  <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                  
-                  {/* Bottom edge shadow */}
-                  <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                 </a>
               </div>
             </div>
@@ -757,7 +686,6 @@ export default function Home() {
                     <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
-                           0 0 0 1px rgba(255,255,255,0.1),
                            0 1px 3px 0 rgba(0,0,0,0.5),
                            0 4px 12px rgba(7,113,36,0.3),
                            0 8px 32px rgba(7,113,36,0.25),
@@ -773,8 +701,6 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
                       <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
-                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -825,7 +751,6 @@ export default function Home() {
                     <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
-                           0 0 0 1px rgba(255,255,255,0.1),
                            0 1px 3px 0 rgba(0,0,0,0.5),
                            0 4px 12px rgba(7,113,36,0.3),
                            0 8px 32px rgba(7,113,36,0.25),
@@ -841,8 +766,6 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
                       <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
-                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -889,7 +812,6 @@ export default function Home() {
                     <a href="#" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
                        style={{
                          boxShadow: `
-                           0 0 0 1px rgba(255,255,255,0.1),
                            0 1px 3px 0 rgba(0,0,0,0.5),
                            0 4px 12px rgba(7,113,36,0.3),
                            0 8px 32px rgba(7,113,36,0.25),
@@ -905,8 +827,6 @@ export default function Home() {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
                       <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
                       <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
-                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -932,7 +852,6 @@ export default function Home() {
               className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                        style={{
                          boxShadow: `
-                           0 0 0 1px rgba(255,255,255,0.1),
                            0 1px 3px 0 rgba(0,0,0,0.5),
                            0 4px 12px rgba(7,113,36,0.3),
                            0 8px 32px rgba(7,113,36,0.25),
@@ -968,12 +887,6 @@ export default function Home() {
               
               {/* Animated arrow */}
               <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
-              
-              {/* Top edge highlight */}
-                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-              
-              {/* Bottom edge shadow */}
-                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
             </Link>
           </div>
             </div>
@@ -1125,69 +1038,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* OUR PARTNERS SECTION - Carousel de testimonials */}
-      <section id="partners" className="relative bg-black w-full py-6 md:py-8 px-3 md:px-4 overflow-hidden select-none">
-        {/* Content wrapper */}
-        <div className="relative w-full py-20 md:py-24 px-4 flex flex-col items-center">
-            <h2 className="text-white text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-2 px-4"
-                style={{ 
-                  textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-                  letterSpacing: '-0.02em',
-                  fontWeight: '600'
-                }}>
-              Our Partners
-            </h2>
-            <p className="text-gray-400 text-center text-base sm:text-base md:text-lg lg:text-lg mb-16 px-4 font-normal leading-relaxed"
-               style={{ 
-                 textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                 letterSpacing: '-0.01em',
-                 fontWeight: '400'
-               }}>
-              Don&apos;t just take our word for it, take theirs.
-            </p>
-            
-            {/* Embla Carousel Container */}
-            <div className="embla w-full max-w-[1800px] select-none" ref={emblaRef}>
-          <div className="embla__container">
-            {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="embla__slide flex items-center justify-center py-8 px-4">
-              <div className="flex flex-col items-center text-center max-w-[500px]">
-                <div className="w-[300px] h-[300px] md:w-[350px] md:h-[350px] rounded-full overflow-hidden border-4 border-white/20 shadow-2xl mb-6">
-                  <Image 
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-full h-full object-cover"
-                    width={350}
-                    height={350}
-                  />
-                </div>
-                <h3 className="text-white text-xl md:text-2xl font-bold mb-2">{testimonial.name}</h3>
-                {testimonial.meta && (
-                  <p className="text-gray-400 text-base md:text-lg mb-4 leading-relaxed">{testimonial.meta}</p>
-                )}
-                {!testimonial.meta && <div className="mb-4"></div>}
-                <p className="text-white text-sm md:text-base leading-relaxed px-4">
-                  &quot;{testimonial.quote}&quot;
-                </p>
-              </div>
-            </div>
-            ))}
-          </div>
+      {/* OUR PARTNERS SECTION */}
+      <section id="partners" className="section-partners">
+        <div className="section-intro">
+          <h2 className="text-white text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
+              style={{ 
+                textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+                letterSpacing: '-0.02em',
+                fontWeight: '600'
+              }}>
+            Our Partners
+          </h2>
+          <p className="text-gray-400 text-center text-base sm:text-base md:text-lg lg:text-lg mb-12 px-4 font-normal leading-relaxed"
+             style={{ 
+               textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+               letterSpacing: '-0.01em',
+               fontWeight: '400'
+             }}>
+            Don&apos;t just take our word for it, take theirs.
+          </p>
         </div>
 
-            {/* Scroll Indicator Dots - Only for real slides (not clones) */}
-            <div className="flex gap-2 mt-8">
-              {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((index, displayIndex) => (
-                <button
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                    currentSlide === index ? 'bg-white' : 'bg-gray-600'
-                  }`}
-                  onClick={() => emblaApi?.scrollTo(index)}
-                  aria-label={`Go to slide ${displayIndex + 1}`}
-                />
-              ))}
+        <div 
+          ref={carouselRef}
+          className="partners-slideshow"
+          data-flickity='{ "wrapAround": true, "cellAlign": "center", "autoPlay": 7000, "pauseAutoPlayOnHover": true }'
+        >
+          {testimonials.map((testimonial) => (
+            <div key={testimonial.id} className="slideshow-slide">
+              <div className="testimonial-item">
+                <div className="testimonial-image">
+                  <Image
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    width={300}
+                    height={300}
+                    className="rounded-full"
+                  />
+                </div>
+                <div className="testimonial-content">
+                  <h3 className="testimonial-name">{testimonial.name}</h3>
+                  {testimonial.meta && (
+                    <p className="testimonial-meta">{testimonial.meta}</p>
+                  )}
+                  <p className="testimonial-quote">
+                    &quot;{testimonial.quote}&quot;
+                  </p>
+                </div>
+              </div>
             </div>
+          ))}
         </div>
       </section>
 
@@ -1314,7 +1214,7 @@ export default function Home() {
                     {/* Date & Category */}
                     <div className="flex items-center gap-3 mb-3">
                       <time className="text-xs text-zinc-400 font-medium">{post.date}</time>
-                      <span className="text-xs text-zinc-600">â€¢</span>
+                      <span className="text-xs text-zinc-600">•</span>
                       <span className="text-xs text-[#077124] font-semibold uppercase tracking-wide">{post.category}</span>
             </div>
 
@@ -1342,51 +1242,10 @@ export default function Home() {
             <div className="text-center mt-12">
               <Link 
                 href="/news"
-                className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
-                style={{
-                  boxShadow: `
-                    0 0 0 1px rgba(255,255,255,0.1),
-                    0 1px 3px 0 rgba(0,0,0,0.5),
-                    0 4px 12px rgba(7,113,36,0.3),
-                    0 8px 32px rgba(7,113,36,0.25),
-                    0 16px 64px rgba(7,113,36,0.2),
-                    inset 0 1px 1px rgba(255,255,255,0.3),
-                    inset 0 -1px 1px rgba(0,0,0,0.2)
-                  `
-                }}
+                className="relative group/btn2 inline-flex items-center justify-center gap-2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-8 py-4 rounded-full text-base transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] backdrop-blur-sm"
               >
-                {/* Outer glow - Layer 1 (most intense) */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
-                
-                {/* Outer glow - Layer 2 (medium spread) */}
-                <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                
-                {/* Outer glow - Layer 3 (soft wide spread) */}
-                <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                
-                {/* Glass reflection effect on top */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                
-                {/* Animated shimmer effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                
-                {/* Inner shadow for depth */}
-                <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                
-                {/* Pulsing ambient glow on hover */}
-                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
-                
-                {/* Button content */}
                 <span className="relative z-10 tracking-wide drop-shadow-lg">Read More</span>
-                
-                {/* Animated arrow */}
-                <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
-                
-                {/* Top edge highlight */}
-                <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                
-                {/* Bottom edge shadow */}
-                <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
+                <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover/btn2:translate-x-1 drop-shadow-lg" strokeWidth={2} />
               </Link>
             </div>
         </div>

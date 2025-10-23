@@ -46,20 +46,6 @@ export default function Header() {
             <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
           </a>
           <a 
-            href="#mission" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Mission</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
-          <a 
-            href="#partners" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Partners</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
-          <a 
             href="/news" 
             className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
           >
@@ -156,22 +142,6 @@ export default function Header() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <span className="relative z-10">Deals</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a 
-                  href="#mission" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Mission</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a 
-                  href="#partners" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Partners</span>
                   <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
                 </a>
                 <a 

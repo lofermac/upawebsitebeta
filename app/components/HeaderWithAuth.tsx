@@ -7,7 +7,7 @@ import { LogOut, User } from "lucide-react";
 
 export default function HeaderWithAuth() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isLoggedIn, userType, logout } = useAuth();
+  const { isLoggedIn, isLoading, userType, logout } = useAuth();
 
   // Get username based on userType
   const getUsername = () => {
@@ -57,21 +57,7 @@ export default function HeaderWithAuth() {
             <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
           </a>
           <a 
-            href="#mission" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Mission</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
-          <a 
-            href="#partners" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Partners</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
-          <a 
-            href="#news" 
+            href="/news" 
             className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
           >
             <span className="relative z-10">News</span>
@@ -95,7 +81,13 @@ export default function HeaderWithAuth() {
         
         {/* Auth Section - Conditional rendering based on auth state */}
         <div className="hidden md:flex items-center gap-3 relative z-10">
-          {isLoggedIn && userType === 'player' ? (
+          {isLoading ? (
+            // Loading skeleton
+            <>
+              <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
+              <div className="h-9 w-24 bg-white/5 rounded-full animate-pulse"></div>
+            </>
+          ) : isLoggedIn && userType === 'player' ? (
             // Player logged in view
             <>
               <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
@@ -192,23 +184,7 @@ export default function HeaderWithAuth() {
                   <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
                 </a>
                 <a 
-                  href="#mission" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Mission</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a 
-                  href="#partners" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Partners</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a 
-                  href="#news" 
+                  href="/news" 
                   className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
                   onClick={() => setMobileOpen(false)}
                 >
@@ -236,7 +212,13 @@ export default function HeaderWithAuth() {
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
                 
                 {/* Mobile Auth Section */}
-                {isLoggedIn && userType === 'player' ? (
+                {isLoading ? (
+                  // Loading skeleton for mobile
+                  <>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                  </>
+                ) : isLoggedIn && userType === 'player' ? (
                   <>
                     <div className="px-4 py-3.5 bg-white/5 rounded-xl border border-white/10">
                       <div className="flex items-center gap-2">

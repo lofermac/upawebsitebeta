@@ -1,6 +1,6 @@
 "use client";
 
-import Header from "../components/Header";
+import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import { Shield, AlertCircle } from "lucide-react";
 
@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       {/* Header Section */}
       <section className="relative bg-[#1E1E1E] w-full px-3 md:px-4 pt-6">
         <div className="absolute top-0 left-0 right-0 z-50 pt-6 px-4">
-          <Header />
+          <HeaderWithAuth />
         </div>
       </section>
 

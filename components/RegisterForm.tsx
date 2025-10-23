@@ -85,7 +85,7 @@ export default function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFor
         discord: formData.discord,
         agreeTerms: formData.agreeTerms,
         agreePrivacy: formData.agreePrivacy,
-      });
+      }, true); // skipRedirect = true quando registro via modal
       onSuccess(); // Fecha modal de Auth e executa callback (ex: abrir JoinDealModal)
     } catch {
       setErrors({ general: 'Registration failed. Please try again.' });

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
 
@@ -31,9 +32,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="https://unpkg.com/flickity@2/dist/flickity.min.css" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <Script 
+          src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"
+          strategy="beforeInteractive"
+        />
         <AuthProvider>
           {children}
         </AuthProvider>

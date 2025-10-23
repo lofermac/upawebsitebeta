@@ -7,10 +7,11 @@ type UserType = 'admin' | 'player' | null;
 
 interface AuthContextType {
   isLoggedIn: boolean;
+  isLoading: boolean;
   user: { email: string; fullName?: string; userType?: UserType } | null;
   userType: UserType;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string, skipRedirect?: boolean) => Promise<void>;
+  register: (data: RegisterData, skipRedirect?: boolean) => Promise<void>;
   logout: () => void;
 }
 
@@ -29,6 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Começa como loading
   const [user, setUser] = useState<{ email: string; fullName?: string; userType?: UserType } | null>(null);
   const [userType, setUserType] = useState<UserType>(null);
   const router = useRouter();
@@ -42,9 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoggedIn(true);
       setUser({ email: storedEmail, userType: storedUserType });
     }
+    setIsLoading(false); // Terminou de carregar
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, skipRedirect?: boolean) => {
     // Mock authentication with validation
     await new Promise(resolve => setTimeout(resolve, 300)); // Simula delay de API
     
@@ -55,21 +58,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser({ email, userType: 'admin' });
       localStorage.setItem('userType', 'admin');
       localStorage.setItem('userEmail', email);
-      router.push('/admin/dashboard');
+      if (!skipRedirect) {
+        router.push('/admin/dashboard');
+      }
     } else if (email === 'player' && password === 'player') {
       setUserType('player');
       setIsLoggedIn(true);
       setUser({ email, userType: 'player' });
       localStorage.setItem('userType', 'player');
       localStorage.setItem('userEmail', email);
-      router.push('/player/dashboard');
+      if (!skipRedirect) {
+        router.push('/player/dashboard');
+      }
     } else {
       // Credenciais inválidas
       throw new Error('Invalid credentials');
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const register = async (data: RegisterData, skipRedirect?: boolean) => {
     // TODO: Integrar com Supabase
     // Por enquanto, mock authentication
     await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay de API
@@ -80,6 +87,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser({ email: data.email, fullName: data.fullName, userType: 'player' });
     localStorage.setItem('userType', 'player');
     localStorage.setItem('userEmail', data.email);
+    
+    if (!skipRedirect) {
+      router.push('/player/dashboard');
+    }
   };
 
   const logout = () => {
@@ -88,11 +99,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('userType');
     localStorage.removeItem('userEmail');
-    router.push('/login');
+    router.push('/'); // Redireciona para homepage
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, userType, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, isLoading, user, userType, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

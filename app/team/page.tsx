@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Header from "../components/Header";
+import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import { Send } from "lucide-react";
 
@@ -40,7 +40,7 @@ const teamMembers = [
     id: 5,
     name: 'Leonardo',
     position: 'Data Analyst',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
+    image: '/images/leo.png',
     description: 'I\'m Leonardo, one of the Data Analysts at Universal Poker. My role inside the company is to provide the best insights for the staff to make the best decisions.',
   },
   {
@@ -79,7 +79,7 @@ export default function TeamPage() {
       <section className="relative bg-black w-full flex flex-col items-center justify-start px-3 md:px-4 pt-6">
         <div className="relative w-full">
           <div className="relative z-50 px-4">
-            <Header />
+            <HeaderWithAuth />
           </div>
         </div>
       </section>
@@ -281,10 +281,9 @@ export default function TeamPage() {
                   <div className="flex justify-center mt-6">
                     <button
                       type="submit"
-                      className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                      className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
                       style={{
                         boxShadow: `
-                          0 0 0 1px rgba(255,255,255,0.1),
                           0 1px 3px 0 rgba(0,0,0,0.5),
                           0 4px 12px rgba(7,113,36,0.3),
                           0 8px 32px rgba(7,113,36,0.25),
@@ -311,10 +310,6 @@ export default function TeamPage() {
                       {/* Button content */}
                       <span className="relative z-10 tracking-wide drop-shadow-lg">Send Enquiry</span>
                       <Send className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
-                      
-                      {/* Edge highlights */}
-                      <div className="absolute inset-x-0 top-[1px] h-px bg-gradient-to-r from-transparent via-white/50 to-transparent rounded-full"></div>
-                      <div className="absolute inset-x-0 bottom-[1px] h-px bg-gradient-to-r from-transparent via-black/50 to-transparent rounded-full"></div>
                     </button>
                   </div>
                 </form>

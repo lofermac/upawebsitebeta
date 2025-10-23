@@ -8,19 +8,20 @@ import Footer from '@/app/components/Footer';
 import DealDetailsModal from '@/components/DealDetailsModal';
 import { 
   ChevronRight,
-  HelpCircle
+  HelpCircle,
+  Info
 } from 'lucide-react';
 
 // Mock earnings data
 const earningsData = [
-  { id: 1, platform: 'Betfair Poker', period: 'Oct 2025', grossRake: '€156.00', netRake: '€101.40', updated: '21-Oct-2025', paymentMade: null },
-  { id: 2, platform: 'Champion Poker', period: 'Oct 2025', grossRake: '€94.50', netRake: '€66.15', updated: '21-Oct-2025', paymentMade: null },
-  { id: 3, platform: 'WPT Global', period: 'Oct 2025', grossRake: '€112.30', netRake: '€67.38', updated: '20-Oct-2025', paymentMade: null },
-  { id: 4, platform: 'Betfair Poker', period: 'Sep 2025', grossRake: '€125.00', netRake: '€81.25', updated: '30-Sep-2025', paymentMade: '05-Oct-2025' },
-  { id: 5, platform: 'Champion Poker', period: 'Sep 2025', grossRake: '€89.15', netRake: '€62.41', updated: '30-Sep-2025', paymentMade: '03-Oct-2025' },
-  { id: 6, platform: 'WPT Global', period: 'Sep 2025', grossRake: '€78.50', netRake: '€47.10', updated: '29-Sep-2025', paymentMade: '08-Oct-2025' },
-  { id: 7, platform: 'Betfair Poker', period: 'Aug 2025', grossRake: '€340.00', netRake: '€221.00', updated: '31-Aug-2025', paymentMade: '05-Sep-2025' },
-  { id: 8, platform: 'Champion Poker', period: 'Aug 2025', grossRake: '€156.00', netRake: '€109.20', updated: '31-Aug-2025', paymentMade: '02-Sep-2025' },
+  { id: 1, platform: 'Betfair Poker', period: 'Oct 2025', grossRake: '$156.00', netRake: '$101.40', updated: '21-Oct-2025', reward: null, paymentMade: null },
+  { id: 2, platform: 'Champion Poker', period: 'Oct 2025', grossRake: '$94.50', netRake: '$66.15', updated: '21-Oct-2025', reward: null, paymentMade: null },
+  { id: 3, platform: 'WPT Global', period: 'Oct 2025', grossRake: '$112.30', netRake: '$67.38', updated: '20-Oct-2025', reward: null, paymentMade: null },
+  { id: 4, platform: 'Betfair Poker', period: 'Sep 2025', grossRake: '$125.00', netRake: '$81.25', updated: '30-Sep-2025', reward: '$81.25', paymentMade: '05-Oct-2025' },
+  { id: 5, platform: 'Champion Poker', period: 'Sep 2025', grossRake: '$89.15', netRake: '$62.41', updated: '30-Sep-2025', reward: '$62.41', paymentMade: '03-Oct-2025' },
+  { id: 6, platform: 'WPT Global', period: 'Sep 2025', grossRake: '$78.50', netRake: '$47.10', updated: '29-Sep-2025', reward: '$47.10', paymentMade: '08-Oct-2025' },
+  { id: 7, platform: 'Betfair Poker', period: 'Aug 2025', grossRake: '$340.00', netRake: '$221.00', updated: '31-Aug-2025', reward: '$221.00', paymentMade: '05-Sep-2025' },
+  { id: 8, platform: 'Champion Poker', period: 'Aug 2025', grossRake: '$156.00', netRake: '$109.20', updated: '31-Aug-2025', reward: '$109.20', paymentMade: '02-Sep-2025' },
 ];
 
 // Mock connected deals
@@ -212,12 +213,18 @@ export default function PlayerDashboard() {
                         Net Rake
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider group/tooltip relative">
-                        <span className="border-b border-dotted border-gray-500 cursor-help">Updated</span>
+                        <div className="flex items-center gap-1.5">
+                          <span>Updated</span>
+                          <Info size={14} className="text-gray-500 cursor-help" />
+                        </div>
                         {/* Tooltip */}
-                        <div className="absolute left-0 top-full mt-2 px-3 py-2 bg-black/95 border border-white/[0.15] rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none z-10 whitespace-nowrap">
-                          <p className="text-xs text-gray-300">Updated once per week</p>
+                        <div className="absolute left-0 top-full mt-2 px-3 py-2 bg-black/95 border border-white/[0.15] rounded-lg shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 pointer-events-none z-10 w-64 normal-case">
+                          <p className="text-xs text-gray-300">We update this rake data when we receive reports from the site. This is typically weekly.</p>
                           <div className="absolute left-6 bottom-full w-2 h-2 bg-black/95 border-l border-t border-white/[0.15] transform rotate-45 -mb-1"></div>
                         </div>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Payment
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Payment Made
@@ -240,12 +247,19 @@ export default function PlayerDashboard() {
                             <span className="text-sm text-gray-300 font-medium">{earning.grossRake}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-[#10b981]">{earning.netRake}</span>
+                            <span className="text-sm text-gray-300 font-medium">{earning.netRake}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-white/[0.03] text-gray-400 border border-white/[0.06]">
                               {earning.updated}
                             </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {earning.reward ? (
+                              <span className="text-sm font-bold text-[#10b981]">{earning.reward}</span>
+                            ) : (
+                              <span className="text-sm text-gray-600">—</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {earning.paymentMade ? (
@@ -262,7 +276,7 @@ export default function PlayerDashboard() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center">
+                        <td colSpan={7} className="px-6 py-12 text-center">
                           <p className="text-gray-400 text-sm">No earnings found for the selected period</p>
                         </td>
                       </tr>

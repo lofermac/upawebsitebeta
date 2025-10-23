@@ -40,7 +40,7 @@ export default function LoginForm({ onSwitchToRegister, onSuccess }: LoginFormPr
     // Tentar login (aceita qualquer credencial por enquanto - mock)
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, true); // skipRedirect = true quando login via modal
       onSuccess(); // Fecha modal e abre Join Deal
     } catch {
       setErrors({ general: 'Login failed. Please try again.' });
