@@ -855,6 +855,162 @@ export default function AdminDashboard() {
               </>
             )}
 
+            {/* Website Tab */}
+            {activeTab === 'website' && (
+              <>
+                {/* Page Title */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+                    <h1 className="text-3xl font-bold text-white">Website Content Management</h1>
+                  </div>
+                  <p className="text-base text-gray-400 ml-6">Edit website content without touching code</p>
+                </div>
+
+                {/* Page Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  
+                  {/* Homepage Card */}
+                  <a 
+                    href="/admin/website/homepage"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#10b981] to-emerald-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                        <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-[#10b981] transition-colors">Homepage</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Edit hero section, stats, testimonials, FAQs and more</p>
+                      
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">7 Sections</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </a>
+
+                  {/* Deals Card - Coming Soon */}
+                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                        <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2">Deals</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Manage poker site deals and promotions</p>
+                      
+                      {/* Coming Soon Badge */}
+                      <div className="pt-4 border-t border-white/[0.06]">
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
+                          Coming Soon
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* News Card - Coming Soon */}
+                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                        <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2">News</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Create and manage blog posts and news articles</p>
+                      
+                      {/* Coming Soon Badge */}
+                      <div className="pt-4 border-t border-white/[0.06]">
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
+                          Coming Soon
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Team Card - Coming Soon */}
+                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                        <Users className="w-7 h-7 text-white" strokeWidth={2} />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2">Team</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Manage team member profiles and information</p>
+                      
+                      {/* Coming Soon Badge */}
+                      <div className="pt-4 border-t border-white/[0.06]">
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
+                          Coming Soon
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contact Card - Coming Soon */}
+                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                        <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2">Contact</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Edit contact page content and form settings</p>
+                      
+                      {/* Coming Soon Badge */}
+                      <div className="pt-4 border-t border-white/[0.06]">
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
+                          Coming Soon
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </>
+            )}
+
             {/* Tasks Tab */}
             {activeTab === 'tasks' && (
               <>

@@ -11,6 +11,7 @@ import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
+import { getTestimonials } from "@/lib/supabase/homepage";
 
 // Blog Posts Data
 const blogPosts = [
@@ -158,78 +159,21 @@ const faqData = [
   }
 ];
 
-// Testimonials data
-const testimonials = [
-  {
-    id: '1',
-    name: "Ryan O'Donnell",
-    meta: 'Moca choca89',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/05/22160615/53224561601_8aa1359351_o-scaled-e1747930080750-1024x1020.jpg',
-    quote: 'Universal Poker, an affiliate that\'s truly exceptional, a must-have for every poker player seeking exceptional rewards, benefits, and support.',
-  },
-  {
-    id: '2',
-    name: 'Smart Spin',
-    meta: null,
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144142/ss-2.png',
-    quote: 'Seeing how Universal Poker use their experience to offer excellent opportunities to poker communities such as Smart Spin is inspiring. What makes them stand out is that they perfectly understand players\' needs and their expectations.',
-  },
-  {
-    id: '3',
-    name: 'David "Monkeybausss" Laka',
-    meta: 'Owner of Nemesis Backing',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174836/9hg8_hKo_400x400-test.webp',
-    quote: 'Universal is a long term focused affiliate who values their players and understands the industry from their perspective. As a player and as a staking group owner I haven\'t gotten a better experience elsewhere in the affiliate industry.',
-  },
-  {
-    id: '4',
-    name: 'Douglas Ferreira',
-    meta: 'Dowgh-Santos',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174834/dowgh-santos-test.webp',
-    quote: 'Universal é a melhor empresa de afiliados pois tem uma política de transparência muito grande, sempre cumprindo os prazos e dando um suporte VP aos afiliados através do grupo do Discord.',
-  },
-  {
-    id: '5',
-    name: 'David Yan',
-    meta: 'MissOracle',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174833/david-yan-win-test.webp',
-    quote: 'Finding poker deals can be annoying because the affiliate industry aren\'t always the best to deal with. In my experience, Universal offer the best deals. I like that they act honestly and reliably. They understand the value of their players and treat them accordingly.',
-  },
-  {
-    id: '6',
-    name: 'Jama-Dharma',
-    meta: 'HS LHE Crusher',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174624/picturemessage_xfrlthne.dfz_webp.webp',
-    quote: 'Universal Poker Affiliates are the nicest people in the affiliate business!',
-  },
-  {
-    id: '7',
-    name: 'Joshua Hoesel',
-    meta: 'Slayerv1fanpoker',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174838/unnamed-e1697105067784-test-1024x1019.webp',
-    quote: 'Universal Affiliates is the best affiliate company I\'ve ever had a deal through. They\'re super timely with payments and quick to respond to any question or issue, quickly getting me a solution within their own house or through their top tier connections with the poker site itself. I\'m grateful to work with Universal!',
-  },
-  {
-    id: '8',
-    name: 'Péter Traply',
-    meta: 'Belabasci',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174831/p2j-test.webp',
-    quote: 'I really like working with Universal. They are always helpful, fast with their responses and even helped me with some unique requests. They have very good connections in the poker business which can be really helpful. Would recommend them for any serious player/stable.',
-  },
-  {
-    id: '9',
-    name: 'Raise Your Edge',
-    meta: null,
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/17174840/rye-test.webp',
-    quote: 'Universal includes one of the most knowledgeable guys around when it comes to affiliation AND poker in general. Their advice and knowledge are a constant source of inspiration for Raise Your Edge members and the poker community as a whole.',
-  },
-];
-
 export default function Home() {
   const { isLoggedIn } = useAuth();
   const authModal = useAuthModal();
   const [cardsVisible, setCardsVisible] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  
+  // Testimonials from Supabase
+  const [testimonials, setTestimonials] = useState<Array<{
+    id: string;
+    name: string;
+    meta: string | null;
+    image: string;
+    quote: string;
+  }>>([]);
+  const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
 
   // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
   const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -245,6 +189,34 @@ export default function Home() {
 
   // Ref para o carousel Flickity
   const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Load testimonials from Supabase
+  useEffect(() => {
+    async function loadTestimonials() {
+      try {
+        setIsLoadingTestimonials(true);
+        const data = await getTestimonials();
+        
+        // Map Supabase data to component format
+        const mappedTestimonials = data.map(t => ({
+          id: t.id || '',
+          name: t.author_name,
+          meta: t.author_role || null,
+          image: t.author_photo_url,
+          quote: t.testimonial_text
+        }));
+        
+        setTestimonials(mappedTestimonials);
+        console.log('✅ Loaded', mappedTestimonials.length, 'testimonials from Supabase');
+      } catch (error) {
+        console.error('❌ Error loading testimonials:', error);
+      } finally {
+        setIsLoadingTestimonials(false);
+      }
+    }
+    
+    loadTestimonials();
+  }, []);
 
   // Inicialização do Flickity Vanilla
   useEffect(() => {
@@ -293,7 +265,7 @@ export default function Home() {
         }
       }
     };
-  }, []);
+  }, [testimonials]); // Reinitialize when testimonials load
 
   // Intersection Observer for How It Works cards animation
   useEffect(() => {
@@ -1066,36 +1038,49 @@ export default function Home() {
           </p>
         </div>
 
-        <div 
-          ref={carouselRef}
-          className="partners-slideshow"
-          data-flickity='{ "wrapAround": true, "cellAlign": "center", "autoPlay": 7000, "pauseAutoPlayOnHover": true }'
-        >
-          {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="slideshow-slide">
-              <div className="testimonial-item">
-                <div className="testimonial-image">
-                  <Image
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    width={300}
-                    height={300}
-                    className="rounded-full"
-                  />
-                </div>
-                <div className="testimonial-content">
-                  <h3 className="testimonial-name">{testimonial.name}</h3>
-                  {testimonial.meta && (
-                    <p className="testimonial-meta">{testimonial.meta}</p>
-                  )}
-                  <p className="testimonial-quote">
-                    &quot;{testimonial.quote}&quot;
-                  </p>
+        {isLoadingTestimonials ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-400 text-sm">Loading testimonials...</p>
+            </div>
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-400">No testimonials available at the moment.</p>
+          </div>
+        ) : (
+          <div 
+            ref={carouselRef}
+            className="partners-slideshow"
+            data-flickity='{ "wrapAround": true, "cellAlign": "center", "autoPlay": 7000, "pauseAutoPlayOnHover": true }'
+          >
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.id} className="slideshow-slide">
+                <div className="testimonial-item">
+                  <div className="testimonial-image">
+                    <Image
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      width={300}
+                      height={300}
+                      className="rounded-full"
+                    />
+                  </div>
+                  <div className="testimonial-content">
+                    <h3 className="testimonial-name">{testimonial.name}</h3>
+                    {testimonial.meta && (
+                      <p className="testimonial-meta">{testimonial.meta}</p>
+                    )}
+                    <p className="testimonial-quote">
+                      &quot;{testimonial.quote}&quot;
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* FAQ SECTION */}

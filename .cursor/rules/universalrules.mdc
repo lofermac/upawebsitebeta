@@ -135,3 +135,9 @@ STACK: Next.js 15 (App Router) + React 19 + TypeScript + Tailwind + Supabase
     - Commits frequentes e atômicos
     - Mensagens claras: "feat:", "fix:", "refactor:", "docs:"
     - Testar localmente antes de push
+
+20. REGRAS ESPECÍFICAS DE COMPORTAMENTO
+- NUNCA crie arquivos de documentação (.md, .txt, _INSTRUCTIONS, etc)
+- NUNCA crie arquivos explicativos
+- Faça APENAS alterações diretas nos arquivos de código solicitados
+- Se precisar explicar algo, explique no chat, não em arquivos
