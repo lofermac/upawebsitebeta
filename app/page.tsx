@@ -67,73 +67,6 @@ const blogPosts = [
   },
 ];
 
-// Animated Counter Component with easing
-function AnimatedCounter({ end, duration = 2000, prefix = '', suffix = '', decimals = 0 }: { 
-  end: number; 
-  duration?: number; 
-  prefix?: string; 
-  suffix?: string; 
-  decimals?: number;
-}) {
-  const [count, setCount] = useState(0);
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (hasAnimated) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setHasAnimated(true);
-          const startTime = Date.now();
-          const startValue = 0;
-
-          const animate = () => {
-            const currentTime = Date.now();
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-
-            // Easing function - ease out cubic for smooth deceleration
-            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-            const currentCount = startValue + (end - startValue) * easeOutCubic;
-
-            setCount(currentCount);
-
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            } else {
-              setCount(end);
-            }
-          };
-
-          requestAnimationFrame(animate);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.3 }
-    );
-
-    const element = document.getElementById(`counter-${end}-${suffix}`);
-    if (element) {
-      observer.observe(element);
-    }
-
-    return () => observer.disconnect();
-  }, [end, duration, hasAnimated, suffix]);
-
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
-  };
-
-  return (
-    <span id={`counter-${end}-${suffix}`}>
-      {prefix}{formatNumber(count)}{suffix}
-    </span>
-  );
-}
 
 // Hook para animar contador com easing dinâmico baseado no tamanho do número
 function useCountUp(end: number, duration: number = 3500, shouldStart: boolean = false) {
@@ -193,19 +126,20 @@ function useInView(options = {}) {
   const [isInView, setIsInView] = useState(false);
   
   useEffect(() => {
+    const currentRef = ref.current;
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !isInView) {
         setIsInView(true);
       }
     }, { threshold: 0.3, ...options });
     
-    if (ref.current) {
-      observer.observe(ref.current);
+    if (currentRef) {
+      observer.observe(currentRef);
     }
     
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [isInView, options]);

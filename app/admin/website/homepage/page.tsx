@@ -34,22 +34,6 @@ interface StatItem {
   isActive: boolean;
 }
 
-interface CashbackSection {
-  sectionTitle: string;
-  amount: number;
-  displayText: string;
-  description: string;
-}
-
-interface HowItWorksStep {
-  id: string;
-  stepNumber: number;
-  title: string;
-  description: string;
-  order: number;
-  isActive: boolean;
-}
-
 interface Testimonial {
   id: string;
   name: string;
@@ -98,12 +82,6 @@ export default function HomepageEditor() {
   const [dragOverItemId, setDragOverItemId] = useState<string | null>(null);
   
   // Section Data States
-  const [heroData, setHeroData] = useState<HeroSection>({
-    title: 'Exclusive Deals On The World\'s Best Poker Sites',
-    subtitle: 'More Rakeback. More Support. Maximum Value.',
-    buttonText: 'Explore Deals',
-    buttonLink: '/deals'
-  });
   const [isLoadingHero, setIsLoadingHero] = useState(true);
   
   // Internal state for admin panel (different field names)
@@ -137,7 +115,12 @@ export default function HomepageEditor() {
     section_title: '',
     section_subtitle: ''
   });
-  const [howItWorksSteps, setHowItWorksSteps] = useState<any[]>([]);
+  const [howItWorksSteps, setHowItWorksSteps] = useState<Array<{
+    id: string;
+    title: string;
+    description: string;
+    display_order: number;
+  }>>([]);
   const [isLoadingHowItWorks, setIsLoadingHowItWorks] = useState(true);
   
   const [testimonialsData, setTestimonialsData] = useState<Testimonial[]>([]);
@@ -310,12 +293,6 @@ export default function HomepageEditor() {
         console.log('📥 Loading hero section from Supabase...');
         const heroFromDb = await getHomeHero();
         if (heroFromDb) {
-          setHeroData({
-            title: heroFromDb.title,
-            subtitle: heroFromDb.subtitle || '',
-            buttonText: heroFromDb.button_text,
-            buttonLink: heroFromDb.button_link || '/deals'
-          });
           setHeroFormData({
             id: heroFromDb.id || '',
             title: heroFromDb.title,

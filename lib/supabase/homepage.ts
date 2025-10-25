@@ -313,12 +313,12 @@ export async function updateHomeCashback(data: Partial<HomeCashback>): Promise<H
 // Deprecated functions - kept for backwards compatibility
 export async function getCashbackSection(): Promise<CashbackSection | null> {
   console.warn('⚠️ getCashbackSection is deprecated, use getHomeCashback instead');
-  return getHomeCashback() as Promise<any>;
+  return getHomeCashback() as Promise<CashbackSection | null>;
 }
 
 export async function updateCashbackSection(cashbackData: CashbackSection): Promise<boolean> {
   console.warn('⚠️ updateCashbackSection is deprecated, use updateHomeCashback instead');
-  const result = await updateHomeCashback(cashbackData as any);
+  const result = await updateHomeCashback(cashbackData as Partial<HomeCashback>);
   return result !== null;
 }
 
