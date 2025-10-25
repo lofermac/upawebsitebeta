@@ -15,7 +15,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial } from '@/lib/supabase/homepage';
+import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep } from '@/lib/supabase/homepage';
 
 // Type Definitions
 interface HeroSection {
@@ -104,25 +104,41 @@ export default function HomepageEditor() {
     buttonText: 'Explore Deals',
     buttonLink: '/deals'
   });
+  const [isLoadingHero, setIsLoadingHero] = useState(true);
+  
+  // Internal state for admin panel (different field names)
+  const [heroFormData, setHeroFormData] = useState({
+    id: '',
+    title: '',
+    title_line_2: '',
+    subtitle: '',
+    button_text: '',
+    button_link: '/deals'
+  });
   
   const [statsData, setStatsData] = useState<StatItem[]>([
     { id: '1', label: 'Number Of Players With Us', value: '10,000+', icon: 'users', order: 1, isActive: true },
     { id: '2', label: 'How Long We\'ve Been Here', value: '13 Years', icon: 'calendar', order: 2, isActive: true },
     { id: '3', label: 'Team Experience in Poker', value: '100+ Years', icon: 'award', order: 3, isActive: true }
   ]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   
-  const [cashbackData, setCashbackData] = useState<CashbackSection>({
-    sectionTitle: 'Rewards & Cashback Paid in 2025',
-    amount: 2450000,
-    displayText: '$2,450,000+',
-    description: 'Join thousands of players maximizing their poker profits with exclusive rakeback deals.'
+  const [cashbackData, setCashbackData] = useState({
+    id: '',
+    section_title: '',
+    subtitle: '',
+    description: '',
+    amount: 0
   });
+  const [isLoadingCashback, setIsLoadingCashback] = useState(true);
   
-  const [howItWorksData, setHowItWorksData] = useState<HowItWorksStep[]>([
-    { id: '1', stepNumber: 1, title: 'Choose Your Deal', description: 'We partner with the top poker sites. Pick one you already play on or try a new one with a better offer.', order: 1, isActive: true },
-    { id: '2', stepNumber: 2, title: 'New & Existing Players Welcome', description: 'Create a new account through us and you\'re automatically accepted. Already have an account? Apply to join our deal.', order: 2, isActive: true },
-    { id: '3', stepNumber: 3, title: 'Same Play. More Rewards', description: 'Nothing changes about how you play. You\'ll still receive the poker sites rewards, plus extra cashback from us on top.', order: 3, isActive: true }
-  ]);
+  const [howItWorksData, setHowItWorksData] = useState({
+    id: '',
+    section_title: '',
+    section_subtitle: ''
+  });
+  const [howItWorksSteps, setHowItWorksSteps] = useState<any[]>([]);
+  const [isLoadingHowItWorks, setIsLoadingHowItWorks] = useState(true);
   
   const [testimonialsData, setTestimonialsData] = useState<Testimonial[]>([]);
   
@@ -287,7 +303,89 @@ export default function HomepageEditor() {
   useEffect(() => {
     const loadData = async () => {
       setIsLoadingData(true);
+      setIsLoadingHero(true);
+      
       try {
+        // Load Hero Section
+        console.log('📥 Loading hero section from Supabase...');
+        const heroFromDb = await getHomeHero();
+        if (heroFromDb) {
+          setHeroData({
+            title: heroFromDb.title,
+            subtitle: heroFromDb.subtitle || '',
+            buttonText: heroFromDb.button_text,
+            buttonLink: heroFromDb.button_link || '/deals'
+          });
+          setHeroFormData({
+            id: heroFromDb.id || '',
+            title: heroFromDb.title,
+            title_line_2: heroFromDb.title_line_2 || '',
+            subtitle: heroFromDb.subtitle || '',
+            button_text: heroFromDb.button_text,
+            button_link: heroFromDb.button_link || '/deals'
+          });
+          console.log('✅ Loaded hero section from database');
+        }
+        
+        // Load Statistics
+        console.log('📥 Loading statistics from Supabase...');
+        setIsLoadingStats(true);
+        const stats = await getHomeStats();
+        if (stats && stats.length > 0) {
+          const mappedStats = stats.map(s => ({
+            id: s.id || '',
+            label: s.label,
+            value: s.value,
+            icon: s.icon || '',
+            order: s.display_order,
+            isActive: s.is_active ?? true
+          }));
+          setStatsData(mappedStats);
+          console.log('✅ Loaded', mappedStats.length, 'statistics from database');
+        }
+        setIsLoadingStats(false);
+        
+        // Load Cashback
+        console.log('📥 Loading cashback from Supabase...');
+        setIsLoadingCashback(true);
+        const cashback = await getHomeCashback();
+        if (cashback) {
+          setCashbackData({
+            id: cashback.id,
+            section_title: cashback.section_title,
+            subtitle: cashback.subtitle || '',
+            description: cashback.description || '',
+            amount: cashback.amount
+          });
+          console.log('✅ Loaded cashback from database');
+        }
+        setIsLoadingCashback(false);
+        
+        // Load How It Works
+        console.log('📥 Loading how it works from Supabase...');
+        setIsLoadingHowItWorks(true);
+        const howItWorks = await getHomeHowItWorks();
+        const steps = await getHomeHowItWorksSteps();
+        
+        if (howItWorks) {
+          setHowItWorksData({
+            id: howItWorks.id,
+            section_title: howItWorks.section_title,
+            section_subtitle: howItWorks.section_subtitle || ''
+          });
+        }
+        
+        if (steps && steps.length > 0) {
+          setHowItWorksSteps(steps.map(step => ({
+            id: step.id,
+            title: step.title,
+            description: step.description || '',
+            display_order: step.display_order
+          })));
+          console.log('✅ Loaded', steps.length, 'steps from database');
+        }
+        setIsLoadingHowItWorks(false);
+        
         // Load testimonials
         const testimonials = await getTestimonials();
         
@@ -308,7 +406,7 @@ export default function HomepageEditor() {
           console.log('✅ Loaded', mappedTestimonials.length, 'testimonials from database');
         }
         
-        // TODO: Load other sections (Hero, Stats, Cashback, etc.) when needed
+        // TODO: Load other sections (Cashback, etc.) when needed
         
       } catch (error) {
         console.error('Error loading homepage data:', error);
@@ -316,6 +414,7 @@ export default function HomepageEditor() {
         setTimeout(() => setSaveError(null), 5000);
       } finally {
         setIsLoadingData(false);
+        setIsLoadingHero(false);
       }
     };
 
@@ -324,32 +423,168 @@ export default function HomepageEditor() {
 
   // Save Functions
   const saveHeroSection = async () => {
+    console.log('💾 [1] Saving Hero Section...');
+    
     setIsSaving(true);
     setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, hero: false }));
+    
     try {
-      // TODO: Implement Supabase save
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      const success = await updateHomeHero({
+        id: heroFormData.id,
+        title: heroFormData.title,
+        title_line_2: heroFormData.title_line_2,
+        subtitle: heroFormData.subtitle,
+        button_text: heroFormData.button_text,
+        button_link: heroFormData.button_link
+      });
+      
+      if (!success) {
+        throw new Error('Failed to save hero section');
+      }
+      
+      console.log('✅ [2] Hero Section saved!');
       setSaveSuccess('Hero section saved successfully!');
-      setTimeout(() => setSaveSuccess(null), 3000);
+      setSaveSuccessState(prev => ({ ...prev, hero: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, hero: false }));
+      }, 2000);
+      
     } catch (error) {
+      console.error('❌ [3] Error saving hero section:', error);
       setSaveError('Failed to save hero section. Please try again.');
-      console.error(error);
+      setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
     }
   };
 
   const saveStatsSection = async () => {
+    console.log('💾 [1] Saving Statistics...');
+    
     setIsSaving(true);
     setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, stats: false }));
+    
     try {
-      // TODO: Implement Supabase save
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Map component state to Supabase format
+      const dbStats = statsData.map(stat => ({
+        id: stat.id,
+        label: stat.label,
+        value: stat.value,
+        icon: stat.icon,
+        display_order: stat.order,
+        is_active: stat.isActive
+      }));
+      
+      const success = await updateHomeStats(dbStats);
+      
+      if (!success) {
+        throw new Error('Failed to save statistics');
+      }
+      
+      console.log('✅ [2] Statistics saved!');
       setSaveSuccess('Statistics saved successfully!');
-      setTimeout(() => setSaveSuccess(null), 3000);
+      setSaveSuccessState(prev => ({ ...prev, stats: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, stats: false }));
+      }, 2000);
+      
     } catch (error) {
+      console.error('❌ [3] Error saving statistics:', error);
       setSaveError('Failed to save statistics. Please try again.');
-      console.error(error);
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveCashbackSection = async () => {
+    console.log('💾 [1] Salvando Cashback...');
+    
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, cashback: false }));
+    
+    try {
+      const result = await updateHomeCashback({
+        id: cashbackData.id,
+        section_title: cashbackData.section_title,
+        subtitle: cashbackData.subtitle,
+        description: cashbackData.description,
+        amount: cashbackData.amount
+      });
+      
+      if (!result) {
+        throw new Error('Failed to save cashback section');
+      }
+      
+      console.log('✅ [2] Cashback salvo!');
+      setSaveSuccess('Cashback section saved successfully!');
+      setSaveSuccessState(prev => ({ ...prev, cashback: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, cashback: false }));
+      }, 2000);
+      
+    } catch (error) {
+      console.error('❌ [3] Erro ao salvar:', error);
+      setSaveError('Failed to save cashback section. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveHowItWorksSection = async () => {
+    console.log('💾 [1] Salvando How It Works...');
+    
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, howItWorks: false }));
+    
+    try {
+      // Atualizar seção principal
+      const sectionResult = await updateHomeHowItWorks({
+        id: howItWorksData.id,
+        section_title: howItWorksData.section_title,
+        section_subtitle: howItWorksData.section_subtitle
+      });
+      
+      if (!sectionResult) {
+        throw new Error('Failed to save how it works section');
+      }
+      
+      // Atualizar cada step
+      for (const step of howItWorksSteps) {
+        const stepResult = await updateHomeHowItWorksStep(step.id, {
+          title: step.title,
+          description: step.description
+        });
+        
+        if (!stepResult) {
+          throw new Error(`Failed to save step ${step.display_order}`);
+        }
+      }
+      
+      console.log('✅ [2] How It Works salvo!');
+      setSaveSuccess('How It Works section saved successfully!');
+      setSaveSuccessState(prev => ({ ...prev, howItWorks: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, howItWorks: false }));
+      }, 2000);
+      
+    } catch (error) {
+      console.error('❌ [3] Erro ao salvar:', error);
+      setSaveError('Failed to save How It Works section. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
     }
@@ -540,86 +775,145 @@ export default function HomepageEditor() {
               
               {openSection === 'hero' && (
                 <div className="p-6 pt-0 border-t border-white/[0.06]">
-                  <div className="space-y-5 mt-6">
-                    
-                    {/* Title Field */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Main Title <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={heroData.title}
-                        onChange={(e) => setHeroData({ ...heroData, title: e.target.value })}
-                        maxLength={100}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                        placeholder="Enter hero title..."
-                      />
-                      <p className="text-xs text-gray-500 mt-1">{heroData.title.length}/100 characters</p>
+                  {isLoadingHero ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading hero section...</p>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="space-y-5 mt-6">
+                      
+                      {/* Title Field - Line 1 */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Main Title - Line 1 <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={heroFormData.title}
+                          onChange={(e) => setHeroFormData({ ...heroFormData, title: e.target.value })}
+                          maxLength={100}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="Exclusive Deals On The"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{heroFormData.title.length}/100 characters</p>
+                      </div>
 
-                    {/* Subtitle Field */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Subtitle <span className="text-red-400">*</span>
-                      </label>
-                      <textarea
-                        value={heroData.subtitle}
-                        onChange={(e) => setHeroData({ ...heroData, subtitle: e.target.value })}
-                        maxLength={200}
-                        rows={3}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
-                        placeholder="Enter subtitle..."
-                      />
-                      <p className="text-xs text-gray-500 mt-1">{heroData.subtitle.length}/200 characters</p>
+                      {/* Title Field - Line 2 */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Main Title - Line 2
+                        </label>
+                        <input
+                          type="text"
+                          value={heroFormData.title_line_2}
+                          onChange={(e) => setHeroFormData({ ...heroFormData, title_line_2: e.target.value })}
+                          maxLength={100}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="World's Best Poker Sites"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{heroFormData.title_line_2.length}/100 characters</p>
+                        <p className="text-xs text-gray-400 mt-1">💡 Leave empty to show title in a single line</p>
+                      </div>
+
+                      {/* Subtitle Field */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Subtitle <span className="text-red-400">*</span>
+                        </label>
+                        <textarea
+                          value={heroFormData.subtitle}
+                          onChange={(e) => setHeroFormData({ ...heroFormData, subtitle: e.target.value })}
+                          maxLength={200}
+                          rows={3}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
+                          placeholder="Enter subtitle..."
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{heroFormData.subtitle.length}/200 characters</p>
+                      </div>
+
+                      {/* Button Text */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Button Text <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={heroFormData.button_text}
+                          onChange={(e) => setHeroFormData({ ...heroFormData, button_text: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="e.g. Explore Deals"
+                        />
+                      </div>
+
+                      {/* Button Link - Dropdown */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Button Link <span className="text-red-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <select
+                            value={heroFormData.button_link}
+                            onChange={(e) => setHeroFormData({ ...heroFormData, button_link: e.target.value })}
+                            className="w-full px-4 py-3 pr-10 bg-white/[0.03] border border-white/[0.08] rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/50 focus:border-[#10b981] transition-all"
+                          >
+                            <option value="/" className="bg-[#0f1419] text-white">Home</option>
+                            <option value="/deals" className="bg-[#0f1419] text-white">Deals</option>
+                            <option value="/news" className="bg-[#0f1419] text-white">News</option>
+                            <option value="/team" className="bg-[#0f1419] text-white">Team</option>
+                            <option value="/contact" className="bg-[#0f1419] text-white">Contact</option>
+                          </select>
+                          
+                          {/* Ícone de seta customizado */}
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/60">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Select the page the button should link to</p>
+                      </div>
+
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveHeroSection}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.hero ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
+                      </div>
+
                     </div>
-
-                    {/* Button Text */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Button Text <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={heroData.buttonText}
-                        onChange={(e) => setHeroData({ ...heroData, buttonText: e.target.value })}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                        placeholder="e.g. Explore Deals"
-                      />
-                    </div>
-
-                    {/* Button Link - Dropdown */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Button Link <span className="text-red-400">*</span>
-                      </label>
-                      <select
-                        value={heroData.buttonLink}
-                        onChange={(e) => setHeroData({ ...heroData, buttonLink: e.target.value })}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#10b981] transition-colors"
-                      >
-                        <option value="/">Home</option>
-                        <option value="/deals">Deals</option>
-                        <option value="/news">News</option>
-                        <option value="/team">Team</option>
-                        <option value="/contact">Contact</option>
-                      </select>
-                      <p className="text-xs text-gray-500 mt-1">Select the page the button should link to</p>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="flex justify-end pt-4 border-t border-white/[0.06]">
-                      <button
-                        onClick={saveHeroSection}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-                      >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                    </div>
-
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -648,61 +942,94 @@ export default function HomepageEditor() {
               
               {openSection === 'stats' && (
                 <div className="p-6 pt-0 border-t border-white/[0.06]">
-                  <div className="space-y-6 mt-6">
-                    
-                    {statsData.map((stat, index) => (
-                      <div key={stat.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="text-sm font-semibold text-white">Stat {index + 1}</h4>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Label</label>
-                            <input
-                              type="text"
-                              value={stat.label}
-                              onChange={(e) => {
-                                const newStats = [...statsData];
-                                newStats[index].label = e.target.value;
-                                setStatsData(newStats);
-                              }}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                              placeholder="e.g. Number Of Players With Us"
-                            />
+                  {isLoadingStats ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading statistics...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 mt-6">
+                      
+                      {statsData.map((stat, index) => (
+                        <div key={stat.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-5">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-semibold text-white">Stat {index + 1}</h4>
                           </div>
                           
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Value</label>
-                            <input
-                              type="text"
-                              value={stat.value}
-                              onChange={(e) => {
-                                const newStats = [...statsData];
-                                newStats[index].value = e.target.value;
-                                setStatsData(newStats);
-                              }}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                              placeholder="e.g. 10,000+"
-                            />
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-xs font-medium text-gray-400 mb-1">Label</label>
+                              <input
+                                type="text"
+                                value={stat.label}
+                                onChange={(e) => {
+                                  const newStats = [...statsData];
+                                  newStats[index].label = e.target.value;
+                                  setStatsData(newStats);
+                                }}
+                                className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                                placeholder="e.g. Number Of Players With Us"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-xs font-medium text-gray-400 mb-1">Value</label>
+                              <input
+                                type="text"
+                                value={stat.value}
+                                onChange={(e) => {
+                                  const newStats = [...statsData];
+                                  newStats[index].value = e.target.value;
+                                  setStatsData(newStats);
+                                }}
+                                className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                                placeholder="e.g. 10,000+"
+                              />
+                            </div>
                           </div>
                         </div>
+                      ))}
+
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveStatsSection}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.stats ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
                       </div>
-                    ))}
 
-                    {/* Save Button */}
-                    <div className="flex justify-end pt-4 border-t border-white/[0.06]">
-                      <button
-                        onClick={saveStatsSection}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-                      >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
                     </div>
-
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -731,79 +1058,119 @@ export default function HomepageEditor() {
               
               {openSection === 'cashback' && (
                 <div className="p-6 pt-0 border-t border-white/[0.06]">
-                  <div className="space-y-5 mt-6">
-                    
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Section Title <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={cashbackData.sectionTitle}
-                        onChange={(e) => setCashbackData({ ...cashbackData, sectionTitle: e.target.value })}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                        placeholder="e.g. Rewards & Cashback Paid in 2025"
-                      />
+                  {isLoadingCashback ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading cashback...</p>
+                      </div>
                     </div>
+                  ) : (
+                    <div className="space-y-5 mt-6">
+                      
+                      {/* Section Title */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Section Title <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={cashbackData.section_title}
+                          onChange={(e) => setCashbackData({ ...cashbackData, section_title: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="Rewards & Cashback Paid in 2025"
+                          maxLength={100}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{cashbackData.section_title.length}/100 characters</p>
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Amount (Number) <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={cashbackData.amount}
-                        onChange={(e) => setCashbackData({ ...cashbackData, amount: Number(e.target.value) })}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                        placeholder="e.g. 2450000"
-                      />
+                      {/* Amount */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Amount <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={cashbackData.amount}
+                          onChange={(e) => setCashbackData({ ...cashbackData, amount: parseInt(e.target.value) || 0 })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="2450000"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          💡 Enter number only (e.g., 2450000). Will be formatted as $2,450,000+
+                        </p>
+                      </div>
+
+                      {/* Subtitle */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Subtitle
+                        </label>
+                        <input
+                          type="text"
+                          value={cashbackData.subtitle}
+                          onChange={(e) => setCashbackData({ ...cashbackData, subtitle: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="And counting..."
+                          maxLength={50}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{cashbackData.subtitle.length}/50 characters</p>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Description
+                        </label>
+                        <textarea
+                          value={cashbackData.description}
+                          onChange={(e) => setCashbackData({ ...cashbackData, description: e.target.value })}
+                          rows={3}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
+                          placeholder="Join thousands of players maximizing their poker profits..."
+                          maxLength={200}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{cashbackData.description.length}/200 characters</p>
+                      </div>
+
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveCashbackSection}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.cashback ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
+                      </div>
+
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Display Text <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={cashbackData.displayText}
-                        onChange={(e) => setCashbackData({ ...cashbackData, displayText: e.target.value })}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                        placeholder="e.g. $2,450,000+"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">How the amount should appear on the site</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-300 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        value={cashbackData.description}
-                        onChange={(e) => setCashbackData({ ...cashbackData, description: e.target.value })}
-                        rows={3}
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
-                        placeholder="Add description..."
-                      />
-                    </div>
-
-                    <div className="flex justify-end pt-4 border-t border-white/[0.06]">
-                      <button
-                        onClick={async () => {
-                          setIsSaving(true);
-                          await new Promise(resolve => setTimeout(resolve, 1000));
-                          setSaveSuccess('Cashback section saved!');
-                          setTimeout(() => setSaveSuccess(null), 3000);
-                          setIsSaving(false);
-                        }}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-                      >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                    </div>
-
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -832,69 +1199,140 @@ export default function HomepageEditor() {
               
               {openSection === 'howitworks' && (
                 <div className="p-6 pt-0 border-t border-white/[0.06]">
-                  <div className="space-y-6 mt-6">
-                    
-                    {howItWorksData.map((step, index) => (
-                      <div key={step.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-5">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                            {step.stepNumber}
-                          </div>
-                          <h4 className="text-sm font-semibold text-white">Step {step.stepNumber}</h4>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Title</label>
-                            <input
-                              type="text"
-                              value={step.title}
-                              onChange={(e) => {
-                                const newSteps = [...howItWorksData];
-                                newSteps[index].title = e.target.value;
-                                setHowItWorksData(newSteps);
-                              }}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                              placeholder="e.g. Choose Your Deal"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Description</label>
-                            <textarea
-                              value={step.description}
-                              onChange={(e) => {
-                                const newSteps = [...howItWorksData];
-                                newSteps[index].description = e.target.value;
-                                setHowItWorksData(newSteps);
-                              }}
-                              rows={3}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
-                              placeholder="Enter step description..."
-                            />
-                          </div>
-                        </div>
+                  {isLoadingHowItWorks ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading how it works...</p>
                       </div>
-                    ))}
-
-                    <div className="flex justify-end pt-4 border-t border-white/[0.06]">
-                      <button
-                        onClick={async () => {
-                          setIsSaving(true);
-                          await new Promise(resolve => setTimeout(resolve, 1000));
-                          setSaveSuccess('How It Works section saved!');
-                          setTimeout(() => setSaveSuccess(null), 3000);
-                          setIsSaving(false);
-                        }}
-                        disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
-                      >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
-                      </button>
                     </div>
+                  ) : (
+                    <div className="space-y-6 mt-6">
+                      
+                      {/* Section Title */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Section Title <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={howItWorksData.section_title}
+                          onChange={(e) => setHowItWorksData({ ...howItWorksData, section_title: e.target.value })}
+                          placeholder="How It Works - 3 Simple Steps"
+                          maxLength={100}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{howItWorksData.section_title.length}/100 characters</p>
+                      </div>
+                      
+                      {/* Section Subtitle */}
+                      <div className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Section Subtitle
+                        </label>
+                        <textarea
+                          value={howItWorksData.section_subtitle}
+                          onChange={(e) => setHowItWorksData({ ...howItWorksData, section_subtitle: e.target.value })}
+                          placeholder="No complicated rules. No hidden hoops. Just connect, play, and get rewarded."
+                          maxLength={200}
+                          rows={2}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">{howItWorksData.section_subtitle.length}/200 characters</p>
+                      </div>
+                      
+                      {/* Steps */}
+                      <div className="space-y-4">
+                        {howItWorksSteps.map((step, index) => (
+                          <div key={step.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-8 h-8 rounded-full bg-[#10b981] text-white flex items-center justify-center font-bold text-sm">
+                                {step.display_order}
+                              </div>
+                              <h4 className="text-sm font-medium text-white/80">Step {step.display_order}</h4>
+                            </div>
+                            
+                            {/* Step Title */}
+                            <div className="mb-3">
+                              <label className="block text-xs font-medium text-white/60 mb-2">
+                                Title <span className="text-red-400">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={step.title}
+                                onChange={(e) => {
+                                  const newSteps = [...howItWorksSteps];
+                                  newSteps[index].title = e.target.value;
+                                  setHowItWorksSteps(newSteps);
+                                }}
+                                placeholder="Step title"
+                                maxLength={50}
+                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40 focus:outline-none focus:border-[#10b981] transition-colors"
+                              />
+                              <p className="text-xs text-white/40 mt-1">{step.title.length}/50 characters</p>
+                            </div>
+                            
+                            {/* Step Description */}
+                            <div>
+                              <label className="block text-xs font-medium text-white/60 mb-2">
+                                Description
+                              </label>
+                              <textarea
+                                value={step.description}
+                                onChange={(e) => {
+                                  const newSteps = [...howItWorksSteps];
+                                  newSteps[index].description = e.target.value;
+                                  setHowItWorksSteps(newSteps);
+                                }}
+                                placeholder="Step description"
+                                maxLength={300}
+                                rows={3}
+                                className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40 resize-none focus:outline-none focus:border-[#10b981] transition-colors"
+                              />
+                              <p className="text-xs text-white/40 mt-1">{step.description.length}/300 characters</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveHowItWorksSection}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.howItWorks ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
+                      </div>
 
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

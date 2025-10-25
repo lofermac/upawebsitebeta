@@ -14,10 +14,10 @@ import { supabase } from './client';
 export interface HeroSection {
   id?: string;
   title: string;
+  title_line_2?: string | null;
   subtitle: string;
   button_text: string;
   button_link: string;
-  is_active?: boolean;
   updated_at?: string;
 }
 
@@ -31,6 +31,37 @@ export interface StatItem {
   updated_at?: string;
 }
 
+export interface HomeCashback {
+  id: string;
+  section_title: string;
+  subtitle: string | null;
+  description: string | null;
+  amount: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HomeHowItWorks {
+  id: string;
+  section_title: string;
+  section_subtitle: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HomeHowItWorksStep {
+  id: string;
+  step_number: number;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Deprecated - use HomeCashback
 export interface CashbackSection {
   id?: string;
   section_title: string;
@@ -78,50 +109,69 @@ export interface FAQ {
 
 export async function getHeroSection(): Promise<HeroSection | null> {
   try {
+    console.log('🔧 [getHeroSection] Fetching hero section...');
+    
     const { data, error } = await supabase
       .from('home_hero')
       .select('*')
-      .eq('is_active', true)
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getHeroSection] Error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [getHeroSection] Success:', data);
+    console.log('✅ [getHeroSection] Title Line 2:', data?.title_line_2);
     return data;
   } catch (error) {
-    console.error('Error fetching hero section:', error);
+    console.error('❌ [getHeroSection] Failed to fetch hero section:', error);
     return null;
   }
 }
 
 export async function updateHeroSection(heroData: HeroSection): Promise<boolean> {
   try {
-    // Get the first active hero record
+    console.log('🔧 [updateHeroSection] Updating hero section...', heroData);
+    
+    // Get the hero record (there's only one)
     const { data: existing } = await supabase
       .from('home_hero')
       .select('id')
-      .eq('is_active', true)
       .single();
 
     if (!existing) {
-      throw new Error('No active hero section found');
+      console.error('❌ [updateHeroSection] No hero section found');
+      throw new Error('No hero section found');
     }
 
     const { error } = await supabase
       .from('home_hero')
       .update({
         title: heroData.title,
+        title_line_2: heroData.title_line_2,
         subtitle: heroData.subtitle,
         button_text: heroData.button_text,
         button_link: heroData.button_link,
       })
       .eq('id', existing.id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [updateHeroSection] Error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [updateHeroSection] Success!');
     return true;
   } catch (error) {
-    console.error('Error updating hero section:', error);
+    console.error('❌ [updateHeroSection] Failed to update hero section:', error);
     return false;
   }
 }
+
+// Alternative function names for convenience
+export const getHomeHero = getHeroSection;
+export const updateHomeHero = updateHeroSection;
 
 // ============================================
 // STATISTICS SECTION
@@ -129,21 +179,30 @@ export async function updateHeroSection(heroData: HeroSection): Promise<boolean>
 
 export async function getStats(): Promise<StatItem[]> {
   try {
+    console.log('🔧 [getStats] Fetching statistics...');
+    
     const { data, error } = await supabase
       .from('home_stats')
       .select('*')
       .order('display_order', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getStats] Error:', error);
+      throw error;
+    }
+    
+    console.log('✅ [getStats] Success:', data);
     return data || [];
   } catch (error) {
-    console.error('Error fetching stats:', error);
+    console.error('❌ [getStats] Failed to fetch stats:', error);
     return [];
   }
 }
 
 export async function updateStats(stats: StatItem[]): Promise<boolean> {
   try {
+    console.log('🔧 [updateStats] Updating statistics...', stats);
+    
     // Update each stat
     const updates = stats.map(async (stat) => {
       if (stat.id) {
@@ -173,67 +232,212 @@ export async function updateStats(stats: StatItem[]): Promise<boolean> {
     });
 
     await Promise.all(updates);
+    console.log('✅ [updateStats] Success!');
     return true;
   } catch (error) {
-    console.error('Error updating stats:', error);
+    console.error('❌ [updateStats] Failed to update stats:', error);
     return false;
   }
 }
+
+// Alternative function names for convenience
+export const getHomeStats = getStats;
+export const updateHomeStats = updateStats;
 
 // ============================================
 // CASHBACK SECTION
 // ============================================
 
-export async function getCashbackSection(): Promise<CashbackSection | null> {
+export async function getHomeCashback(): Promise<HomeCashback | null> {
   try {
+    console.log('🔧 [getHomeCashback] Buscando cashback section...');
+    
     const { data, error } = await supabase
       .from('home_cashback')
       .select('*')
-      .eq('is_active', true)
       .single();
 
-    if (error) throw error;
-    return data;
+    if (error) {
+      console.error('❌ [getHomeCashback] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [getHomeCashback] Sucesso:', data);
+    return data as HomeCashback;
   } catch (error) {
-    console.error('Error fetching cashback section:', error);
+    console.error('❌ [getHomeCashback] Failed to fetch cashback:', error);
     return null;
   }
 }
 
-export async function updateCashbackSection(cashbackData: CashbackSection): Promise<boolean> {
+export async function updateHomeCashback(data: Partial<HomeCashback>): Promise<HomeCashback | null> {
   try {
+    console.log('🔧 [updateHomeCashback] Atualizando cashback...', data);
+    
     const { data: existing } = await supabase
       .from('home_cashback')
       .select('id')
-      .eq('is_active', true)
       .single();
-
+    
     if (!existing) {
-      throw new Error('No active cashback section found');
+      console.error('❌ [updateHomeCashback] Cashback record not found');
+      throw new Error('Cashback record not found');
     }
-
-    const { error } = await supabase
+    
+    const { data: result, error } = await supabase
       .from('home_cashback')
       .update({
-        section_title: cashbackData.section_title,
-        amount: cashbackData.amount,
-        display_text: cashbackData.display_text,
-        description: cashbackData.description,
+        section_title: data.section_title,
+        subtitle: data.subtitle,
+        description: data.description,
+        amount: data.amount,
+        updated_at: new Date().toISOString()
       })
-      .eq('id', existing.id);
-
-    if (error) throw error;
-    return true;
+      .eq('id', existing.id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ [updateHomeCashback] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [updateHomeCashback] Sucesso:', result);
+    return result as HomeCashback;
   } catch (error) {
-    console.error('Error updating cashback section:', error);
-    return false;
+    console.error('❌ [updateHomeCashback] Failed to update cashback:', error);
+    return null;
   }
+}
+
+// Deprecated functions - kept for backwards compatibility
+export async function getCashbackSection(): Promise<CashbackSection | null> {
+  console.warn('⚠️ getCashbackSection is deprecated, use getHomeCashback instead');
+  return getHomeCashback() as Promise<any>;
+}
+
+export async function updateCashbackSection(cashbackData: CashbackSection): Promise<boolean> {
+  console.warn('⚠️ updateCashbackSection is deprecated, use updateHomeCashback instead');
+  const result = await updateHomeCashback(cashbackData as any);
+  return result !== null;
 }
 
 // ============================================
 // HOW IT WORKS SECTION
 // ============================================
 
+export async function getHomeHowItWorks(): Promise<HomeHowItWorks | null> {
+  try {
+    console.log('🔧 [getHomeHowItWorks] Buscando how it works section...');
+    
+    const { data, error } = await supabase
+      .from('home_how_it_works')
+      .select('*')
+      .single();
+    
+    if (error) {
+      console.error('❌ [getHomeHowItWorks] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [getHomeHowItWorks] Sucesso:', data);
+    return data as HomeHowItWorks;
+  } catch (error) {
+    console.error('❌ [getHomeHowItWorks] Failed to fetch:', error);
+    return null;
+  }
+}
+
+export async function getHomeHowItWorksSteps(): Promise<HomeHowItWorksStep[]> {
+  try {
+    console.log('🔧 [getHomeHowItWorksSteps] Buscando steps...');
+    
+    const { data, error } = await supabase
+      .from('home_how_it_works_steps')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+    
+    if (error) {
+      console.error('❌ [getHomeHowItWorksSteps] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [getHomeHowItWorksSteps] Sucesso:', data);
+    return data as HomeHowItWorksStep[];
+  } catch (error) {
+    console.error('❌ [getHomeHowItWorksSteps] Failed to fetch:', error);
+    return [];
+  }
+}
+
+export async function updateHomeHowItWorks(data: Partial<HomeHowItWorks>): Promise<HomeHowItWorks | null> {
+  try {
+    console.log('🔧 [updateHomeHowItWorks] Atualizando section...', data);
+    
+    const { data: existing } = await supabase
+      .from('home_how_it_works')
+      .select('id')
+      .single();
+    
+    if (!existing) {
+      console.error('❌ [updateHomeHowItWorks] How It Works record not found');
+      throw new Error('How It Works record not found');
+    }
+    
+    const { data: result, error } = await supabase
+      .from('home_how_it_works')
+      .update({
+        section_title: data.section_title,
+        section_subtitle: data.section_subtitle,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', existing.id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ [updateHomeHowItWorks] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [updateHomeHowItWorks] Sucesso:', result);
+    return result as HomeHowItWorks;
+  } catch (error) {
+    console.error('❌ [updateHomeHowItWorks] Failed to update:', error);
+    return null;
+  }
+}
+
+export async function updateHomeHowItWorksStep(id: string, data: Partial<HomeHowItWorksStep>): Promise<HomeHowItWorksStep | null> {
+  try {
+    console.log('🔧 [updateHomeHowItWorksStep] Atualizando step:', id, data);
+    
+    const { data: result, error } = await supabase
+      .from('home_how_it_works_steps')
+      .update({
+        title: data.title,
+        description: data.description,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ [updateHomeHowItWorksStep] Erro:', error);
+      throw error;
+    }
+    
+    console.log('✅ [updateHomeHowItWorksStep] Sucesso:', result);
+    return result as HomeHowItWorksStep;
+  } catch (error) {
+    console.error('❌ [updateHomeHowItWorksStep] Failed to update:', error);
+    return null;
+  }
+}
+
+// Deprecated functions - kept for backwards compatibility
 export async function getHowItWorksSteps(): Promise<HowItWorksStep[]> {
   try {
     const { data, error } = await supabase

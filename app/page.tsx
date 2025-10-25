@@ -11,7 +11,7 @@ import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
-import { getTestimonials } from "@/lib/supabase/homepage";
+import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps } from "@/lib/supabase/homepage";
 
 // Blog Posts Data
 const blogPosts = [
@@ -135,6 +135,189 @@ function AnimatedCounter({ end, duration = 2000, prefix = '', suffix = '', decim
   );
 }
 
+// Hook para animar contador com easing dinâmico baseado no tamanho do número
+function useCountUp(end: number, duration: number = 3500, shouldStart: boolean = false) {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() => {
+    if (!shouldStart) return;
+    
+    let startTime: number | null = null;
+    const startValue = 0;
+    
+    // Calcular easing power baseado no tamanho do número (escala logarítmica)
+    const calculateEasingPower = (num: number): number => {
+      if (num <= 1) return 1.5; // Muito pequeno: quase linear
+      
+      const logValue = Math.log10(num);
+      
+      // Mapear log₁₀ para easing power
+      // log 1-1.5 (1-30) → easing 1.5-2 (mais linear)
+      // log 1.5-2.5 (30-300) → easing 2-3 (médio)
+      // log 2.5-4+ (300-10000+) → easing 3-4 (suave)
+      
+      if (logValue < 1.5) return 1.5 + (logValue * 0.3); // 1.5-1.95
+      if (logValue < 2.5) return 2.0 + ((logValue - 1.5) * 1.0); // 2.0-3.0
+      return Math.min(4, 3.0 + ((logValue - 2.5) * 0.67)); // 3.0-4.0 (max)
+    };
+    
+    const easingPower = calculateEasingPower(end);
+    console.log(`📊 Animating ${end}: easing power = ${easingPower.toFixed(2)}`);
+    
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      // Aplicar easing dinâmico
+      const easedProgress = 1 - Math.pow(1 - progress, easingPower);
+      const currentCount = Math.floor(easedProgress * (end - startValue) + startValue);
+      
+      setCount(currentCount);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setCount(end);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [end, duration, shouldStart]);
+  
+  return count;
+}
+
+// Hook para detectar quando elemento entra na viewport
+function useInView(options = {}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isInView, setIsInView] = useState(false);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !isInView) {
+        setIsInView(true);
+      }
+    }, { threshold: 0.3, ...options });
+    
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+    
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [isInView, options]);
+  
+  return [ref, isInView] as const;
+}
+
+// Componente para estatística animada
+function AnimatedStat({ 
+  label, 
+  value, 
+  icon: Icon, 
+  isInView 
+}: { 
+  label: string; 
+  value: string; 
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; 
+  isInView: boolean;
+}) {
+  // Usar regex para separar número e sufixo preservando espaços
+  const match = value.match(/^([\d,]+)(.*)$/);
+  
+  const numericValue = match 
+    ? parseInt(match[1].replace(/,/g, '')) 
+    : 0;
+  
+  const suffix = match ? match[2] : '';  // Preserva espaços
+  
+  // DURAÇÃO FIXA de 3.5 segundos para TODOS
+  // O easing é calculado automaticamente dentro do hook baseado no tamanho do número
+  const FIXED_DURATION = 3500;
+  
+  // Animar contador com duração fixa e easing dinâmico
+  const animatedValue = useCountUp(numericValue, FIXED_DURATION, isInView);
+  
+  // Formatar com vírgulas
+  const formattedValue = animatedValue.toLocaleString('en-US');
+  
+  return (
+    <div className="flex flex-col items-center justify-center p-10">
+      {/* Icon */}
+      <div className="relative flex justify-center mb-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-lg opacity-30"></div>
+          <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl shadow-lg">
+            <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
+          </div>
+        </div>
+      </div>
+      
+      {/* Title */}
+      <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
+          style={{ 
+            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            letterSpacing: '-0.01em',
+            fontWeight: '600'
+          }}>
+        {label}
+      </h3>
+      
+      {/* Animated Value */}
+      <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
+           style={{ 
+             textShadow: '0 2px 16px rgba(0,0,0,0.5)',
+             letterSpacing: '-0.02em',
+             fontWeight: '700'
+           }}>
+        {formattedValue}{suffix}
+      </div>
+    </div>
+  );
+}
+
+// Componente para Cashback animado (reutiliza mesma lógica das Stats)
+function AnimatedCashback({ 
+  value, 
+  isInView 
+}: { 
+  value: string; 
+  isInView: boolean;
+}) {
+  // Usar regex para separar número e sufixo (aceita $ opcional)
+  const match = value.match(/^[\$]?([\d,]+)(.*)$/);
+  
+  const numericValue = match 
+    ? parseInt(match[1].replace(/,/g, '')) 
+    : 0;
+  
+  const suffix = match ? match[2] : '';
+  
+  // MESMA DURAÇÃO das Stats (3.5s) para sincronização perfeita
+  const FIXED_DURATION = 3500;
+  
+  // Hook com easing dinâmico automático (calculado baseado no tamanho do número)
+  const animatedValue = useCountUp(numericValue, FIXED_DURATION, isInView);
+  
+  // Formatar com vírgulas
+  const formattedValue = animatedValue.toLocaleString('en-US');
+  
+  return (
+    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
+         style={{ 
+           WebkitTextStroke: '1px rgba(7, 113, 36, 0.3)',
+           textShadow: '0 0 80px rgba(7, 113, 36, 0.5)',
+           letterSpacing: '-0.02em',
+           fontWeight: '700'
+         }}>
+      ${formattedValue}{suffix}
+    </div>
+  );
+}
+
 // FAQ Data
 const faqData = [
   {
@@ -159,11 +342,63 @@ const faqData = [
   }
 ];
 
+// Helper para renderizar texto com parágrafos
+function renderTextWithParagraphs(text: string) {
+  const lines = text.split('\n').filter(line => line.trim());
+  
+  return lines.map((line, index) => (
+    <p key={index} className="mb-4 last:mb-0">
+      {line}
+    </p>
+  ));
+}
+
 export default function Home() {
   const { isLoggedIn } = useAuth();
   const authModal = useAuthModal();
   const [cardsVisible, setCardsVisible] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  
+  // Detectar quando stats entram na viewport
+  const [statsRef, statsInView] = useInView();
+  
+  // Detectar quando cashback entra na viewport
+  const [cashbackRef, cashbackInView] = useInView();
+  
+  // Hero Section from Supabase
+  const [heroData, setHeroData] = useState({
+    title: 'Exclusive Deals On The',
+    title_line_2: 'World\'s Best Poker Sites',
+    subtitle: 'More Rakeback. More Support. Maximum Value.',
+    button_text: 'Explore Deals',
+    button_link: '/deals'
+  });
+  
+  // Statistics from Supabase
+  const [statsData, setStatsData] = useState([
+    { label: 'Number Of Players With Us', value: '10,000+' },
+    { label: 'How Long We\'ve Been Here', value: '13 Years' },
+    { label: 'Team Experience in Poker', value: '100+ Years' }
+  ]);
+  
+  // Cashback from Supabase
+  const [cashbackData, setCashbackData] = useState({
+    section_title: 'Rewards & Cashback Paid in 2025',
+    amount: 2450000,
+    subtitle: 'And counting...',
+    description: 'Join thousands of players maximizing their poker profits with exclusive rakeback deals.'
+  });
+  
+  // How It Works from Supabase
+  const [howItWorksData, setHowItWorksData] = useState({
+    section_title: 'How It Works - 3 Simple Steps',
+    section_subtitle: 'No complicated rules. No hidden hoops. Just connect, play, and get rewarded.'
+  });
+  const [howItWorksSteps, setHowItWorksSteps] = useState([
+    { title: 'Choose Your Deal', description: 'We partner with the top poker sites.\n\nPick one you already play on or try a new one with a better offer.', display_order: 1 },
+    { title: 'New & Existing Players Welcome', description: 'Create a new account through us and you\'re automatically accepted.\n\nAlready have an account? Apply to join our deal and we\'ll review it on a case-by-case basis.', display_order: 2 },
+    { title: 'Same Play. More Rewards', description: 'Nothing changes about how you play.\n\nYou\'ll still receive the poker sites rewards, plus extra cashback from us on top.', display_order: 3 }
+  ]);
   
   // Testimonials from Supabase
   const [testimonials, setTestimonials] = useState<Array<{
@@ -190,10 +425,70 @@ export default function Home() {
   // Ref para o carousel Flickity
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Load testimonials from Supabase
+  // Load hero section and testimonials from Supabase
   useEffect(() => {
-    async function loadTestimonials() {
+    async function loadHomepageData() {
       try {
+        // Load Hero Section
+        console.log('📥 [Homepage] Loading hero section from Supabase...');
+        const heroFromDb = await getHomeHero();
+        if (heroFromDb) {
+          setHeroData({
+            title: heroFromDb.title,
+            title_line_2: heroFromDb.title_line_2 || '',
+            subtitle: heroFromDb.subtitle || 'More Rakeback. More Support. Maximum Value.',
+            button_text: heroFromDb.button_text,
+            button_link: heroFromDb.button_link || '/deals'
+          });
+          console.log('✅ [Homepage] Loaded hero section:', heroFromDb);
+        }
+        
+        // Load Statistics
+        console.log('📥 [Homepage] Loading statistics from Supabase...');
+        const stats = await getHomeStats();
+        if (stats && stats.length > 0) {
+          setStatsData(stats.map(stat => ({
+            label: stat.label,
+            value: stat.value
+          })));
+          console.log('✅ [Homepage] Loaded statistics:', stats);
+        }
+        
+        // Load Cashback
+        console.log('📥 [Homepage] Loading cashback from Supabase...');
+        const cashback = await getHomeCashback();
+        if (cashback) {
+          setCashbackData({
+            section_title: cashback.section_title,
+            amount: cashback.amount,
+            subtitle: cashback.subtitle || 'And counting...',
+            description: cashback.description || ''
+          });
+          console.log('✅ [Homepage] Loaded cashback:', cashback);
+        }
+        
+        // Load How It Works
+        console.log('📥 [Homepage] Loading how it works from Supabase...');
+        const howItWorks = await getHomeHowItWorks();
+        const steps = await getHomeHowItWorksSteps();
+        
+        if (howItWorks) {
+          setHowItWorksData({
+            section_title: howItWorks.section_title,
+            section_subtitle: howItWorks.section_subtitle || ''
+          });
+        }
+        
+        if (steps && steps.length > 0) {
+          setHowItWorksSteps(steps.map(step => ({
+            title: step.title,
+            description: step.description || '',
+            display_order: step.display_order
+          })));
+          console.log('✅ [Homepage] Loaded', steps.length, 'how it works steps');
+        }
+        
+        // Load Testimonials
         setIsLoadingTestimonials(true);
         const data = await getTestimonials();
         
@@ -209,13 +504,13 @@ export default function Home() {
         setTestimonials(mappedTestimonials);
         console.log('✅ Loaded', mappedTestimonials.length, 'testimonials from Supabase');
       } catch (error) {
-        console.error('❌ Error loading testimonials:', error);
+        console.error('❌ Error loading homepage data:', error);
       } finally {
         setIsLoadingTestimonials(false);
       }
     }
     
-    loadTestimonials();
+    loadHomepageData();
   }, []);
 
   // Inicialização do Flickity Vanilla
@@ -341,22 +636,37 @@ export default function Home() {
               {/* Main Heading - Apple-like Typography */}
               <h1 className="animate-fade-up-delay-800">
                 <div className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-semibold leading-tight tracking-[-0.02em]">
-                  {/* Primeira linha - Peso menor, mais sutil */}
-                  <span className="block text-white/95 font-medium" 
-                        style={{ 
-                          textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-                          letterSpacing: '-0.02em'
-                        }}>
-                    Exclusive Deals On The
-                  </span>
-                  {/* Segunda linha - Destaque premium com gradiente sutil */}
-                  <span className="block mt-1 bg-gradient-to-br from-white via-white to-gray-200 bg-clip-text text-transparent font-semibold" 
-                        style={{ 
-                          textShadow: '0 4px 24px rgba(255,255,255,0.08)',
-                          letterSpacing: '-0.03em'
-                        }}>
-                    World&apos;s Best Poker Sites
-                  </span>
+                  {/* Dynamic title from Supabase - supports 2 lines */}
+                  {heroData.title_line_2 ? (
+                    <>
+                      {/* Two-line title */}
+                      <span className="block text-white/95 font-medium" 
+                            style={{ 
+                              textShadow: '0 2px 16px rgba(0,0,0,0.4)',
+                              letterSpacing: '-0.02em'
+                            }}>
+                        {heroData.title}
+                      </span>
+                      <span className="block mt-1 bg-gradient-to-br from-white via-white to-gray-200 bg-clip-text text-transparent font-semibold" 
+                            style={{ 
+                              textShadow: '0 4px 24px rgba(255,255,255,0.08)',
+                              letterSpacing: '-0.03em'
+                            }}>
+                        {heroData.title_line_2}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {/* Single-line title */}
+                      <span className="block mt-1 bg-gradient-to-br from-white via-white to-gray-200 bg-clip-text text-transparent font-semibold" 
+                            style={{ 
+                              textShadow: '0 4px 24px rgba(255,255,255,0.08)',
+                              letterSpacing: '-0.03em'
+                            }}>
+                        {heroData.title}
+                      </span>
+                    </>
+                  )}
                 </div>
               </h1>
               
@@ -367,13 +677,13 @@ export default function Home() {
                    letterSpacing: '-0.01em',
                    fontWeight: '400'
                  }}>
-            More Rakeback. More Support. Maximum Value.
+            {heroData.subtitle}
           </p>
           
               {/* CTA Button - Premium Apple-like Style */}
               <div className="flex justify-center pt-6 animate-fade-up-delay-1400">
           <a 
-            href="#deals"
+            href={heroData.button_link}
                   className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
                   style={{
                     boxShadow: `
@@ -408,7 +718,7 @@ export default function Home() {
                   <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
                   
                   {/* Button content */}
-                  <span className="relative z-10 tracking-wide drop-shadow-lg">Explore Deals</span>
+                  <span className="relative z-10 tracking-wide drop-shadow-lg">{heroData.button_text}</span>
                   
                   {/* Animated arrow */}
                   <svg 
@@ -430,110 +740,32 @@ export default function Home() {
       {/* STATS & RAKEBACK SECTION - Premium */}
       <section id="mission" className="relative bg-black w-full py-20 md:py-32 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Stats Grid - No Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-20">
-            {/* Stat 1: Number Of Players With Us */}
-            <div className="flex flex-col items-center justify-center p-10">
-              {/* Icon */}
-              <div className="relative flex justify-center mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-lg opacity-30"></div>
-                  <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl shadow-lg">
-                    <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </div>
+          {/* Stats Grid - Dynamic from Supabase with Animation */}
+          <div 
+            ref={statsRef}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-20"
+          >
+            {statsData.map((stat, index) => {
+              // Select icon based on index
+              const Icon = index === 0 ? Users : index === 1 ? Calendar : Award;
               
-              {/* Title */}
-              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
-                  style={{ 
-                    textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.01em',
-                    fontWeight: '600'
-                  }}>
-                Number Of Players With Us
-              </h3>
-              
-              {/* Counter */}
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
-                   style={{ 
-                     textShadow: '0 2px 16px rgba(0,0,0,0.5)',
-                     letterSpacing: '-0.02em',
-                     fontWeight: '700'
-                   }}>
-                <AnimatedCounter end={10000} duration={5000} suffix="+" decimals={0} />
-              </div>
-            </div>
-
-            {/* Stat 2: How Long We've Been Here */}
-            <div className="flex flex-col items-center justify-center p-10">
-              {/* Icon */}
-              <div className="relative flex justify-center mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-lg opacity-30"></div>
-                  <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl shadow-lg">
-                    <Calendar className="w-8 h-8 text-white" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Title */}
-              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
-                  style={{ 
-                    textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.01em',
-                    fontWeight: '600'
-                  }}>
-                How Long We&apos;ve Been Here
-              </h3>
-              
-              {/* Counter */}
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
-                   style={{ 
-                     textShadow: '0 2px 16px rgba(0,0,0,0.5)',
-                     letterSpacing: '-0.02em',
-                     fontWeight: '700'
-                   }}>
-                <AnimatedCounter end={13} duration={5000} suffix=" Years" decimals={0} />
-              </div>
-            </div>
-
-            {/* Stat 3: Team Experience in Poker */}
-            <div className="flex flex-col items-center justify-center p-10">
-              {/* Icon */}
-              <div className="relative flex justify-center mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-lg opacity-30"></div>
-                  <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl shadow-lg">
-                    <Award className="w-8 h-8 text-white" strokeWidth={2.5} />
-                  </div>
-                </div>
-              </div>
-              
-              {/* Title */}
-              <h3 className="text-sm sm:text-base md:text-base lg:text-lg font-semibold mb-4 text-center tracking-tight text-gray-400"
-                  style={{ 
-                    textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.01em',
-                    fontWeight: '600'
-                  }}>
-                Team Experience in Poker
-              </h3>
-              
-              {/* Counter */}
-              <div className="text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold text-white drop-shadow-lg tracking-tight"
-                   style={{ 
-                     textShadow: '0 2px 16px rgba(0,0,0,0.5)',
-                     letterSpacing: '-0.02em',
-                     fontWeight: '700'
-                   }}>
-                <AnimatedCounter end={100} duration={5000} suffix="+ Years" decimals={0} />
-              </div>
-            </div>
+              return (
+                <AnimatedStat
+                  key={index}
+                  label={stat.label}
+                  value={stat.value}
+                  icon={Icon}
+                  isInView={statsInView}
+                />
+              );
+            })}
           </div>
 
           {/* Rakeback Section - Integrated Premium */}
-          <div className="relative max-w-5xl mx-auto text-center">
+          <div 
+            ref={cashbackRef}
+            className="relative max-w-5xl mx-auto text-center"
+          >
             {/* Ambient glow effects */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#077124]/[0.08] rounded-full blur-[120px] animate-pulse-slow pointer-events-none"></div>
             
@@ -545,40 +777,39 @@ export default function Home() {
                     letterSpacing: '-0.02em',
                     fontWeight: '600'
                   }}>
-                Rewards & Cashback Paid in 2025
+                {cashbackData.section_title}
               </h2>
               
-              {/* Big Counter - Premium Style */}
+              {/* Big Counter - Premium Style with Synchronized Animation */}
               <div className="inline-block mb-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
-                <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
-                     style={{ 
-                       WebkitTextStroke: '1px rgba(7, 113, 36, 0.3)',
-                       textShadow: '0 0 80px rgba(7, 113, 36, 0.5)',
-                       letterSpacing: '-0.02em',
-                       fontWeight: '700'
-                     }}>
-                  <AnimatedCounter end={2450000} duration={5000} prefix="$" suffix="+" decimals={0} />
-                </div>
+                <AnimatedCashback 
+                  value={`${cashbackData.amount}+`}
+                  isInView={cashbackInView} 
+                />
               </div>
               
               {/* Subtitle texts */}
               <div className="max-w-2xl mx-auto space-y-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-                <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
-                   style={{ 
-                     textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                     letterSpacing: '-0.01em',
-                     fontWeight: '400'
-                   }}>
-                  And counting...
-                </p>
-                <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
-                   style={{ 
-                     textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                     letterSpacing: '-0.01em',
-                     fontWeight: '400'
-                   }}>
-                  Join thousands of players maximizing their poker profits with exclusive rakeback deals.
-                </p>
+                {cashbackData.subtitle && (
+                  <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
+                     style={{ 
+                       textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                       letterSpacing: '-0.01em',
+                       fontWeight: '400'
+                     }}>
+                    {cashbackData.subtitle}
+                  </p>
+                )}
+                {cashbackData.description && (
+                  <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
+                     style={{ 
+                       textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                       letterSpacing: '-0.01em',
+                       fontWeight: '400'
+                     }}>
+                    {cashbackData.description}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -884,134 +1115,64 @@ export default function Home() {
                   letterSpacing: '-0.02em',
                   fontWeight: '600'
                 }}>
-              How It Works - 3 Simple Steps
+              {howItWorksData.section_title}
             </h2>
-            <p className="text-gray-400 text-base sm:text-base md:text-lg lg:text-lg max-w-3xl mx-auto font-normal leading-relaxed"
-               style={{ 
-                 textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                 letterSpacing: '-0.01em',
-                 fontWeight: '400'
-               }}>
-              No complicated rules. No hidden hoops. Just connect, play, and get rewarded.
-            </p>
+            {howItWorksData.section_subtitle && (
+              <p className="text-gray-400 text-base sm:text-base md:text-lg lg:text-lg max-w-3xl mx-auto font-normal leading-relaxed"
+                 style={{ 
+                   textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                   letterSpacing: '-0.01em',
+                   fontWeight: '400'
+                 }}>
+                {howItWorksData.section_subtitle}
+              </p>
+            )}
           </div>
 
           {/* Steps Grid - 3 columns */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            {/* Step 1: Choose Your Deal */}
-            <div className={`group relative rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${cardsVisible ? 'animate-fade-in-up-1' : 'opacity-0'}`}>
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
-                {/* Background subtle effects */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+            {/* Dynamic Steps from Supabase */}
+            {howItWorksSteps.map((step) => (
+              <div 
+                key={step.display_order} 
+                className={`group relative rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${cardsVisible ? `animate-fade-in-up-${step.display_order}` : 'opacity-0'}`}
+              >
+                {/* Gradient Border Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
                 
-                {/* Step Number Badge */}
-                <div className="relative flex justify-center mb-5 z-10">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-                    <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white text-3xl font-bold">1</span>
+                {/* Card Content */}
+                <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
+                  {/* Background subtle effects */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+                  
+                  {/* Step Number Badge */}
+                  <div className="relative flex justify-center mb-5 z-10">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
+                      <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-white text-3xl font-bold">{step.display_order}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Title */}
-                <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
-                    style={{ 
-                      textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                      letterSpacing: '-0.01em',
-                      fontWeight: '700'
-                    }}>
-                  Choose Your Deal
-                </h3>
-                
-                {/* Description */}
-                <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p className="leading-relaxed">We partner with the top poker sites.</p>
-                  <p className="leading-relaxed">Pick one you already play on or try a new one with a better offer.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Step 2: New & Existing Players Welcome */}
-            <div className={`group relative rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${cardsVisible ? 'animate-fade-in-up-2' : 'opacity-0'}`}>
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
-                {/* Background subtle effects */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
-                
-                {/* Step Number Badge */}
-                <div className="relative flex justify-center mb-5 z-10">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-                    <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white text-3xl font-bold">2</span>
-                    </div>
+                  
+                  {/* Title */}
+                  <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
+                      style={{ 
+                        textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                        letterSpacing: '-0.01em',
+                        fontWeight: '700'
+                      }}>
+                    {step.title}
+                  </h3>
+                  
+                  {/* Description */}
+                  <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center z-10">
+                    {renderTextWithParagraphs(step.description || '')}
                   </div>
                 </div>
-                
-                {/* Title */}
-                <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
-                    style={{ 
-                      textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                      letterSpacing: '-0.01em',
-                      fontWeight: '700'
-                    }}>
-                  New & Existing Players Welcome
-                </h3>
-                
-                {/* Description */}
-                <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p className="leading-relaxed">Create a new account through us and you&apos;re automatically accepted.</p>
-                  <p className="leading-relaxed">Already have an account? Apply to join our deal and we&apos;ll review it on a case-by-case basis.</p>
-                </div>
               </div>
-            </div>
-
-            {/* Step 3: Same Play. More Rewards */}
-            <div className={`group relative rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${cardsVisible ? 'animate-fade-in-up-3' : 'opacity-0'}`}>
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
-                {/* Background subtle effects */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
-                
-                {/* Step Number Badge */}
-                <div className="relative flex justify-center mb-5 z-10">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-                    <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
-                      <span className="text-white text-3xl font-bold">3</span>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Title */}
-                <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
-                    style={{ 
-                      textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                      letterSpacing: '-0.01em',
-                      fontWeight: '700'
-                    }}>
-                  Same Play. More Rewards
-                </h3>
-                
-                {/* Description */}
-                <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center space-y-3 z-10">
-                  <p className="leading-relaxed">Nothing changes about how you play.</p>
-                  <p className="leading-relaxed">You&apos;ll still receive the poker sites rewards, plus extra cashback from us on top.</p>
-                </div>
-              </div>
-            </div>
+            ))}
 
           </div>
         </div>
