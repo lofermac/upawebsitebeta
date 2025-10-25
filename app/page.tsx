@@ -242,10 +242,13 @@ function AnimatedCashback({
   return (
     <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
          style={{ 
-           WebkitTextStroke: '1px rgba(7, 113, 36, 0.3)',
-           textShadow: '0 0 80px rgba(7, 113, 36, 0.5)',
+           WebkitTextStroke: '0.5px rgba(7, 113, 36, 0.2)',
+           textShadow: '0 0 40px rgba(7, 113, 36, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4)',
            letterSpacing: '-0.02em',
-           fontWeight: '700'
+           fontWeight: '800',
+           WebkitFontSmoothing: 'antialiased',
+           MozOsxFontSmoothing: 'grayscale',
+           textRendering: 'optimizeLegibility'
          }}>
       ${formattedValue}{suffix}
     </div>
@@ -298,6 +301,10 @@ export default function Home() {
   
   // Detectar quando cashback entra na viewport
   const [cashbackRef, cashbackInView] = useInView();
+  
+  // Detectar quando How It Works entra na viewport
+  const [howItWorksVisible, setHowItWorksVisible] = useState(false);
+  const howItWorksRef = useRef<HTMLElement>(null);
   
   // Hero Section from Supabase
   const [heroData, setHeroData] = useState({
@@ -518,6 +525,46 @@ export default function Home() {
       }
     };
   }, [cardsVisible]);
+  
+  // Intersection Observer para How It Works animação premium
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !howItWorksVisible) {
+            console.log('🎬 [How It Works] Animação INICIADA:', new Date().toLocaleTimeString());
+            setHowItWorksVisible(true);
+            
+            // Debug: verificar quando linha deveria terminar
+            setTimeout(() => {
+              console.log('⏱️ [How It Works] 6 segundos se passaram (linha deveria ter terminado):', new Date().toLocaleTimeString());
+            }, 6000);
+            
+            // Debug: verificar timing dos steps (valores precisos com linear)
+            setTimeout(() => console.log('1️⃣ Step 1 começou aos 650ms, completa aos 1350ms (linha em 22.5%)'), 650);
+            setTimeout(() => console.log('2️⃣ Step 2 começou aos 2650ms, completa aos 3350ms (linha em 55.8%)'), 2650);
+            setTimeout(() => console.log('3️⃣ Step 3 começou aos 4650ms, completa aos 5350ms (linha em 89.2%)'), 4650);
+            
+            // Debug: mostrar progresso da linha a cada 500ms
+            for (let i = 0; i <= 12; i++) {
+              setTimeout(() => {
+                const progress = (i/12*100).toFixed(1);
+                const time = i*500;
+                console.log(`📊 Linha em ${progress}% aos ${time}ms`);
+              }, i * 500);
+            }
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    if (howItWorksRef.current) {
+      observer.observe(howItWorksRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [howItWorksVisible]);
 
   return (
     <div className="bg-black min-h-screen flex flex-col">
@@ -614,53 +661,69 @@ export default function Home() {
             {heroData.subtitle}
           </p>
           
-              {/* CTA Button - Premium Apple-like Style */}
+              {/* CTA Button - Ultra Premium Glassmorphism */}
               <div className="flex justify-center pt-6 animate-fade-up-delay-1400">
           <a 
             href={heroData.button_link}
-                  className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+                  className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white rounded-full overflow-hidden transition-all duration-700 hover:scale-[1.04] active:scale-[0.97]"
                   style={{
+                    background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
                     boxShadow: `
-                      0 1px 3px 0 rgba(0,0,0,0.5),
-                      0 4px 12px rgba(7,113,36,0.3),
-                      0 8px 32px rgba(7,113,36,0.25),
-                      0 16px 64px rgba(7,113,36,0.2),
-                      inset 0 1px 1px rgba(255,255,255,0.3),
-                      inset 0 -1px 1px rgba(0,0,0,0.2)
+                      0 1px 0 0 rgba(255,255,255,0.2) inset,
+                      0 -1px 0 0 rgba(0,0,0,0.4) inset,
+                      0 2px 4px rgba(0,0,0,0.3),
+                      0 8px 24px rgba(0,0,0,0.25),
+                      0 16px 48px rgba(0,0,0,0.15)
                     `
                   }}
                 >
-                  {/* Outer glow - Layer 1 (most intense) */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+                  {/* Refined gradient border with subtle animation */}
+                  <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover:opacity-100 transition-all duration-700">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
+                  </div>
                   
-                  {/* Outer glow - Layer 2 (medium spread) */}
-                  <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+                  {/* Premium glass reflection - top half with enhanced gradient */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
                   
-                  {/* Outer glow - Layer 3 (soft wide spread) */}
-                  <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+                  {/* Bottom subtle darkening for depth */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
                   
-                  {/* Glass reflection effect on top */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+                  {/* Multi-layered shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
                   
-                  {/* Animated shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+                  {/* Secondary shimmer with delay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1600 ease-out skew-x-12" style={{ transitionDelay: '0.1s' }}></div>
                   
-                  {/* Inner shadow for depth */}
-                  <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+                  {/* Micro texture overlay for premium feel */}
+                  <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" 
+                       style={{ 
+                         backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)'
+                       }}></div>
                   
-                  {/* Pulsing ambient glow on hover */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+                  {/* Refined inner shadow with multiple layers */}
+                  <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
                   
-                  {/* Button content */}
-                  <span className="relative z-10 tracking-wide drop-shadow-lg">{heroData.button_text}</span>
+                  {/* Subtle edge highlight */}
+                  <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover:ring-white/20 transition-all duration-700"></div>
                   
-                  {/* Animated arrow */}
+                  {/* Button content with enhanced typography */}
+                  <span className="relative z-10 tracking-wide" 
+                        style={{ 
+                          textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)',
+                          fontWeight: '700',
+                          letterSpacing: '0.02em'
+                        }}>
+                    {heroData.button_text}
+                  </span>
+                  
+                  {/* Animated arrow with refined animation */}
                   <svg 
-                    className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" 
+                    className="relative z-10 w-5 h-5 transition-all duration-500 group-hover:translate-x-2 group-hover:scale-110" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor" 
                     strokeWidth={3}
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -677,7 +740,7 @@ export default function Home() {
           {/* Stats Grid - Dynamic from Supabase with Animation */}
           <div 
             ref={statsRef}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-20"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 mb-20"
           >
             {statsData.map((stat, index) => {
               // Select icon based on index
@@ -705,7 +768,7 @@ export default function Home() {
             
             <div className="relative z-10">
               {/* Title with Apple-like typography */}
-              <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold mb-8 leading-relaxed tracking-tight animate-fade-up"
+              <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold mb-4 leading-relaxed tracking-tight animate-fade-up"
                   style={{ 
                     textShadow: '0 2px 16px rgba(0,0,0,0.4)',
                     letterSpacing: '-0.02em',
@@ -715,7 +778,7 @@ export default function Home() {
               </h2>
               
               {/* Big Counter - Premium Style with Synchronized Animation */}
-              <div className="inline-block mb-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
+              <div className="inline-block mb-4 animate-fade-up" style={{ animationDelay: '0.2s' }}>
                 <AnimatedCashback 
                   value={`${cashbackData.amount}+`}
                   isInView={cashbackInView} 
@@ -723,7 +786,7 @@ export default function Home() {
               </div>
               
               {/* Subtitle texts */}
-              <div className="max-w-2xl mx-auto space-y-4 animate-fade-up" style={{ animationDelay: '0.4s' }}>
+              <div className="max-w-2xl mx-auto space-y-4 mb-6 animate-fade-up" style={{ animationDelay: '0.4s' }}>
                 {cashbackData.subtitle && (
                   <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
                      style={{ 
@@ -826,25 +889,27 @@ export default function Home() {
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Primary */}
-                    <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
+                    {/* Claim Offer Button - Ultra Premium */}
+                    <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
                        style={{
+                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
                          boxShadow: `
-                           0 1px 3px 0 rgba(0,0,0,0.5),
-                           0 4px 12px rgba(7,113,36,0.3),
-                           0 8px 32px rgba(7,113,36,0.25),
-                           0 16px 64px rgba(7,113,36,0.2),
-                           inset 0 1px 1px rgba(255,255,255,0.3),
-                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                           0 1px 0 0 rgba(255,255,255,0.2) inset,
+                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
+                           0 2px 4px rgba(0,0,0,0.3),
+                           0 4px 16px rgba(0,0,0,0.2)
                          `
                        }}>
-                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
+                      </div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
+                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
+                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
+                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -891,25 +956,27 @@ export default function Home() {
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Primary */}
-                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
+                    {/* Claim Offer Button - Ultra Premium */}
+                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
                        style={{
+                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
                          boxShadow: `
-                           0 1px 3px 0 rgba(0,0,0,0.5),
-                           0 4px 12px rgba(7,113,36,0.3),
-                           0 8px 32px rgba(7,113,36,0.25),
-                           0 16px 64px rgba(7,113,36,0.2),
-                           inset 0 1px 1px rgba(255,255,255,0.3),
-                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                           0 1px 0 0 rgba(255,255,255,0.2) inset,
+                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
+                           0 2px 4px rgba(0,0,0,0.3),
+                           0 4px 16px rgba(0,0,0,0.2)
                          `
                        }}>
-                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
+                      </div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
+                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
+                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
+                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -952,25 +1019,27 @@ export default function Home() {
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Primary */}
-                    <a href="#" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
+                    {/* Claim Offer Button - Ultra Premium */}
+                    <a href="#" className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
                        style={{
+                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
                          boxShadow: `
-                           0 1px 3px 0 rgba(0,0,0,0.5),
-                           0 4px 12px rgba(7,113,36,0.3),
-                           0 8px 32px rgba(7,113,36,0.25),
-                           0 16px 64px rgba(7,113,36,0.2),
-                           inset 0 1px 1px rgba(255,255,255,0.3),
-                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                           0 1px 0 0 rgba(255,255,255,0.2) inset,
+                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
+                           0 2px 4px rgba(0,0,0,0.3),
+                           0 4px 16px rgba(0,0,0,0.2)
                          `
                        }}>
-                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
+                      </div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
+                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
+                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
+                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
+                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
+                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -989,48 +1058,67 @@ export default function Home() {
 
             </div>
 
-          {/* View All Deals Button */}
+          {/* View All Deals Button - Ultra Premium */}
           <div className="text-center mt-12">
             <Link 
               href="/deals"
-              className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
+              className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white rounded-full overflow-hidden transition-all duration-700 hover:scale-[1.04] active:scale-[0.97]"
                        style={{
+                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
                          boxShadow: `
-                           0 1px 3px 0 rgba(0,0,0,0.5),
-                           0 4px 12px rgba(7,113,36,0.3),
-                           0 8px 32px rgba(7,113,36,0.25),
-                           0 16px 64px rgba(7,113,36,0.2),
-                           inset 0 1px 1px rgba(255,255,255,0.3),
-                           inset 0 -1px 1px rgba(0,0,0,0.2)
+                           0 1px 0 0 rgba(255,255,255,0.2) inset,
+                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
+                           0 2px 4px rgba(0,0,0,0.3),
+                           0 8px 24px rgba(0,0,0,0.25),
+                           0 16px 48px rgba(0,0,0,0.15)
                          `
               }}
             >
-              {/* Outer glow - Layer 1 (most intense) */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
+              {/* Refined gradient border with subtle animation */}
+              <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover:opacity-100 transition-all duration-700">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
+              </div>
               
-              {/* Outer glow - Layer 2 (medium spread) */}
-              <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
+              {/* Premium glass reflection - top half with enhanced gradient */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
               
-              {/* Outer glow - Layer 3 (soft wide spread) */}
-              <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
+              {/* Bottom subtle darkening for depth */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
               
-              {/* Glass reflection effect on top */}
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
+              {/* Multi-layered shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
               
-              {/* Animated shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
+              {/* Secondary shimmer with delay */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1600 ease-out skew-x-12" style={{ transitionDelay: '0.1s' }}></div>
               
-              {/* Inner shadow for depth */}
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
+              {/* Micro texture overlay for premium feel */}
+              <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" 
+                   style={{ 
+                     backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)'
+                   }}></div>
               
-              {/* Pulsing ambient glow on hover */}
-              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
+              {/* Refined inner shadow with multiple layers */}
+              <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
               
-              {/* Button content */}
-              <span className="relative z-10 tracking-wide drop-shadow-lg">View All Deals</span>
+              {/* Subtle edge highlight */}
+              <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover:ring-white/20 transition-all duration-700"></div>
               
-              {/* Animated arrow */}
-              <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+              {/* Button content with enhanced typography */}
+              <span className="relative z-10 tracking-wide" 
+                    style={{ 
+                      textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)',
+                      fontWeight: '700',
+                      letterSpacing: '0.02em'
+                    }}>
+                View All Deals
+              </span>
+              
+              {/* Animated arrow with refined animation */}
+              <ArrowRight 
+                className="relative z-10 w-5 h-5 transition-all duration-500 group-hover:translate-x-2 group-hover:scale-110" 
+                strokeWidth={3}
+                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}
+              />
             </Link>
           </div>
             </div>
@@ -1039,10 +1127,10 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS SECTION - 3 Simple Steps */}
-      <section id="how-it-works" className="relative bg-black w-full py-24 md:py-32 px-4">
+      <section ref={howItWorksRef} id="how-it-works" className="relative bg-black w-full py-32 md:py-40 px-4">
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
-          <div className="text-center mb-20">
+          <div className="text-center mb-28">
             <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
                 style={{ 
                   textShadow: '0 2px 16px rgba(0,0,0,0.4)',
@@ -1063,50 +1151,84 @@ export default function Home() {
             )}
           </div>
 
-          {/* Steps Grid - 3 columns */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Steps Grid - 3 columns with horizontal line */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 relative">
+            {/* Linha horizontal animada - desktop only (6 segundos - LINEAR sem aceleração) */}
+            <div className="hidden md:block absolute top-8 left-0 right-0 h-0.5 bg-gray-800/40 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#077124] via-emerald-400 to-emerald-500 origin-left transition-transform shadow-[0_0_12px_rgba(16,185,129,0.6)]"
+                style={{
+                  transform: howItWorksVisible ? 'scaleX(1)' : 'scaleX(0)',
+                  transitionDuration: '6000ms',
+                  transitionTimingFunction: 'linear',  // SEM aceleração - velocidade constante
+                }}
+              ></div>
+            </div>
             
             {/* Dynamic Steps from Supabase */}
-            {howItWorksSteps.map((step) => (
-              <div 
-                key={step.display_order} 
-                className={`group relative rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${cardsVisible ? `animate-fade-in-up-${step.display_order}` : 'opacity-0'}`}
-              >
-                {/* Gradient Border Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-3xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-                
-                {/* Card Content */}
-                <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-3xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 px-8 py-12 flex flex-col min-h-[420px]">
-                  {/* Background subtle effects */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
-                  
-                  {/* Step Number Badge */}
-                  <div className="relative flex justify-center mb-5 z-10">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-full blur-lg opacity-30 group-hover:opacity-50 transition-opacity duration-500"></div>
-                      <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 w-16 h-16 rounded-full flex items-center justify-center shadow-lg">
-                        <span className="text-white text-3xl font-bold">{step.display_order}</span>
-                      </div>
-                    </div>
+            {howItWorksSteps.map((step) => {
+              // Timing PRECISO sincronizado com a linha linear (6s total)
+              // Grid com 3 colunas: cada coluna = 33.33% da largura
+              // Step 1: centro da 1ª coluna = 16.66% → 16.66% de 6000ms = 1000ms
+              // Step 2: centro da 2ª coluna = 50% → 50% de 6000ms = 3000ms  
+              // Step 3: centro da 3ª coluna = 83.33% → 83.33% de 6000ms = 5000ms
+              // 
+              // MAS: Como elementos têm fade-in de 700ms, antecipamos 350ms (metade)
+              // para que COMPLETEM quando linha CRUZAR (não quando começam)
+              const timings = {
+                1: { number: 650, title: 650, description: 850 },   // 1000 - 350 = 650ms
+                2: { number: 2650, title: 2650, description: 2850 }, // 3000 - 350 = 2650ms
+                3: { number: 4650, title: 4650, description: 4850 }  // 5000 - 350 = 4650ms
+              };
+              
+              const timing = timings[step.display_order as keyof typeof timings];
+              
+              return (
+                <div 
+                  key={step.display_order} 
+                  className="flex flex-col items-center text-center relative"
+                >
+                  {/* Número quadrado com animação premium - aparece junto com o título */}
+                  <div 
+                    className="relative z-10 bg-[#077124] w-16 h-16 rounded-lg flex items-center justify-center mb-8 transition-all duration-700 ease-out"
+                    style={{
+                      opacity: howItWorksVisible ? 1 : 0,
+                      transform: howItWorksVisible ? 'scale(1)' : 'scale(0.7)',
+                      transitionDelay: `${timing.number}ms`,
+                      boxShadow: howItWorksVisible 
+                        ? '0 0 24px rgba(7, 113, 36, 0.6), 0 0 48px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4)' 
+                        : 'none'
+                    }}
+                  >
+                    <span className="text-white text-3xl font-bold">{step.display_order}</span>
                   </div>
                   
-                  {/* Title */}
-                  <h3 className="relative text-white text-lg md:text-xl font-bold mb-4 text-center z-10 tracking-tight"
-                      style={{ 
-                        textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                        letterSpacing: '-0.01em',
-                        fontWeight: '700'
-                      }}>
+                  {/* Título com fade-in - aparece junto com o número */}
+                  <h3 
+                    className="text-white text-xl font-bold mb-4 transition-all duration-700 ease-out"
+                    style={{
+                      opacity: howItWorksVisible ? 1 : 0,
+                      transform: howItWorksVisible ? 'translateY(0)' : 'translateY(10px)',
+                      transitionDelay: `${timing.title}ms`
+                    }}
+                  >
                     {step.title}
                   </h3>
                   
-                  {/* Description */}
-                  <div className="relative text-gray-300 text-sm md:text-base leading-relaxed text-center z-10">
+                  {/* Descrição com fade-in - aparece 200ms depois */}
+                  <div 
+                    className="text-gray-300 text-base leading-relaxed transition-all duration-700 ease-out"
+                    style={{
+                      opacity: howItWorksVisible ? 1 : 0,
+                      transform: howItWorksVisible ? 'translateY(0)' : 'translateY(10px)',
+                      transitionDelay: `${timing.description}ms`
+                    }}
+                  >
                     {renderTextWithParagraphs(step.description || '')}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
           </div>
         </div>
