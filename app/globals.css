@@ -298,183 +298,234 @@ html {
 }
 
 /* ============================================
-   OUR PARTNERS - FLICKITY VANILLA
+   OUR PARTNERS - SWIPER
    ============================================ */
 
 .section-partners {
   position: relative;
-  background: black;
+  background: #0e0f11;
   width: 100%;
-  padding: 80px 20px;
+  padding: 80px 20px 140px 20px;
+  overflow: visible;
 }
 
 .section-intro {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 60px;
 }
 
-/* Container do Flickity */
+/* Container do Swiper */
 .partners-slideshow {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
+  padding: 40px 80px;
+  overflow: visible;
+}
+
+/* Swiper wrapper */
+.swiper-testimonials {
+  padding: 40px 0;
+  overflow: visible !important;
+}
+
+.swiper-testimonials .swiper-wrapper {
+  align-items: center;
 }
 
 /* Slide individual */
-.slideshow-slide {
-  width: 70%;
-  margin: 0 15px;
+.swiper-testimonials .swiper-slide {
+  opacity: 0.35;
+  transform: scale(0.88);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Esconde vizinhos dos vizinhos */
+.swiper-testimonials .swiper-slide:not(.swiper-slide-prev):not(.swiper-slide-active):not(.swiper-slide-next) {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* Card central ativo */
+.swiper-testimonials .swiper-slide-active {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+.swiper-testimonials .swiper-slide-active .testimonial-item {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 /* Item do testimonial */
 .testimonial-item {
-  background: rgba(30, 30, 30, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #080808;
+  border: 1px solid #077124;
   border-radius: 20px;
-  padding: 40px;
+  padding: 30px 20px;
   text-align: center;
   height: 550px;
+  max-width: 520px; /* REDUZIDO: de 520px para 460px para mostrar vizinhos completos */
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  transition: box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .testimonial-image {
-  margin-bottom: 24px;
+  margin-bottom: 20px; /* Mais espaço entre foto e texto */
 }
 
 .testimonial-image img {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  width: 255px !important; /* 15% menor que 300px */
+  height: 255px !important;
+  object-fit: cover;
 }
 
 .testimonial-content {
-  max-width: 600px;
+  max-width: 430px; /* MEIO TERMO: 430px (entre 380 e 480) */
+  width: 100%;
+  padding: 0 8px; /* MEIO TERMO: 8px */
 }
 
 .testimonial-name {
   font-size: 1.5rem;
   font-weight: bold;
   color: white;
-  margin-bottom: 8px;
+  margin-bottom: 6px;  /* REDUZIDO: de 8px para 6px */
 }
 
 .testimonial-meta {
   font-size: 0.875rem;
   color: #9ca3af;
-  margin-bottom: 16px;
+  margin-bottom: 14px;  /* REDUZIDO: de 16px para 14px */
 }
 
 .testimonial-quote {
   font-size: 1rem;
   color: #d1d5db;
-  line-height: 1.6;
+  line-height: 1.5;  /* REDUZIDO: de 1.6 para 1.5 */
 }
 
-/* Customização dos botões - posicionados no fundo preto */
-.partners-slideshow .flickity-button {
+/* Customização dos botões de navegação */
+.swiper-testimonials .swiper-button-next,
+.swiper-testimonials .swiper-button-prev {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   width: 50px;
   height: 50px;
   border-radius: 50%;
   transition: all 0.3s ease;
+  color: white;
 }
 
-.partners-slideshow .flickity-button:hover {
+.swiper-testimonials .swiper-button-next::after,
+.swiper-testimonials .swiper-button-prev::after {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.swiper-testimonials .swiper-button-next:hover,
+.swiper-testimonials .swiper-button-prev:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
+  color: #10b981;
 }
 
-.partners-slideshow .flickity-button:active {
+.swiper-testimonials .swiper-button-next:active,
+.swiper-testimonials .swiper-button-prev:active {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Posicionar as setas bem afastadas, alinhadas com os cards laterais */
-.partners-slideshow .flickity-button.previous {
+/* Posicionar as setas */
+.swiper-testimonials .swiper-button-prev {
   left: 5%;
 }
 
-.partners-slideshow .flickity-button.next {
+.swiper-testimonials .swiper-button-next {
   right: 5%;
 }
 
-/* Ícone branco por padrão, verde no hover */
-.partners-slideshow .flickity-button-icon {
-  fill: white;
-  transition: fill 0.3s ease;
+/* Customização da paginação (dots) */
+.swiper-testimonials .swiper-pagination {
+  bottom: -50px !important;
 }
 
-.partners-slideshow .flickity-button:hover .flickity-button-icon {
-  fill: #10b981;
+.swiper-testimonials .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.3);
+  width: 10px;
+  height: 10px;
+  opacity: 1;
+  transition: all 0.3s ease;
 }
 
-/* Ajustes responsivos para as setas */
+.swiper-testimonials .swiper-pagination-bullet-active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* Ajustes responsivos */
 @media (max-width: 1400px) {
-  .partners-slideshow .flickity-button.previous {
+  .swiper-testimonials .swiper-button-prev {
     left: 2%;
   }
   
-  .partners-slideshow .flickity-button.next {
+  .swiper-testimonials .swiper-button-next {
     right: 2%;
   }
 }
 
 @media (max-width: 1024px) {
-  .partners-slideshow .flickity-button.previous {
+  .swiper-testimonials .swiper-button-prev {
     left: 1%;
   }
   
-  .partners-slideshow .flickity-button.next {
+  .swiper-testimonials .swiper-button-next {
     right: 1%;
+  }
+  
+  .swiper-testimonials .swiper-slide {
+    opacity: 1 !important;
+    transform: scale(1) !important;
   }
 }
 
 @media (max-width: 768px) {
-  .partners-slideshow .flickity-button {
+  .swiper-testimonials .swiper-button-next,
+  .swiper-testimonials .swiper-button-prev {
     width: 40px;
     height: 40px;
   }
   
-  .partners-slideshow .flickity-button.previous {
+  .swiper-testimonials .swiper-button-next::after,
+  .swiper-testimonials .swiper-button-prev::after {
+    font-size: 16px;
+  }
+  
+  .swiper-testimonials .swiper-button-prev {
     left: 10px;
   }
   
-  .partners-slideshow .flickity-button.next {
+  .swiper-testimonials .swiper-button-next {
     right: 10px;
-  }
-}
-
-/* Customização dos dots */
-.partners-slideshow .flickity-page-dots {
-  bottom: -50px;
-}
-
-.partners-slideshow .flickity-page-dots .dot {
-  background: rgba(255, 255, 255, 0.3);
-  width: 10px;
-  height: 10px;
-}
-
-.partners-slideshow .flickity-page-dots .dot.is-selected {
-  background: white;
-}
-
-/* Responsivo */
-@media (max-width: 1024px) {
-  .slideshow-slide {
-    width: 80%;
-  }
-}
-
-@media (max-width: 768px) {
-  .slideshow-slide {
-    width: 90%;
-    margin: 0 10px;
   }
   
   .testimonial-item {
-    padding: 30px 20px;
+    padding: 28px 18px; /* MEIO TERMO no mobile */
     height: 500px;
+    max-width: 400px; /* MEIO TERMO: 400px no mobile */
+  }
+  
+  .testimonial-content {
+    max-width: 100%;  /* Usa toda a largura disponível no mobile */
+    padding: 0 5px;  /* Menos padding nos lados */
   }
   
   .section-title {

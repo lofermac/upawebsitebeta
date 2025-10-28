@@ -20,7 +20,7 @@ export default function DealCardWithGeo({ children, dealId }: DealCardWithGeoPro
   const deal = getDealById(dealId) || null;
   const { isAvailable, isLoading } = useDealAvailability(deal);
 
-  // Banner que cobre os botões + glow verde (altura ajustada)
+  // Banner que cobre os botões - estética melhorada
   const unavailableBanner = !isLoading && !isAvailable ? (
     <div 
       className="absolute left-0 right-0 z-50 px-8"
@@ -30,36 +30,61 @@ export default function DealCardWithGeo({ children, dealId }: DealCardWithGeoPro
         pointerEvents: 'auto' // Banner é clicável (para o link Contact Us)
       }}
     >
-      {/* Overlay premium escuro com gradient */}
+      {/* Overlay premium com estética moderna */}
       <div 
-        className="absolute inset-0 backdrop-blur-sm"
+        className="relative h-full rounded-xl overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, rgba(15, 15, 20, 0.97) 0%, rgba(10, 10, 15, 0.98) 100%)',
-          boxShadow: '0 -4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          background: 'linear-gradient(135deg, rgba(20, 20, 25, 0.95) 0%, rgba(15, 15, 20, 0.97) 100%)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
         }}
       >
-        {/* Conteúdo compacto - 2 linhas */}
-        <div className="flex flex-col items-center justify-center h-full gap-0.5 px-4 py-2">
-          {/* Linha 1: Título principal com ícone (compacto) */}
-          <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-red-500 flex-shrink-0" strokeWidth={2.5} />
-            <p className="text-sm font-bold text-white tracking-wide">
+        {/* Borda interna sutil para profundidade */}
+        <div className="absolute inset-[1px] rounded-xl" style={{ border: '1px solid rgba(255, 255, 255, 0.03)' }}></div>
+        
+        {/* Conteúdo do banner */}
+        <div className="relative flex flex-col items-center justify-center h-full gap-1 px-4 py-2">
+          {/* Linha 1: Ícone + Título principal */}
+          <div className="flex items-center gap-2">
+            {/* Ícone premium com múltiplas camadas de efeito */}
+            <div className="relative flex items-center justify-center">
+              {/* Glow externo animado */}
+              <div className="absolute inset-0 bg-red-500/20 rounded-full blur-lg animate-pulse"></div>
+              {/* Círculo de fundo com gradiente */}
+              <div className="relative w-7 h-7 rounded-full bg-gradient-to-br from-red-500/20 to-red-600/30 flex items-center justify-center"
+                   style={{
+                     boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                   }}>
+                {/* Ícone com sombra */}
+                <MapPin className="w-4 h-4 text-red-400" strokeWidth={2.5} 
+                        style={{ filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))' }} />
+              </div>
+            </div>
+            <p className="text-sm font-bold text-white tracking-tight"
+               style={{ 
+                 textShadow: '0 1px 4px rgba(0, 0, 0, 0.5)',
+                 letterSpacing: '-0.01em'
+               }}>
               Not Available in Your Location
             </p>
           </div>
           
-          {/* Linha 2: Texto secundário com link clicável */}
-          <p className="text-xs font-normal text-white/75 text-center leading-tight">
+          {/* Linha 2: Texto secundário com link */}
+          <p className="text-xs text-gray-400 text-center leading-tight font-normal">
             <Link 
               href="/contact-us" 
-              className="text-[#077124] hover:text-[#088929] hover:underline cursor-pointer font-semibold transition-colors duration-200"
+              className="text-[#077124] hover:text-[#0a9b30] hover:underline font-semibold transition-colors duration-200 inline-flex items-center gap-1"
             >
               Contact us
             </Link>
             {' '}if you have any questions.
           </p>
         </div>
+        
+        {/* Subtle accent line no topo */}
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-red-500/40 to-transparent"></div>
       </div>
     </div>
   ) : null;

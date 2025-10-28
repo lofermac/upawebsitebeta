@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="relative bg-black w-full px-3 md:px-4 pb-0">
+    <footer className="relative w-full px-3 md:px-4 pb-0" style={{ backgroundColor: '#0e0f12' }}>
       {/* Premium Container Card - Rounded top, cut bottom */}
       <div className="relative w-full rounded-t-[2.5rem] overflow-hidden group/footer transition-all duration-700">
         {/* Background with gradient - tom intermediário entre preto e cinza */}

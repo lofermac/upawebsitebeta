@@ -12,6 +12,11 @@ import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
 import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps } from "@/lib/supabase/homepage";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-coverflow';
 
 // Blog Posts Data
 const blogPosts = [
@@ -120,6 +125,94 @@ function useCountUp(end: number, duration: number = 3500, shouldStart: boolean =
   return count;
 }
 
+// Hook para efeito de digitação
+function useTypingEffect(text: string, speed: number = 50, shouldStart: boolean = false, delay: number = 0) {
+  const [displayedText, setDisplayedText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  
+  useEffect(() => {
+    if (!shouldStart) {
+      setDisplayedText('');
+      setIsComplete(false);
+      return;
+    }
+    
+    // Delay antes de começar a digitar
+    const delayTimeout = setTimeout(() => {
+      let currentIndex = 0;
+      setDisplayedText('');
+      setIsComplete(false);
+      
+      const interval = setInterval(() => {
+        if (currentIndex <= text.length) {
+          setDisplayedText(text.slice(0, currentIndex));
+          currentIndex++;
+        } else {
+          setIsComplete(true);
+          clearInterval(interval);
+        }
+      }, speed);
+      
+      return () => clearInterval(interval);
+    }, delay);
+    
+    return () => clearTimeout(delayTimeout);
+  }, [text, speed, shouldStart, delay]);
+  
+  return { displayedText, isComplete };
+}
+
+// Componente para os subtítulos com efeito de digitação
+function CashbackSubtitles({ 
+  subtitle, 
+  description, 
+  shouldStart 
+}: { 
+  subtitle: string; 
+  description: string; 
+  shouldStart: boolean;
+}) {
+  // Primeiro texto começa após 3.5s (duração da animação do número)
+  const subtitleTyping = useTypingEffect(subtitle || '', 30, shouldStart, 3500);
+  
+  // Segundo texto começa após o primeiro terminar (3.5s + tempo do primeiro texto)
+  const descriptionDelay = 3500 + (subtitle?.length || 0) * 30 + 200; // 200ms de pausa entre textos
+  const descriptionTyping = useTypingEffect(description || '', 30, shouldStart, descriptionDelay);
+  
+  return (
+    <div className="max-w-2xl mx-auto space-y-4 mb-6">
+      {subtitle && (
+        <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
+           style={{ 
+             textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+             letterSpacing: '-0.01em',
+             fontWeight: '400',
+             minHeight: '1.5em',
+             whiteSpace: 'pre-wrap',
+             wordBreak: 'keep-all',
+             overflowWrap: 'normal'
+           }}>
+          {subtitleTyping.displayedText || '\u00A0'}
+        </p>
+      )}
+      {description && (
+        <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
+           style={{ 
+             textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+             letterSpacing: '-0.01em',
+             fontWeight: '400',
+             minHeight: '1.5em',
+             whiteSpace: 'pre-wrap',
+             wordBreak: 'keep-all',
+             overflowWrap: 'normal'
+           }}>
+          {descriptionTyping.displayedText || '\u00A0'}
+        </p>
+      )}
+    </div>
+  );
+}
+
 // Hook para detectar quando elemento entra na viewport
 function useInView(options = {}) {
   const ref = useRef<HTMLDivElement>(null);
@@ -183,8 +276,8 @@ function AnimatedStat({
       {/* Icon */}
       <div className="relative flex justify-center mb-6">
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#077124] to-emerald-400 rounded-2xl blur-lg opacity-30"></div>
-          <div className="relative bg-gradient-to-br from-[#077124] to-emerald-500 p-4 rounded-2xl shadow-lg">
+          <div className="absolute inset-0 bg-[#077124] rounded-2xl blur-lg opacity-30"></div>
+          <div className="relative bg-[#077124] p-4 rounded-2xl shadow-lg">
             <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
           </div>
         </div>
@@ -240,10 +333,8 @@ function AnimatedCashback({
   const formattedValue = animatedValue.toLocaleString('en-US');
   
   return (
-    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-emerald-400 to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
+    <div className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-clip-text text-transparent relative leading-relaxed"
          style={{ 
-           WebkitTextStroke: '0.5px rgba(7, 113, 36, 0.2)',
-           textShadow: '0 0 40px rgba(7, 113, 36, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4)',
            letterSpacing: '-0.02em',
            fontWeight: '800',
            WebkitFontSmoothing: 'antialiased',
@@ -363,9 +454,6 @@ export default function Home() {
     }
   };
 
-  // Ref para o carousel Flickity
-  const carouselRef = useRef<HTMLDivElement>(null);
-
   // Load hero section and testimonials from Supabase
   useEffect(() => {
     async function loadHomepageData() {
@@ -453,55 +541,6 @@ export default function Home() {
     
     loadHomepageData();
   }, []);
-
-  // Inicialização do Flickity Vanilla
-  useEffect(() => {
-    // Esperar o Flickity carregar
-    const initFlickity = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (typeof window !== 'undefined' && (window as any).Flickity && carouselRef.current) {
-        // Destruir instância anterior se existir
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const existingFlickity = (window as any).Flickity.data(carouselRef.current);
-        if (existingFlickity) {
-          existingFlickity.destroy();
-        }
-
-        // Criar nova instância
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        new (window as any).Flickity(carouselRef.current, {
-          wrapAround: true,
-          cellAlign: 'center',
-          autoPlay: 7000,
-          pauseAutoPlayOnHover: true,
-          prevNextButtons: true,
-          pageDots: true,
-          draggable: true,
-          contain: false
-        });
-      }
-    };
-
-    // Tentar inicializar imediatamente
-    initFlickity();
-
-    // Fallback: tentar novamente após 100ms
-    const timer = setTimeout(initFlickity, 100);
-
-    const currentCarouselRef = carouselRef.current;
-
-    return () => {
-      clearTimeout(timer);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (currentCarouselRef && (window as any).Flickity) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const flickity = (window as any).Flickity.data(currentCarouselRef);
-        if (flickity) {
-          flickity.destroy();
-        }
-      }
-    };
-  }, [testimonials]); // Reinitialize when testimonials load
 
   // Intersection Observer for How It Works cards animation
   useEffect(() => {
@@ -661,72 +700,22 @@ export default function Home() {
             {heroData.subtitle}
           </p>
           
-              {/* CTA Button - Ultra Premium Glassmorphism */}
+              {/* CTA Button - Register Style */}
               <div className="flex justify-center pt-6 animate-fade-up-delay-1400">
           <a 
             href={heroData.button_link}
-                  className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white rounded-full overflow-hidden transition-all duration-700 hover:scale-[1.04] active:scale-[0.97]"
-                  style={{
-                    background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
-                    boxShadow: `
-                      0 1px 0 0 rgba(255,255,255,0.2) inset,
-                      0 -1px 0 0 rgba(0,0,0,0.4) inset,
-                      0 2px 4px rgba(0,0,0,0.3),
-                      0 8px 24px rgba(0,0,0,0.25),
-                      0 16px 48px rgba(0,0,0,0.15)
-                    `
-                  }}
+                  className="relative font-semibold text-lg md:text-xl px-10 py-4 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden inline-flex items-center gap-3"
                 >
-                  {/* Refined gradient border with subtle animation */}
-                  <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover:opacity-100 transition-all duration-700">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
-                  </div>
-                  
-                  {/* Premium glass reflection - top half with enhanced gradient */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
-                  
-                  {/* Bottom subtle darkening for depth */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
-                  
-                  {/* Multi-layered shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
-                  
-                  {/* Secondary shimmer with delay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1600 ease-out skew-x-12" style={{ transitionDelay: '0.1s' }}></div>
-                  
-                  {/* Micro texture overlay for premium feel */}
-                  <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" 
-                       style={{ 
-                         backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)'
-                       }}></div>
-                  
-                  {/* Refined inner shadow with multiple layers */}
-                  <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
-                  
-                  {/* Subtle edge highlight */}
-                  <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover:ring-white/20 transition-all duration-700"></div>
-                  
-                  {/* Button content with enhanced typography */}
-                  <span className="relative z-10 tracking-wide" 
-                        style={{ 
-                          textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)',
-                          fontWeight: '700',
-                          letterSpacing: '0.02em'
-                        }}>
+                  <span className="relative z-10 flex items-center gap-3">
                     {heroData.button_text}
+                    <svg className="w-5 h-5 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
                   </span>
-                  
-                  {/* Animated arrow with refined animation */}
-                  <svg 
-                    className="relative z-10 w-5 h-5 transition-all duration-500 group-hover:translate-x-2 group-hover:scale-110" 
-                    fill="none" 
-                    viewBox="0 0 24 24" 
-                    stroke="currentColor" 
-                    strokeWidth={3}
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  {/* Animated shine effect */}
+                  <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                  {/* Subtle inner glow */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                 </a>
               </div>
             </div>
@@ -785,29 +774,12 @@ export default function Home() {
                 />
               </div>
               
-              {/* Subtitle texts */}
-              <div className="max-w-2xl mx-auto space-y-4 mb-6 animate-fade-up" style={{ animationDelay: '0.4s' }}>
-                {cashbackData.subtitle && (
-                  <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
-                     style={{ 
-                       textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                       letterSpacing: '-0.01em',
-                       fontWeight: '400'
-                     }}>
-                    {cashbackData.subtitle}
-                  </p>
-                )}
-                {cashbackData.description && (
-                  <p className="text-sm sm:text-base md:text-lg text-gray-400 font-normal leading-relaxed"
-                     style={{ 
-                       textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                       letterSpacing: '-0.01em',
-                       fontWeight: '400'
-                     }}>
-                    {cashbackData.description}
-                  </p>
-                )}
-              </div>
+              {/* Subtitle texts with typing effect */}
+              <CashbackSubtitles 
+                subtitle={cashbackData.subtitle}
+                description={cashbackData.description}
+                shouldStart={cashbackInView}
+              />
             </div>
           </div>
         </div>
@@ -815,29 +787,7 @@ export default function Home() {
 
       {/* FEATURED DEALS SECTION - 9 Real Poker Room Deals */}
       <section id="deals" className="relative bg-black w-full py-6 md:py-8 px-3 md:px-4">
-        {/* Premium Container Card */}
-        <div className="relative w-full rounded-[2.5rem] overflow-hidden group/deals transition-all duration-700">
-          {/* Background with gradient - tom intermediário entre preto e cinza */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] via-[#121212] to-[#0d0d0d] transition-all duration-700 group-hover/deals:from-[#0e0e0e] group-hover/deals:via-[#131313] group-hover/deals:to-[#0e0e0e]"></div>
-          
-          {/* Subtle border effect - borda completa ao redor */}
-          <div className="absolute inset-0 rounded-[2.5rem] border border-white/[0.06] shadow-2xl shadow-black/50 transition-all duration-700 group-hover/deals:border-white/[0.09] group-hover/deals:shadow-black/60"></div>
-          
-          {/* Inner glow effect - brilho interno sutil */}
-          <div className="absolute inset-0 rounded-[2.5rem] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.025)] transition-all duration-700 group-hover/deals:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04)]"></div>
-          
-          {/* Top light rim - brilho no topo */}
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent rounded-t-[2.5rem]"></div>
-          
-          {/* Ambient background effects - glows verdes sutis */}
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#077124]/[0.04] rounded-full blur-[120px] animate-pulse-slow"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/[0.025] rounded-full blur-[120px] animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
-          
-          {/* Subtle noise texture overlay for premium feel */}
-          <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
-          
-          {/* Content wrapper */}
-          <div className="relative z-10 w-full py-20 md:py-24 px-4">
+          <div className="w-full py-20 md:py-24 px-4">
             <div className="max-w-7xl mx-auto">
               <h2 className="text-white text-center text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
                   style={{ 
@@ -882,34 +832,20 @@ export default function Home() {
                 <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                   <div className="text-center space-y-0 mb-8">
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">65%</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">65%</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                   </div>
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Ultra Premium */}
-                    <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
-                       style={{
-                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
-                         boxShadow: `
-                           0 1px 0 0 rgba(255,255,255,0.2) inset,
-                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
-                           0 2px 4px rgba(0,0,0,0.3),
-                           0 4px 16px rgba(0,0,0,0.2)
-                         `
-                       }}>
-                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
-                      </div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
-                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
-                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
-                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
+                    {/* Claim Offer Button - Register Style */}
+                    <a href="/platform-connection?platform_id=1368" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                      <span className="relative z-10">Claim Offer</span>
+                      {/* Animated shine effect */}
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      {/* Subtle inner glow */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -949,34 +885,20 @@ export default function Home() {
                 <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                   <div className="text-center space-y-0 mb-8">
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Extra</p>
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">50%</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">50%</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                   </div>
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Ultra Premium */}
-                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
-                       style={{
-                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
-                         boxShadow: `
-                           0 1px 0 0 rgba(255,255,255,0.2) inset,
-                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
-                           0 2px 4px rgba(0,0,0,0.3),
-                           0 4px 16px rgba(0,0,0,0.2)
-                         `
-                       }}>
-                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
-                      </div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
-                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
-                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
-                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
+                    {/* Claim Offer Button - Register Style */}
+                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                      <span className="relative z-10">Claim Offer</span>
+                      {/* Animated shine effect */}
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      {/* Subtle inner glow */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -1012,34 +934,20 @@ export default function Home() {
                 <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                   <div className="text-center space-y-0 mb-8">
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Join Our</p>
-                    <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
                     <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Up To $1500 Every Month</p>
                   </div>
                   
                   {/* Buttons - 2 side by side */}
                   <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Ultra Premium */}
-                    <a href="#" className="relative group/btn overflow-hidden text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-700 hover:scale-[1.04] active:scale-[0.97] flex-1"
-                       style={{
-                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
-                         boxShadow: `
-                           0 1px 0 0 rgba(255,255,255,0.2) inset,
-                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
-                           0 2px 4px rgba(0,0,0,0.3),
-                           0 4px 16px rgba(0,0,0,0.2)
-                         `
-                       }}>
-                      <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover/btn:opacity-100 transition-all duration-700">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
-                      </div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover/btn:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
-                      <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" style={{ backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)' }}></div>
-                      <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
-                      <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover/btn:ring-white/20 transition-all duration-700"></div>
-                      <span className="relative z-10 tracking-wide" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)', fontWeight: '700' }}>Claim Offer</span>
+                    {/* Claim Offer Button - Register Style */}
+                    <a href="#" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                      <span className="relative z-10">Claim Offer</span>
+                      {/* Animated shine effect */}
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      {/* Subtle inner glow */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                     </a>
                     {/* Learn More Button - Secondary */}
                     <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -1058,76 +966,28 @@ export default function Home() {
 
             </div>
 
-          {/* View All Deals Button - Ultra Premium */}
+          {/* View All Deals Button - Register Style */}
           <div className="text-center mt-12">
             <Link 
               href="/deals"
-              className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white rounded-full overflow-hidden transition-all duration-700 hover:scale-[1.04] active:scale-[0.97]"
-                       style={{
-                         background: 'linear-gradient(135deg, #0a9b30 0%, #088929 25%, #066920 50%, #055a1c 75%, #044515 100%)',
-                         boxShadow: `
-                           0 1px 0 0 rgba(255,255,255,0.2) inset,
-                           0 -1px 0 0 rgba(0,0,0,0.4) inset,
-                           0 2px 4px rgba(0,0,0,0.3),
-                           0 8px 24px rgba(0,0,0,0.25),
-                           0 16px 48px rgba(0,0,0,0.15)
-                         `
-              }}
+              className="relative font-semibold text-lg md:text-xl px-10 py-4 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden inline-flex items-center gap-3"
             >
-              {/* Refined gradient border with subtle animation */}
-              <div className="absolute inset-0 rounded-full p-[1.5px] bg-gradient-to-br from-white/20 via-white/5 to-white/20 opacity-70 group-hover:opacity-100 transition-all duration-700">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent via-black/10 to-transparent"></div>
-              </div>
-              
-              {/* Premium glass reflection - top half with enhanced gradient */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/35 via-white/15 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-700" style={{ height: '48%' }}></div>
-              
-              {/* Bottom subtle darkening for depth */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-t from-black/25 via-transparent to-transparent" style={{ height: '35%', bottom: 0, top: 'auto' }}></div>
-              
-              {/* Multi-layered shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1400 ease-out skew-x-12"></div>
-              
-              {/* Secondary shimmer with delay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-200/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1600 ease-out skew-x-12" style={{ transitionDelay: '0.1s' }}></div>
-              
-              {/* Micro texture overlay for premium feel */}
-              <div className="absolute inset-0 rounded-full opacity-40 mix-blend-soft-light" 
-                   style={{ 
-                     backgroundImage: 'radial-gradient(circle at 25% 40%, rgba(255,255,255,0.2) 0%, transparent 60%), radial-gradient(circle at 75% 60%, rgba(0,0,0,0.15) 0%, transparent 60%)'
-                   }}></div>
-              
-              {/* Refined inner shadow with multiple layers */}
-              <div className="absolute inset-[1px] rounded-full shadow-[inset_0_1px_3px_rgba(255,255,255,0.25),inset_0_-2px_6px_rgba(0,0,0,0.4)]"></div>
-              
-              {/* Subtle edge highlight */}
-              <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-white/10 group-hover:ring-white/20 transition-all duration-700"></div>
-              
-              {/* Button content with enhanced typography */}
-              <span className="relative z-10 tracking-wide" 
-                    style={{ 
-                      textShadow: '0 1px 2px rgba(0,0,0,0.6), 0 2px 12px rgba(0,0,0,0.4)',
-                      fontWeight: '700',
-                      letterSpacing: '0.02em'
-                    }}>
+              <span className="relative z-10 flex items-center gap-3">
                 View All Deals
+                <ArrowRight className="w-5 h-5 transition-all duration-300" strokeWidth={2.5} />
               </span>
-              
-              {/* Animated arrow with refined animation */}
-              <ArrowRight 
-                className="relative z-10 w-5 h-5 transition-all duration-500 group-hover:translate-x-2 group-hover:scale-110" 
-                strokeWidth={3}
-                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}
-              />
+              {/* Animated shine effect */}
+              <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+              {/* Subtle inner glow */}
+              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
             </Link>
           </div>
             </div>
           </div>
-        </div>
       </section>
 
       {/* HOW IT WORKS SECTION - 3 Simple Steps */}
-      <section ref={howItWorksRef} id="how-it-works" className="relative bg-black w-full py-32 md:py-40 px-4">
+      <section ref={howItWorksRef} id="how-it-works" className="relative w-full py-40 md:py-48 lg:py-56 px-4" style={{ backgroundColor: '#0e0e10' }}>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-28">
@@ -1194,10 +1054,7 @@ export default function Home() {
                     style={{
                       opacity: howItWorksVisible ? 1 : 0,
                       transform: howItWorksVisible ? 'scale(1)' : 'scale(0.7)',
-                      transitionDelay: `${timing.number}ms`,
-                      boxShadow: howItWorksVisible 
-                        ? '0 0 24px rgba(7, 113, 36, 0.6), 0 0 48px rgba(16, 185, 129, 0.3), 0 4px 12px rgba(0, 0, 0, 0.4)' 
-                        : 'none'
+                      transitionDelay: `${timing.number}ms`
                     }}
                   >
                     <span className="text-white text-3xl font-bold">{step.display_order}</span>
@@ -1267,41 +1124,84 @@ export default function Home() {
             <p className="text-gray-400">No testimonials available at the moment.</p>
           </div>
         ) : (
-          <div 
-            ref={carouselRef}
-            className="partners-slideshow"
-            data-flickity='{ "wrapAround": true, "cellAlign": "center", "autoPlay": 7000, "pauseAutoPlayOnHover": true }'
-          >
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.id} className="slideshow-slide">
-                <div className="testimonial-item">
-                  <div className="testimonial-image">
-                    <Image
-                      src={testimonial.image}
-                      alt={testimonial.name}
-                      width={300}
-                      height={300}
-                      className="rounded-full"
-                    />
+          <div className="partners-slideshow">
+            <Swiper
+              modules={[Pagination, Autoplay, EffectCoverflow]}
+              effect="coverflow"
+              grabCursor={true}
+              centeredSlides={true}
+              slidesPerView={2.2}
+              loop={true}
+              autoplay={{
+                delay: 7000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }}
+              speed={400}
+              coverflowEffect={{
+                rotate: 0,
+                stretch: 0,
+                depth: 100,
+                modifier: 2.5,
+                slideShadows: false,
+              }}
+              pagination={{
+                clickable: true,
+                dynamicBullets: true,
+              }}
+              breakpoints={{
+                320: {
+                  slidesPerView: 1,
+                  coverflowEffect: {
+                    modifier: 1,
+                  },
+                },
+                768: {
+                  slidesPerView: 1.8,
+                  coverflowEffect: {
+                    modifier: 2,
+                  },
+                },
+                1024: {
+                  slidesPerView: 2.2,
+                  coverflowEffect: {
+                    modifier: 2.5,
+                  },
+                },
+              }}
+              className="swiper-testimonials"
+            >
+              {testimonials.map((testimonial) => (
+                <SwiperSlide key={testimonial.id}>
+                  <div className="testimonial-item">
+                    <div className="testimonial-image">
+                        <Image
+                          src={testimonial.image}
+                          alt={testimonial.name}
+                          width={255}
+                          height={255}
+                          className="rounded-full"
+                        />
+                    </div>
+                    <div className="testimonial-content">
+                      <h3 className="testimonial-name">{testimonial.name}</h3>
+                      {testimonial.meta && (
+                        <p className="testimonial-meta">{testimonial.meta}</p>
+                      )}
+                      <p className="testimonial-quote">
+                        &quot;{testimonial.quote}&quot;
+                      </p>
+                    </div>
                   </div>
-                  <div className="testimonial-content">
-                    <h3 className="testimonial-name">{testimonial.name}</h3>
-                    {testimonial.meta && (
-                      <p className="testimonial-meta">{testimonial.meta}</p>
-                    )}
-                    <p className="testimonial-quote">
-                      &quot;{testimonial.quote}&quot;
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
         )}
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="relative bg-black w-full py-24 md:py-32 px-4">
+      <section id="faq" className="relative w-full py-24 md:py-32 px-4" style={{ backgroundColor: '#0e0f11' }}>
         <div className="max-w-4xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-16">
@@ -1347,7 +1247,7 @@ export default function Home() {
                         strokeWidth="2.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="text-white"
+                        className="text-[#077124]"
                       >
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1379,7 +1279,7 @@ export default function Home() {
       </section>
 
       {/* LATEST NEWS SECTION */}
-      <section id="news" className="relative bg-black w-full py-12 md:py-16 px-3 md:px-4">
+      <section id="news" className="relative w-full py-12 md:py-16 px-3 md:px-4" style={{ backgroundColor: '#0e0f12' }}>
         <div className="w-full py-8 md:py-12 px-4">
             <h2 className="text-white text-center text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-bold mb-4"
                 style={{ 
@@ -1403,7 +1303,7 @@ export default function Home() {
               {blogPosts.slice(0, 3).map((post) => (
                 <article 
                   key={post.id}
-                  className="group relative bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-[#077124] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-[#077124]/20"
+                  className="group relative bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-[#077124] transition-all duration-300 hover:-translate-y-2"
                 >
                   {/* Image */}
                   <Link href={post.url} className="block overflow-hidden">
@@ -1411,7 +1311,7 @@ export default function Home() {
                       <img 
                         src={post.image} 
                         alt={post.alt}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
