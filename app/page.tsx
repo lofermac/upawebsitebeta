@@ -367,6 +367,14 @@ const faqData = [
   {
     question: "What Makes Universal Poker Different?",
     answer: "We offer higher rakeback percentages, personalized support, exclusive promotions, and work directly with poker rooms to ensure you get the best possible deal. We've been in business for 13+ years and have paid out millions in rakeback."
+  },
+  {
+    question: "How Long Does It Take To Get Approved?",
+    answer: "New account approvals are typically instant. If you're applying to transfer an existing account to our rakeback program, the review process usually takes 2-3 business days. We work quickly to get you started as soon as possible."
+  },
+  {
+    question: "What If I Have Issues With My Rakeback?",
+    answer: "Our dedicated support team is here to help with any rakeback-related questions or issues. You can contact us via email, live chat, or through our contact form, and we'll resolve your concerns promptly. We pride ourselves on providing excellent customer service."
   }
 ];
 
@@ -1216,7 +1224,7 @@ export default function Home() {
           </div>
 
           {/* FAQ Accordion */}
-          <div className="space-y-4">
+          <div className="space-y-0">
             {faqData.map((faq, index) => (
               <div 
                 key={index}
@@ -1225,7 +1233,7 @@ export default function Home() {
                 {/* Question Button */}
                 <button
                   onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                  className="w-full flex items-center justify-between py-8 text-left transition-all duration-300 hover:opacity-80"
+                  className="w-full flex items-center justify-between py-5 text-left transition-all duration-300 hover:opacity-80"
                 >
                   <span className="text-white text-base sm:text-base md:text-lg lg:text-lg font-semibold pr-8"
                         style={{ 
