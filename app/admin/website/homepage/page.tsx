@@ -10,7 +10,6 @@ import {
   ChevronUp,
   Plus,
   Trash2,
-  GripVertical,
   Eye,
   AlertCircle
 } from 'lucide-react';
@@ -35,13 +34,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 // Type Definitions
-interface HeroSection {
-  title: string;
-  subtitle: string;
-  buttonText: string;
-  buttonLink: string;
-}
-
 interface StatItem {
   id: string;
   label: string;
@@ -753,7 +745,7 @@ export default function HomepageEditor() {
   };
 
   // Componente Sortable FAQ Item
-  function SortableFAQItem({ faq, index, onUpdate }: any) {
+  function SortableFAQItem({ faq, index, onUpdate }: { faq: FAQ; index: number; onUpdate: (index: number, field: 'question' | 'answer', value: string) => void }) {
     const {
       attributes,
       listeners,

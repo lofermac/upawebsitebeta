@@ -30,7 +30,7 @@ export interface ContactLink {
  * Fetch all active contact links ordered by display_order
  * @returns Array of contact links or empty array on error
  */
-export async function getContactLinks(): Promise<{ data: ContactLink[] | null; error: any }> {
+export async function getContactLinks(): Promise<{ data: ContactLink[] | null; error: unknown }> {
   try {
     console.log('🔧 [getContactLinks] Fetching contact links...');
     
@@ -66,7 +66,7 @@ export async function getContactLinks(): Promise<{ data: ContactLink[] | null; e
 export async function updateContactLink(
   id: string,
   url: string
-): Promise<{ data: ContactLink | null; error: any }> {
+): Promise<{ data: ContactLink | null; error: unknown }> {
   try {
     console.log('🔧 [updateContactLink] Updating link:', id, url);
     

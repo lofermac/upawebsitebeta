@@ -724,7 +724,11 @@ export async function updateFAQs(faqs: FAQ[]): Promise<boolean> {
         return createFAQ(faq);
       } else if (faq.id) {
         // Update existing
-        return updateFAQ(faq);
+        return updateFAQ(faq.id, {
+          question: faq.question,
+          answer: faq.answer,
+          display_order: faq.display_order
+        });
       }
     });
 

@@ -96,7 +96,7 @@ export default function ContactUsPage() {
                 ) : contactLinks.length > 0 ? (
                   contactLinks.map((link) => {
                     // Map platform to icon and color
-                    const platformConfig: Record<string, { icon: JSX.Element; color: string; hoverColor: string }> = {
+                    const platformConfig: Record<string, { icon: React.ReactElement; color: string; hoverColor: string }> = {
                       whatsapp: {
                         icon: (
                           <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">

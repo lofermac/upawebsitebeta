@@ -31,7 +31,7 @@ export interface TeamMember {
  * Fetch all active team members ordered by display_order
  * @returns Array of team members or empty array on error
  */
-export async function getTeamMembers(): Promise<{ data: TeamMember[] | null; error: any }> {
+export async function getTeamMembers(): Promise<{ data: TeamMember[] | null; error: unknown }> {
   try {
     console.log('🔧 [getTeamMembers] Fetching team members...');
     
@@ -72,7 +72,7 @@ export async function updateTeamMember(
     bio?: string;
     photo_url?: string | null;
   }
-): Promise<{ data: TeamMember | null; error: any }> {
+): Promise<{ data: TeamMember | null; error: unknown }> {
   try {
     console.log('🔧 [updateTeamMember] Updating member:', id, memberData);
     
@@ -112,7 +112,7 @@ export async function updateTeamMember(
  */
 export async function updateTeamMembersOrder(
   members: Array<{ id: string; display_order: number }>
-): Promise<{ success: boolean; error: any }> {
+): Promise<{ success: boolean; error: unknown }> {
   try {
     console.log('🔧 [updateTeamMembersOrder] Updating order for', members.length, 'members');
     
@@ -160,7 +160,7 @@ export async function uploadTeamPhoto(
   file: File,
   memberId: string,
   oldPhotoUrl: string | null = null
-): Promise<{ url: string | null; error: any }> {
+): Promise<{ url: string | null; error: unknown }> {
   try {
     console.log('🔧 [uploadTeamPhoto] 📸 Starting upload...');
     console.log('🔧 [uploadTeamPhoto] 📁 File:', {
