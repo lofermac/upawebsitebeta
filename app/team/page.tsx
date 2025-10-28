@@ -1,63 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import { Send } from "lucide-react";
-
-// Team Members Data - In Order: Andy, Chris, Misha, Tim, Leonardo, Paul
-const teamMembers = [
-  {
-    id: 1,
-    name: 'Andy',
-    position: 'Director',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'My name is Andy, and I\'m the owner and founder of Universal Poker. I was a professional poker player and very well known in the industry, mostly from playing televised poker.',
-  },
-  {
-    id: 2,
-    name: 'Chris',
-    position: 'Associate Director',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144036/53221910069_4410e20b5a_o-e1698690291570-1024x1024.jpg',
-    description: 'I\'m Chris, the Associate Director at Universal Poker. I have been in the poker industry for years now, still playing online whenever I have the free time.',
-  },
-  {
-    id: 3,
-    name: 'Misha',
-    position: 'Affiliate Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144038/2023-10-30-17.49.16.jpg',
-    description: 'Hi, I\'m Misha, one of the Affiliate Managers at Universal Poker. I have always been in the poker industry being a former professional poker pro and running my own stable.',
-  },
-  {
-    id: 4,
-    name: 'Tim',
-    position: 'Operations Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'I\'m Tim, the Operations Manager at Universal Poker. I have always been in the poker scene, with the vast majority of my time spent as the Poker Manager at Ladbrokes.',
-  },
-  {
-    id: 5,
-    name: 'Leonardo',
-    position: 'Data Analyst',
-    image: '/images/leo.png',
-    description: 'I\'m Leonardo, one of the Data Analysts at Universal Poker. My role inside the company is to provide the best insights for the staff to make the best decisions.',
-  },
-  {
-    id: 6,
-    name: 'Paul',
-    position: 'Finance Manager',
-    image: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/10/07144030/jhfhfjhfhfhgfhgfhgfjhv-1-e1698778319516-1024x1024.png',
-    description: 'My name is Paul, the Finance Manager at Universal Poker. I have been with Universal since day one, bringing a wealth of experience in Poker, Banking and Finance industries.',
-  },
-];
+import { getTeamMembers, type TeamMember } from "@/lib/supabase/team";
 
 export default function TeamPage() {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     message: ''
   });
+
+  // Load team members from Supabase
+  useEffect(() => {
+    async function loadTeam() {
+      try {
+        const { data, error } = await getTeamMembers();
+        if (error) {
+          console.error('Error loading team members:', error);
+        } else if (data) {
+          setTeamMembers(data);
+        }
+      } catch (error) {
+        console.error('Failed to load team:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadTeam();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -113,62 +89,100 @@ export default function TeamPage() {
 
           {/* TEAM GRID - 3x3 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10 max-w-6xl mx-auto auto-rows-fr">
-            {teamMembers.map((member, index) => (
-              <div 
-                key={member.id}
-                className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 animate-fade-up h-full"
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                {/* Gradient Border Effect */}
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
-                
-                {/* Card Content */}
-                <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
-                  {/* Background subtle effects */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
-                  
-                  {/* Image Container */}
-                  <div className="relative w-full aspect-square overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 z-10"></div>
-                    <Image
-                      src={member.image}
-                      alt={`${member.name} - ${member.position}`}
-                      width={300}
-                      height={300}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      loading="lazy"
-                    />
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="relative p-4 sm:p-5 flex flex-col items-center text-center flex-grow z-10">
-                    {/* Name */}
-                    <h3 className="text-white text-base sm:text-lg font-bold mb-1 tracking-tight"
-                        style={{ 
-                          textShadow: '0 2px 12px rgba(0,0,0,0.4)',
-                          letterSpacing: '-0.01em',
-                          fontWeight: '700'
-                        }}>
-                      {member.name}
-                    </h3>
-                    
-                    {/* Position */}
-                    <p className="text-[#077124] text-xs sm:text-sm font-semibold mb-3 tracking-wide">
-                      {member.position}
-                    </p>
-                    
-                    {/* Description */}
-                    <p className="text-gray-300 text-xs sm:text-sm leading-relaxed"
-                       style={{ 
-                         textShadow: '0 1px 4px rgba(0,0,0,0.2)',
-                         letterSpacing: '-0.005em'
-                       }}>
-                      {member.description}
-                    </p>
+            {isLoading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <div 
+                  key={`skeleton-${index}`}
+                  className="rounded-2xl overflow-hidden backdrop-blur-xl h-full animate-pulse"
+                >
+                  <div className="bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-2xl overflow-hidden flex flex-col h-full">
+                    <div className="w-full aspect-square bg-gray-800"></div>
+                    <div className="p-4 sm:p-5 flex flex-col items-center text-center flex-grow">
+                      <div className="h-6 bg-gray-800 rounded w-24 mb-2"></div>
+                      <div className="h-4 bg-gray-800 rounded w-32 mb-3"></div>
+                      <div className="h-16 bg-gray-800 rounded w-full"></div>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : teamMembers.length === 0 ? (
+              // No members found
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-400 text-lg">No team members found</p>
               </div>
-            ))}
+            ) : (
+              // Team members
+              teamMembers.map((member, index) => (
+                <div 
+                  key={member.id}
+                  className="group relative rounded-2xl overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 animate-fade-up h-full"
+                  style={{ animationDelay: `${0.1 * index}s` }}
+                >
+                  {/* Gradient Border Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 via-[#077124]/20 to-zinc-900/50 rounded-2xl blur-sm group-hover:blur-md transition-all duration-500"></div>
+                  
+                  {/* Card Content */}
+                  <div className="relative bg-gradient-to-br from-zinc-900/95 via-black/95 to-zinc-900/95 border border-white/[0.08] rounded-2xl overflow-hidden shadow-2xl group-hover:shadow-emerald-500/20 group-hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+                    {/* Background subtle effects */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] via-transparent to-transparent opacity-60 group-hover:opacity-85 transition-opacity duration-500"></div>
+                    
+                    {/* Image Container */}
+                    <div className="relative w-full aspect-square overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 z-10"></div>
+                      {member.photo_url ? (
+                        <Image
+                          src={member.photo_url}
+                          alt={`${member.name} - ${member.role}`}
+                          width={300}
+                          height={300}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                          <Image
+                            src="/images/logo.png"
+                            alt="Universal Poker"
+                            width={150}
+                            height={150}
+                            className="opacity-20"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="relative p-4 sm:p-5 flex flex-col items-center text-center flex-grow z-10">
+                      {/* Name */}
+                      <h3 className="text-white text-base sm:text-lg font-bold mb-1 tracking-tight"
+                          style={{ 
+                            textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                            letterSpacing: '-0.01em',
+                            fontWeight: '700'
+                          }}>
+                        {member.name}
+                      </h3>
+                      
+                      {/* Position */}
+                      <p className="text-[#077124] text-xs sm:text-sm font-semibold mb-3 tracking-wide">
+                        {member.role}
+                      </p>
+                      
+                      {/* Description */}
+                      <p className="text-gray-300 text-xs sm:text-sm leading-relaxed"
+                         style={{ 
+                           textShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                           letterSpacing: '-0.005em'
+                         }}>
+                        {member.bio}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

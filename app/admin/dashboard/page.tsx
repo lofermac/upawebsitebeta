@@ -12,17 +12,10 @@ import {
   Menu,
   X,
   DollarSign,
-  ClipboardList,
   Building2,
   TrendingUp,
   TrendingDown,
-  CheckSquare,
-  Globe,
-  Plus,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
-  Clock
+  Globe
 } from 'lucide-react';
 
 // Network platforms data
@@ -164,7 +157,6 @@ export default function AdminDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'players', label: 'Players', icon: Users },
     { id: 'subaffiliates', label: 'Sub-Affiliates', icon: Building2 },
-    { id: 'tasks', label: 'Tasks', icon: CheckSquare },
     { id: 'website', label: 'Website', icon: Globe },
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -198,15 +190,6 @@ export default function AdminDashboard() {
       color: 'from-green-500 to-green-600',
       iconBg: 'bg-gradient-to-br from-green-500 to-green-600',
       textColor: 'text-green-500'
-    },
-    { 
-      label: 'Pending Tasks',
-      subtitle: 'Open operational tasks', 
-      value: '8', 
-      icon: ClipboardList,
-      color: 'from-purple-500 to-purple-600',
-      iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
-      textColor: 'text-purple-500'
     },
   ];
 
@@ -330,32 +313,6 @@ export default function AdminDashboard() {
                   )}
                 </button>
               ))}
-              
-              {/* Quick Stats in Sidebar */}
-              <div className="mt-8 pt-6 border-t border-gray-800/50">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest px-2 mb-4">Quick Stats</h3>
-                <div className="space-y-3">
-                  <div className="px-4 py-3 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl border border-gray-800/50">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400 font-medium">Networks</span>
-                      <span className="text-lg font-bold text-emerald-400">9</span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full w-full bg-gradient-to-r from-emerald-500 to-green-400 rounded-full"></div>
-                    </div>
-                  </div>
-                  
-                  <div className="px-4 py-3 bg-gradient-to-br from-gray-900/50 to-gray-800/30 rounded-xl border border-gray-800/50">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400 font-medium">Total Rake</span>
-                      <span className="text-sm font-bold text-green-400">$139K</span>
-                    </div>
-                    <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
-                      <div className="h-full w-4/5 bg-gradient-to-r from-green-500 to-emerald-400 rounded-full"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </nav>
           </aside>
 
@@ -959,347 +916,83 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  {/* Team Card - Coming Soon */}
-                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                  {/* Team Card */}
+                  <a 
+                    href="/admin/website/team"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
                     <div className="flex flex-col h-full">
                       {/* Icon */}
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                         <Users className="w-7 h-7 text-white" strokeWidth={2} />
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-white mb-2">Team</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-blue-500 transition-colors">Team</h3>
                       
                       {/* Description */}
-                      <p className="text-sm text-gray-400 mb-4 flex-grow">Manage team member profiles and information</p>
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Manage team member profiles, photos and information</p>
                       
-                      {/* Coming Soon Badge */}
-                      <div className="pt-4 border-t border-white/[0.06]">
-                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
-                          Coming Soon
-                        </span>
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">6 Members</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </a>
 
-                  {/* Contact Card - Coming Soon */}
-                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                  {/* Contact Card */}
+                  <a 
+                    href="/admin/website/contact"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
                     <div className="flex flex-col h-full">
                       {/* Icon */}
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                         <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-white mb-2">Contact</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-500 transition-colors">Contact</h3>
                       
                       {/* Description */}
-                      <p className="text-sm text-gray-400 mb-4 flex-grow">Edit contact page content and form settings</p>
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Edit contact page links (WhatsApp, Discord, Telegram)</p>
                       
-                      {/* Coming Soon Badge */}
-                      <div className="pt-4 border-t border-white/[0.06]">
-                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
-                          Coming Soon
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </>
-            )}
-
-            {/* Tasks Tab */}
-            {activeTab === 'tasks' && (
-              <>
-                {/* Page Title */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                      <h1 className="text-3xl font-bold text-white">Task Management</h1>
-                    </div>
-                    <button className="px-4 py-2 bg-[#10b981] hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
-                      <Plus size={18} />
-                      New Task
-                    </button>
-                  </div>
-                  <p className="text-base text-gray-400 ml-6">Organize and track team tasks across projects</p>
-                </div>
-
-                {/* Task Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Clock className="w-5 h-5 text-gray-400" />
-                      <div className="text-sm text-gray-400">To Do</div>
-                    </div>
-                    <div className="text-2xl font-bold text-white">10</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <AlertCircle className="w-5 h-5 text-blue-500" />
-                      <div className="text-sm text-gray-400">In Progress</div>
-                    </div>
-                    <div className="text-2xl font-bold text-blue-500">6</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <CheckCircle2 className="w-5 h-5 text-[#10b981]" />
-                      <div className="text-sm text-gray-400">Completed</div>
-                    </div>
-                    <div className="text-2xl font-bold text-[#10b981]">14</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Calendar className="w-5 h-5 text-orange-500" />
-                      <div className="text-sm text-gray-400">Overdue</div>
-                    </div>
-                    <div className="text-2xl font-bold text-orange-500">2</div>
-                  </div>
-                </div>
-
-                {/* Kanban Board */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  {/* To Do Column */}
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                        <h3 className="text-lg font-semibold text-white">To Do</h3>
-                        <span className="text-sm text-gray-500">(10)</span>
-                      </div>
-                      <button className="p-1.5 hover:bg-white/[0.05] rounded-lg transition-colors">
-                        <Plus size={16} className="text-gray-400" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {[
-                        { id: 1, title: 'Update GGPoker Deal Page', assignee: 'Leonardo', priority: 'High', dueDate: 'Jan 25', tags: ['Website', 'Content'], color: 'from-purple-500 to-purple-600' },
-                        { id: 2, title: 'Review Player Approval Requests', assignee: 'Misha', priority: 'Medium', dueDate: 'Jan 26', tags: ['Admin', 'Players'], color: 'from-blue-500 to-blue-600' },
-                        { id: 3, title: 'Setup New Affiliate Dashboard', assignee: 'Tim', priority: 'High', dueDate: 'Jan 27', tags: ['Development'], color: 'from-emerald-500 to-emerald-600' },
-                        { id: 4, title: 'Create Monthly Report Template', assignee: 'Paul', priority: 'Low', dueDate: 'Jan 30', tags: ['Reports'], color: 'from-orange-500 to-orange-600' },
-                        { id: 13, title: 'Optimize SEO for News Articles', assignee: 'Chris', priority: 'Medium', dueDate: 'Jan 28', tags: ['SEO', 'Content'], color: 'from-red-500 to-red-600' },
-                        { id: 14, title: 'Audit Network Performance Metrics', assignee: 'Chris', priority: 'High', dueDate: 'Jan 26', tags: ['Analytics', 'Data'], color: 'from-red-500 to-red-600' },
-                      ].map((task) => (
-                        <div key={task.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-4 hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                          <div className="flex items-start gap-3 mb-3">
-                            <input 
-                              type="checkbox" 
-                              className="mt-1 w-4 h-4 rounded border-gray-600 bg-transparent checked:bg-[#10b981] focus:ring-[#10b981] focus:ring-offset-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-white mb-2 group-hover:text-[#10b981] transition-colors">{task.title}</h4>
-                              <div className="flex flex-wrap gap-1.5 mb-3">
-                                {task.tags.map((tag, idx) => (
-                                  <span key={idx} className="text-[10px] px-2 py-0.5 bg-white/[0.05] text-gray-400 rounded-md border border-white/[0.08]">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${task.color} flex items-center justify-center text-white text-[10px] font-semibold`}>
-                                    {task.assignee[0]}
-                                  </div>
-                                  <span className="text-gray-400">{task.assignee}</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-gray-500">
-                                  <Calendar size={12} />
-                                  <span>{task.dueDate}</span>
-                                </div>
-                              </div>
-                              <div className="mt-2">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${
-                                  task.priority === 'High' 
-                                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                    : task.priority === 'Medium'
-                                    ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                                    : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-                                }`}>
-                                  {task.priority}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">3 Links</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* In Progress Column */}
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                        <h3 className="text-lg font-semibold text-white">In Progress</h3>
-                        <span className="text-sm text-gray-500">(6)</span>
-                      </div>
-                      <button className="p-1.5 hover:bg-white/[0.05] rounded-lg transition-colors">
-                        <Plus size={16} className="text-gray-400" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {[
-                        { id: 5, title: 'Implement Player Stats Dashboard', assignee: 'Tim', priority: 'High', dueDate: 'Jan 24', tags: ['Development', 'UI'], progress: 65, color: 'from-emerald-500 to-emerald-600' },
-                        { id: 6, title: 'Review Sub-Affiliate Applications', assignee: 'Misha', priority: 'Medium', dueDate: 'Jan 25', tags: ['Admin'], progress: 40, color: 'from-blue-500 to-blue-600' },
-                        { id: 7, title: 'Update PartyPoker Commission Structure', assignee: 'Paul', priority: 'High', dueDate: 'Jan 26', tags: ['Finance'], progress: 80, color: 'from-orange-500 to-orange-600' },
-                        { id: 8, title: 'Design New Landing Page', assignee: 'Leonardo', priority: 'Medium', dueDate: 'Jan 28', tags: ['Design', 'Website'], progress: 30, color: 'from-purple-500 to-purple-600' },
-                        { id: 15, title: 'Create Marketing Campaign for Q1', assignee: 'Chris', priority: 'High', dueDate: 'Jan 27', tags: ['Marketing', 'Strategy'], progress: 55, color: 'from-red-500 to-red-600' },
-                      ].map((task) => (
-                        <div key={task.id} className="bg-white/[0.02] border border-blue-500/20 rounded-lg p-4 hover:bg-white/[0.04] transition-colors cursor-pointer group">
-                          <div className="flex items-start gap-3 mb-3">
-                            <input 
-                              type="checkbox" 
-                              className="mt-1 w-4 h-4 rounded border-gray-600 bg-transparent checked:bg-[#10b981] focus:ring-[#10b981] focus:ring-offset-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-white mb-2 group-hover:text-blue-400 transition-colors">{task.title}</h4>
-                              <div className="flex flex-wrap gap-1.5 mb-3">
-                                {task.tags.map((tag, idx) => (
-                                  <span key={idx} className="text-[10px] px-2 py-0.5 bg-white/[0.05] text-gray-400 rounded-md border border-white/[0.08]">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                              
-                              {/* Progress Bar */}
-                              <div className="mb-3">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="text-[10px] text-gray-500">Progress</span>
-                                  <span className="text-[10px] text-gray-400 font-semibold">{task.progress}%</span>
-                                </div>
-                                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-300"
-                                    style={{ width: `${task.progress}%` }}
-                                  ></div>
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${task.color} flex items-center justify-center text-white text-[10px] font-semibold`}>
-                                    {task.assignee[0]}
-                                  </div>
-                                  <span className="text-gray-400">{task.assignee}</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-gray-500">
-                                  <Calendar size={12} />
-                                  <span>{task.dueDate}</span>
-                                </div>
-                              </div>
-                              <div className="mt-2">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${
-                                  task.priority === 'High' 
-                                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                                    : task.priority === 'Medium'
-                                    ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                                    : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-                                }`}>
-                                  {task.priority}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                      </div>
-                      ))}
-                      </div>
-                    </div>
-                    
-                  {/* Completed Column */}
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-[#10b981]"></div>
-                        <h3 className="text-lg font-semibold text-white">Completed</h3>
-                        <span className="text-sm text-gray-500">(14)</span>
-                      </div>
-                      <button className="p-1.5 hover:bg-white/[0.05] rounded-lg transition-colors">
-                        <Plus size={16} className="text-gray-400" />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {[
-                        { id: 9, title: 'Launch 888poker Promotion', assignee: 'Leonardo', completedDate: 'Jan 22', tags: ['Marketing'], color: 'from-purple-500 to-purple-600' },
-                        { id: 10, title: 'Onboard 12 New Players to WPT', assignee: 'Misha', completedDate: 'Jan 21', tags: ['Players', 'WPT'], color: 'from-blue-500 to-blue-600' },
-                        { id: 11, title: 'Fix Payment Processing Bug', assignee: 'Tim', completedDate: 'Jan 20', tags: ['Development', 'Bug'], color: 'from-emerald-500 to-emerald-600' },
-                        { id: 12, title: 'Generate December Reports', assignee: 'Paul', completedDate: 'Jan 19', tags: ['Reports', 'Finance'], color: 'from-orange-500 to-orange-600' },
-                        { id: 16, title: 'Setup Google Analytics Dashboard', assignee: 'Chris', completedDate: 'Jan 18', tags: ['Analytics', 'Tools'], color: 'from-red-500 to-red-600' },
-                        { id: 17, title: 'Create Email Newsletter Template', assignee: 'Chris', completedDate: 'Jan 17', tags: ['Marketing', 'Email'], color: 'from-red-500 to-red-600' },
-                      ].map((task) => (
-                        <div key={task.id} className="bg-white/[0.02] border border-[#10b981]/20 rounded-lg p-4 hover:bg-white/[0.04] transition-colors cursor-pointer group opacity-80">
-                          <div className="flex items-start gap-3 mb-3">
-                            <CheckCircle2 size={16} className="mt-1 text-[#10b981] flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-sm font-medium text-gray-400 mb-2 line-through">{task.title}</h4>
-                              <div className="flex flex-wrap gap-1.5 mb-3">
-                                {task.tags.map((tag, idx) => (
-                                  <span key={idx} className="text-[10px] px-2 py-0.5 bg-white/[0.05] text-gray-500 rounded-md border border-white/[0.08]">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                              <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2">
-                                  <div className={`w-6 h-6 rounded-full bg-gradient-to-br ${task.color} flex items-center justify-center text-white text-[10px] font-semibold`}>
-                                    {task.assignee[0]}
-                                  </div>
-                                  <span className="text-gray-500">{task.assignee}</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-gray-600">
-                                  <CheckCircle2 size={12} />
-                                  <span>{task.completedDate}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </a>
 
-                {/* Team Members Quick View */}
-                <div className="mt-8 bg-[#0f1419] border border-white/[0.06] rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-5">Team Workload</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    {[
-                      { name: 'Leonardo', tasks: 2, completed: 9, avatar: 'L', color: 'from-purple-500 to-purple-600' },
-                      { name: 'Misha', tasks: 3, completed: 13, avatar: 'M', color: 'from-blue-500 to-blue-600' },
-                      { name: 'Tim', tasks: 2, completed: 10, avatar: 'T', color: 'from-emerald-500 to-emerald-600' },
-                      { name: 'Paul', tasks: 2, completed: 8, avatar: 'P', color: 'from-orange-500 to-orange-600' },
-                      { name: 'Chris', tasks: 3, completed: 11, avatar: 'C', color: 'from-red-500 to-red-600' },
-                    ].map((member) => (
-                      <div key={member.name} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-4 hover:bg-white/[0.04] transition-colors">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-white font-semibold`}>
-                            {member.avatar}
-                          </div>
-                          <div>
-                            <div className="text-sm font-semibold text-white">{member.name}</div>
-                            <div className="text-xs text-gray-500">Team Member</div>
-                          </div>
-                      </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-400">Active Tasks</span>
-                            <span className="font-semibold text-blue-400">{member.tasks}</span>
-                      </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-400">Completed</span>
-                            <span className="font-semibold text-[#10b981]">{member.completed}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                </div>
               </>
             )}
           </main>

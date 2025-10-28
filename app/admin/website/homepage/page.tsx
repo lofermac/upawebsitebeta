@@ -15,7 +15,24 @@ import {
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep } from '@/lib/supabase/homepage';
+import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep, getFAQs, updateFAQ } from '@/lib/supabase/homepage';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // Type Definitions
 interface HeroSection {
@@ -128,6 +145,7 @@ export default function HomepageEditor() {
   const [faqsData, setFaqsData] = useState<FAQ[]>([
     { id: '1', question: 'Do I Have To Pay For This Service?', answer: 'No, our service is completely free for players. We earn a commission from the poker sites when you play, which allows us to offer you additional rakeback and benefits at no cost to you.', order: 1, isActive: true }
   ]);
+  const [isLoadingFaqs, setIsLoadingFaqs] = useState(true);
 
   // Toggle Accordion Section
   const toggleSection = (section: string) => {
@@ -383,7 +401,22 @@ export default function HomepageEditor() {
           console.log('✅ Loaded', mappedTestimonials.length, 'testimonials from database');
         }
         
-        // TODO: Load other sections (Cashback, etc.) when needed
+        // Load FAQs
+        console.log('📥 Loading FAQs from Supabase...');
+        setIsLoadingFaqs(true);
+        const faqsList = await getFAQs();
+
+        if (faqsList && faqsList.length > 0) {
+          setFaqsData(faqsList.map(faq => ({
+            id: faq.id,
+            question: faq.question,
+            answer: faq.answer,
+            order: faq.display_order,
+            isActive: faq.is_active
+          })));
+          console.log('✅ Loaded', faqsList.length, 'FAQs from database');
+        }
+        setIsLoadingFaqs(false);
         
       } catch (error) {
         console.error('Error loading homepage data:', error);
@@ -649,6 +682,151 @@ export default function HomepageEditor() {
       setIsSaving(false);
     }
   };
+
+  const saveFAQsSection = async () => {
+    console.log('💾 [1] Salvando FAQs...');
+    
+    try {
+      setIsSaving(true);
+      setSaveSuccessState(prev => ({ ...prev, faqs: false }));
+      
+      // Atualizar cada FAQ COM display_order
+      for (const faq of faqsData) {
+        await updateFAQ(faq.id, {
+          question: faq.question,
+          answer: faq.answer,
+          display_order: faq.order
+        });
+      }
+      
+      console.log('✅ [2] FAQs salvos!');
+      setSaveSuccess('FAQs saved successfully!');
+      setSaveSuccessState(prev => ({ ...prev, faqs: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, faqs: false }));
+      }, 2000);
+      
+    } catch (error) {
+      console.error('❌ [3] Erro ao salvar:', error);
+      setSaveError('Failed to save FAQs');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // DnD Sensors para FAQs
+  const faqSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handler de drag para FAQs
+  const handleFAQDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      setFaqsData((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        const reorderedItems = arrayMove(items, oldIndex, newIndex);
+        
+        // Atualizar display_order de cada FAQ
+        return reorderedItems.map((item, index) => ({
+          ...item,
+          order: index + 1
+        }));
+      });
+    }
+  };
+
+  // Função para atualizar campo do FAQ
+  const updateFAQField = (index: number, field: 'question' | 'answer', value: string) => {
+    const newFaqs = [...faqsData];
+    newFaqs[index][field] = value;
+    setFaqsData(newFaqs);
+  };
+
+  // Componente Sortable FAQ Item
+  function SortableFAQItem({ faq, index, onUpdate }: any) {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging
+    } = useSortable({ id: faq.id });
+    
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+    
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-4"
+      >
+        <div className="flex items-center gap-2 mb-3">
+          {/* Drag Handle */}
+          <button
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-white/40 hover:text-white/60 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+            </svg>
+          </button>
+          
+          <div className="w-6 h-6 rounded bg-green-500/20 text-green-400 flex items-center justify-center text-xs font-bold">
+            {faq.order}
+          </div>
+          <h4 className="text-sm font-medium text-white/80">Question {faq.order}</h4>
+        </div>
+        
+        {/* Question */}
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-white/60 mb-2">
+            Question <span className="text-red-400">*</span>
+          </label>
+          <input
+            type="text"
+            value={faq.question}
+            onChange={(e) => onUpdate(index, 'question', e.target.value)}
+            placeholder="Question text"
+            maxLength={150}
+            className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40"
+          />
+          <p className="text-xs text-white/40 mt-1">{faq.question.length}/150 characters</p>
+        </div>
+        
+        {/* Answer */}
+        <div>
+          <label className="block text-xs font-medium text-white/60 mb-2">
+            Answer <span className="text-red-400">*</span>
+          </label>
+          <textarea
+            value={faq.answer}
+            onChange={(e) => onUpdate(index, 'answer', e.target.value)}
+            placeholder="Answer text"
+            maxLength={1000}
+            rows={4}
+            className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40 resize-none"
+          />
+          <p className="text-xs text-white/40 mt-1">{faq.answer.length}/1000 characters</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ProtectedRoute allowedUserType="admin">
@@ -1598,6 +1776,14 @@ export default function HomepageEditor() {
               
               {openSection === 'faq' && (
                 <div className="p-6 pt-0 border-t border-white/[0.06]">
+                  {isLoadingFaqs ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-4 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading FAQs...</p>
+                      </div>
+                    </div>
+                  ) : (
                   <div className="space-y-4 mt-6">
                     
                     {/* Add New FAQ Button */}
@@ -1618,59 +1804,28 @@ export default function HomepageEditor() {
                       <span className="text-sm font-medium">Add New FAQ</span>
                     </button>
 
-                    {/* FAQs List */}
-                    {faqsData.map((faq, index) => (
-                      <div key={faq.id} className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-5">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <GripVertical size={16} className="text-gray-600 cursor-move" />
-                            <h4 className="text-sm font-semibold text-white">FAQ #{index + 1}</h4>
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this FAQ?')) {
-                                setFaqsData(faqsData.filter((_, i) => i !== index));
-                              }
-                            }}
-                            className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors group"
-                          >
-                            <Trash2 size={14} className="text-gray-500 group-hover:text-red-400" />
-                          </button>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Question *</label>
-                            <input
-                              type="text"
-                              value={faq.question}
-                              onChange={(e) => {
-                                const newFAQs = [...faqsData];
-                                newFAQs[index].question = e.target.value;
-                                setFaqsData(newFAQs);
-                              }}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                              placeholder="e.g. Do I Have To Pay For This Service?"
+                    {/* FAQs List with Drag & Drop */}
+                    <DndContext
+                      sensors={faqSensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleFAQDragEnd}
+                    >
+                      <SortableContext
+                        items={faqsData.map(f => f.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-4 mb-6">
+                          {faqsData.map((faq, index) => (
+                            <SortableFAQItem
+                              key={faq.id}
+                              faq={faq}
+                              index={index}
+                              onUpdate={updateFAQField}
                             />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1">Answer *</label>
-                            <textarea
-                              value={faq.answer}
-                              onChange={(e) => {
-                                const newFAQs = [...faqsData];
-                                newFAQs[index].answer = e.target.value;
-                                setFaqsData(newFAQs);
-                              }}
-                              rows={4}
-                              className="w-full bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
-                              placeholder="Enter answer..."
-                            />
-                          </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
+                      </SortableContext>
+                    </DndContext>
 
                     {faqsData.length === 0 && (
                       <div className="text-center py-8 text-gray-500">
@@ -1680,22 +1835,36 @@ export default function HomepageEditor() {
 
                     <div className="flex justify-end pt-4 border-t border-white/[0.06]">
                       <button
-                        onClick={async () => {
-                          setIsSaving(true);
-                          await new Promise(resolve => setTimeout(resolve, 1000));
-                          setSaveSuccess('FAQs saved successfully!');
-                          setTimeout(() => setSaveSuccess(null), 3000);
-                          setIsSaving(false);
-                        }}
+                        onClick={saveFAQsSection}
                         disabled={isSaving}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
                       >
-                        <Save size={16} />
-                        {isSaving ? 'Saving...' : 'Save Changes'}
+                        {isSaving ? (
+                          <>
+                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                            Saving...
+                          </>
+                        ) : saveSuccessState.faqs ? (
+                          <>
+                            <svg className="w-4 h-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Saved!
+                          </>
+                        ) : (
+                          <>
+                            <Save size={16} />
+                            Save Changes
+                          </>
+                        )}
                       </button>
                     </div>
 
                   </div>
+                  )}
                 </div>
               )}
             </div>

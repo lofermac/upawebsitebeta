@@ -57,18 +57,26 @@ export default function DealsPage() {
           
           {/* Hero Content - Title and Subtitle */}
           <div className="relative z-10 pt-20 pb-20 px-4">
-            <div className="max-w-7xl mx-auto">
-              <h1 className="text-white text-center text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight mb-4" 
-                  style={{ 
-                    textShadow: '0 2px 16px rgba(0,0,0,0.4)',
-                    letterSpacing: '-0.02em'
-                  }}>
-                Poker Deals
+            <div className="max-w-6xl mx-auto text-center">
+              {/* Main Heading - Apple-like Typography */}
+              <h1 className="animate-fade-up-delay-800 mb-4">
+                <div className="text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] font-semibold leading-tight tracking-[-0.02em]">
+                  <span className="block mt-1 bg-gradient-to-br from-white via-white to-gray-200 bg-clip-text text-transparent font-semibold" 
+                        style={{ 
+                          textShadow: '0 4px 24px rgba(255,255,255,0.08)',
+                          letterSpacing: '-0.03em'
+                        }}>
+                    Poker Deals
+                  </span>
+                </div>
               </h1>
-              <p className="text-gray-400 text-center text-lg md:text-xl lg:text-[1.35rem] max-w-5xl mx-auto leading-relaxed font-normal whitespace-nowrap"
+              
+              {/* Subtitle - Apple-style minimalista */}
+              <p className="text-lg md:text-xl lg:text-[1.35rem] text-gray-400 font-normal max-w-4xl mx-auto leading-relaxed animate-fade-up-delay-1200"
                  style={{ 
                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                   letterSpacing: '-0.01em'
+                   letterSpacing: '-0.01em',
+                   fontWeight: '400'
                  }}>
                 We have a wide variety of Poker Deals available, with each one offering a unique deal.
               </p>
@@ -79,10 +87,11 @@ export default function DealsPage() {
 
       {/* Deals Section - Pure Black Background */}
       <main className="relative bg-black w-full pt-8 pb-24">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full pt-2 md:pt-4 pb-20 md:pb-24 px-4">
+          <div className="max-w-7xl mx-auto">
         
         {/* Deals Grid - 3 columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-auto">
           
           {/* Deal 1: GGPOKER */}
           <DealCardWithGeo dealId={1}>
@@ -97,21 +106,18 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">60%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">60%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">With GGPoker Fish Buffet</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Primary */}
-                  <a href="/platform-connection?platform_id=1365" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1365" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
                   {/* Learn More Button - Secondary */}
                   <a href="/ggpoker-deal" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
@@ -139,21 +145,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">65%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">65%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1368" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1368" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -179,21 +184,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Extra</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">50%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">50%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -219,21 +223,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To An Extra</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">40%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">40%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Every Month</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1364" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1364" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -259,21 +262,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Enhanced Welcome Bonus</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">Worth</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">£540</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Worth</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">£540</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Plus 4 x €500 Freerolls</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=9074" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=9074" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -299,21 +301,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Instant VIP Upgrade To</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">35%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">35%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">+ €50k In Races</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1363" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1363" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -339,21 +340,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Instant Upgrade To</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">30%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">30%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">+ All On-Site Promotions</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=6016" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=6016" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -379,21 +379,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Play On A</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">GGPoker</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Alternative</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">GGPoker</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Alternative</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">From Ontario Only</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=2933" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=2933" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -419,21 +418,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">60%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">60%</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Every Month</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="/platform-connection?platform_id=1362" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="/platform-connection?platform_id=1362" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -459,21 +457,20 @@ export default function DealsPage() {
               <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
                 <div className="text-center space-y-0 mb-8">
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Join Our</p>
-                  <p className="text-4xl sm:text-5xl md:text-6xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
+                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
                   <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Up To $1500 Every Month</p>
                 </div>
                 <div className="flex gap-3 justify-center mb-4 px-2">
-                  <a href="#" className="relative group/btn overflow-hidden bg-gradient-to-b from-[#088929] to-[#055a1c] text-white font-bold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] flex-1"
-                     style={{ boxShadow: `0 1px 3px 0 rgba(0,0,0,0.5), 0 4px 12px rgba(7,113,36,0.3), 0 8px 32px rgba(7,113,36,0.25), 0 16px 64px rgba(7,113,36,0.2), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -1px 1px rgba(0,0,0,0.2)` }}>
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover/btn:opacity-90 transition-opacity duration-500"></div>
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover/btn:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover/btn:opacity-40 transition-opacity duration-700"></div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover/btn:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Claim Offer</span>
+                  {/* Claim Offer Button - Register Style */}
+                  <a href="#" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
+                    <span className="relative z-10">Claim Offer</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
                   </a>
+                  {/* Learn More Button - Secondary */}
                   <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
                     <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
                   </a>
@@ -487,6 +484,7 @@ export default function DealsPage() {
           </DealCardWithGeo>
 
         </div>
+      </div>
       </div>
 
       <style jsx global>{`

@@ -11,7 +11,7 @@ import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
-import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps } from "@/lib/supabase/homepage";
+import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, getFAQs } from "@/lib/supabase/homepage";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
@@ -346,38 +346,6 @@ function AnimatedCashback({
   );
 }
 
-// FAQ Data
-const faqData = [
-  {
-    question: "Do I Have To Pay For This Service?",
-    answer: "No, our service is completely free for players. We earn a commission from the poker sites when you play, which allows us to offer you additional rakeback and benefits at no cost to you."
-  },
-  {
-    question: "Can Any Country Join?",
-    answer: "Most countries can join our deals, but it depends on the specific poker site's restrictions. Some sites have regional limitations. Contact us with your location, and we'll let you know which deals are available for you."
-  },
-  {
-    question: "How Do Payments Work?",
-    answer: "Rakeback payments are typically processed monthly. Once you accumulate rakeback, we'll transfer it directly to your poker account or via your preferred payment method (Skrill, Neteller, bank transfer, etc.). Payment schedules vary by site."
-  },
-  {
-    question: "Can I Join If I Already Have An Account?",
-    answer: "Yes! If you already have an account with a poker site, you can apply to switch to our deal. We'll review your application on a case-by-case basis and work with the poker room to transfer you to our rakeback program."
-  },
-  {
-    question: "What Makes Universal Poker Different?",
-    answer: "We offer higher rakeback percentages, personalized support, exclusive promotions, and work directly with poker rooms to ensure you get the best possible deal. We've been in business for 13+ years and have paid out millions in rakeback."
-  },
-  {
-    question: "How Long Does It Take To Get Approved?",
-    answer: "New account approvals are typically instant. If you're applying to transfer an existing account to our rakeback program, the review process usually takes 2-3 business days. We work quickly to get you started as soon as possible."
-  },
-  {
-    question: "What If I Have Issues With My Rakeback?",
-    answer: "Our dedicated support team is here to help with any rakeback-related questions or issues. You can contact us via email, live chat, or through our contact form, and we'll resolve your concerns promptly. We pride ourselves on providing excellent customer service."
-  }
-];
-
 // Helper para renderizar texto com parágrafos
 function renderTextWithParagraphs(text: string) {
   const lines = text.split('\n').filter(line => line.trim());
@@ -439,6 +407,13 @@ export default function Home() {
     { title: 'New & Existing Players Welcome', description: 'Create a new account through us and you\'re automatically accepted.\n\nAlready have an account? Apply to join our deal and we\'ll review it on a case-by-case basis.', display_order: 2 },
     { title: 'Same Play. More Rewards', description: 'Nothing changes about how you play.\n\nYou\'ll still receive the poker sites rewards, plus extra cashback from us on top.', display_order: 3 }
   ]);
+  
+  // FAQs from Supabase
+  const [faqs, setFaqs] = useState<Array<{
+    question: string;
+    answer: string;
+    display_order: number;
+  }>>([]);
   
   // Testimonials from Supabase
   const [testimonials, setTestimonials] = useState<Array<{
@@ -540,6 +515,19 @@ export default function Home() {
         
         setTestimonials(mappedTestimonials);
         console.log('✅ Loaded', mappedTestimonials.length, 'testimonials from Supabase');
+        
+        // Load FAQs
+        console.log('📥 [Homepage] Loading FAQs from Supabase...');
+        const faqsList = await getFAQs();
+
+        if (faqsList && faqsList.length > 0) {
+          setFaqs(faqsList.map(faq => ({
+            question: faq.question,
+            answer: faq.answer,
+            display_order: faq.display_order
+          })));
+          console.log('✅ [Homepage] Loaded', faqsList.length, 'FAQs');
+        }
       } catch (error) {
         console.error('❌ Error loading homepage data:', error);
       } finally {
@@ -1225,9 +1213,9 @@ export default function Home() {
 
           {/* FAQ Accordion */}
           <div className="space-y-0">
-            {faqData.map((faq, index) => (
+            {faqs.map((faq, index) => (
               <div 
-                key={index}
+                key={faq.display_order}
                 className="group border-b border-white/10 transition-all duration-300"
               >
                 {/* Question Button */}

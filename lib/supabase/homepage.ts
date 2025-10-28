@@ -95,11 +95,12 @@ export interface Testimonial {
 }
 
 export interface FAQ {
-  id?: string;
+  id: string;
   question: string;
   answer: string;
   display_order: number;
   is_active: boolean;
+  created_at?: string;
   updated_at?: string;
 }
 
@@ -630,21 +631,29 @@ export async function updateTestimonials(testimonials: Testimonial[]): Promise<b
 // ============================================
 
 export async function getFAQs(): Promise<FAQ[]> {
+  console.log('🔧 [getFAQs] Buscando FAQs...')
+  
   try {
     const { data, error } = await supabase
       .from('faqs')
       .select('*')
+      .eq('is_active', true)
       .order('display_order', { ascending: true });
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ [getFAQs] Erro:', error)
+      throw error;
+    }
+    
+    console.log('✅ [getFAQs] Sucesso:', data?.length, 'FAQs encontrados')
     return data || [];
   } catch (error) {
-    console.error('Error fetching FAQs:', error);
+    console.error('❌ [getFAQs] Error fetching FAQs:', error);
     return [];
   }
 }
 
-export async function createFAQ(faq: FAQ): Promise<boolean> {
+export async function createFAQ(faq: Omit<FAQ, 'id' | 'created_at' | 'updated_at'>): Promise<boolean> {
   try {
     const { error } = await supabase
       .from('faqs')
@@ -663,27 +672,32 @@ export async function createFAQ(faq: FAQ): Promise<boolean> {
   }
 }
 
-export async function updateFAQ(faq: FAQ): Promise<boolean> {
+export async function updateFAQ(id: string, data: Partial<FAQ>): Promise<FAQ | null> {
+  console.log('🔧 [updateFAQ] Atualizando FAQ:', id, data)
+  
   try {
-    if (!faq.id) {
-      throw new Error('FAQ ID is required for update');
-    }
-
-    const { error } = await supabase
+    const { data: result, error } = await supabase
       .from('faqs')
       .update({
-        question: faq.question,
-        answer: faq.answer,
-        display_order: faq.display_order,
-        is_active: faq.is_active,
+        question: data.question,
+        answer: data.answer,
+        display_order: data.display_order,
+        updated_at: new Date().toISOString()
       })
-      .eq('id', faq.id);
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (error) throw error;
-    return true;
+    if (error) {
+      console.error('❌ [updateFAQ] Erro:', error)
+      throw error;
+    }
+    
+    console.log('✅ [updateFAQ] Sucesso:', result)
+    return result as FAQ;
   } catch (error) {
-    console.error('Error updating FAQ:', error);
-    return false;
+    console.error('❌ [updateFAQ] Error updating FAQ:', error);
+    return null;
   }
 }
 
