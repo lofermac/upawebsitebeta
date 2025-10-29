@@ -12,6 +12,7 @@ import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
 import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, getFAQs, getHomeFeaturedDeals, getHomeFeaturedDealsCards } from "@/lib/supabase/homepage";
+import { Deal } from "@/lib/supabase/deals";
 import { generateRadialGradient, generateGlowClasses } from "@/lib/utils/colorUtils";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
@@ -427,7 +428,14 @@ export default function Home() {
   const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
 
   // Featured Deals from Supabase
-  const [featuredDeals, setFeaturedDeals] = useState<any[]>([]);
+  const [featuredDeals, setFeaturedDeals] = useState<Array<{
+    id: string;
+    deal_id: number;
+    display_order: number;
+    created_at: string;
+    updated_at: string;
+    deal?: Deal;
+  }>>([]);
   const [isFeaturedDealsLoading, setIsFeaturedDealsLoading] = useState(true);
 
   // Featured Deals Section (texts)

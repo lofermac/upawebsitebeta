@@ -14,7 +14,6 @@ import {
   Trash2,
   GripVertical,
   CheckCircle,
-  X,
   Loader
 } from 'lucide-react';
 import Link from 'next/link';
@@ -155,7 +154,7 @@ export default function DealsManagementPage() {
   // (Removed - now handled by MultiCountrySelect component)
 
   // Validation Functions
-  const validateField = (field: string, value: any): boolean => {
+  const validateField = (field: string, value: string | number): boolean => {
     switch (field) {
       case 'name':
       case 'title':
@@ -174,7 +173,7 @@ export default function DealsManagementPage() {
   };
 
   // Handle Form Change
-  function handleFormChange(dealId: number, field: keyof Deal, value: any) {
+  function handleFormChange(dealId: number, field: keyof Deal, value: string | number | string[]) {
     setFormData((prev) => ({
       ...prev,
       [dealId]: {
@@ -327,7 +326,7 @@ export default function DealsManagementPage() {
       }
       
       // Prepare deal data
-      const dealData: any = {
+      const dealData: Partial<DealInput> = {
         name: newDealData.name,
         slug: newDealData.slug || undefined,
         platform_id: newDealData.platform_id ? parseInt(newDealData.platform_id) : null,
@@ -692,7 +691,7 @@ export default function DealsManagementPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">💡 Large highlighted text (e.g., '60%')</p>
+                    <p className="text-xs text-gray-500 mt-1">💡 Large highlighted text (e.g., &apos;60%&apos;)</p>
                   </div>
                   
                   <div>
@@ -706,7 +705,7 @@ export default function DealsManagementPage() {
                       className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
                       placeholder="Cashback"
                     />
-                    <p className="text-xs text-gray-500 mt-1">💡 Continuation of main value (e.g., 'Cashback')</p>
+                    <p className="text-xs text-gray-500 mt-1">💡 Continuation of main value (e.g., &apos;Cashback&apos;)</p>
                   </div>
                   
                   <div>
@@ -870,7 +869,7 @@ export default function DealsManagementPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">💡 Link for the 'Claim Offer' button</p>
+                    <p className="text-xs text-gray-500 mt-1">💡 Link for the &apos;Claim Offer&apos; button</p>
                   </div>
                   
                   <div>
@@ -884,7 +883,7 @@ export default function DealsManagementPage() {
                       className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
                       placeholder="/ggpoker-deal"
                     />
-                    <p className="text-xs text-gray-500 mt-1">💡 Link for the 'Learn More' button (optional)</p>
+                    <p className="text-xs text-gray-500 mt-1">💡 Link for the &apos;Learn More&apos; button (optional)</p>
                   </div>
                 </div>
 
@@ -963,7 +962,7 @@ export default function DealsManagementPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {deals.map((deal, index) => (
+              {deals.map((deal) => (
                 <div
                   key={deal.id}
                   draggable
@@ -1116,7 +1115,7 @@ export default function DealsManagementPage() {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">💡 Large highlighted text (e.g., '60%')</p>
+                            <p className="text-xs text-gray-500 mt-1">💡 Large highlighted text (e.g., &apos;60%&apos;)</p>
                           </div>
                           
                           <div>
@@ -1129,7 +1128,7 @@ export default function DealsManagementPage() {
                               onChange={(e) => handleFormChange(deal.id, 'main_value_second_line', e.target.value)}
                               className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
                             />
-                            <p className="text-xs text-gray-500 mt-1">💡 Continuation of main value (e.g., 'Cashback')</p>
+                            <p className="text-xs text-gray-500 mt-1">💡 Continuation of main value (e.g., &apos;Cashback&apos;)</p>
                           </div>
                           
                           <div>
@@ -1303,7 +1302,7 @@ export default function DealsManagementPage() {
                                 </div>
                               )}
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">💡 Link for the 'Claim Offer' button</p>
+                            <p className="text-xs text-gray-500 mt-1">💡 Link for the &apos;Claim Offer&apos; button</p>
                           </div>
                           
                           <div>
@@ -1316,7 +1315,7 @@ export default function DealsManagementPage() {
                               onChange={(e) => handleFormChange(deal.id, 'learn_more_url', e.target.value)}
                               className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
                             />
-                            <p className="text-xs text-gray-500 mt-1">💡 Link for the 'Learn More' button (optional)</p>
+                            <p className="text-xs text-gray-500 mt-1">💡 Link for the &apos;Learn More&apos; button (optional)</p>
                           </div>
                         </div>
 

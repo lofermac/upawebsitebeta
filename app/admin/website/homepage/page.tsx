@@ -11,9 +11,7 @@ import {
   Plus,
   Trash2,
   Eye,
-  AlertCircle,
-  TrendingUp,
-  FileText
+  AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeFeaturedDeals, updateHomeFeaturedDeals, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep, getFAQs, updateFAQ, getHomeFeaturedDealsCards, updateHomeFeaturedDealsCards } from '@/lib/supabase/homepage';
@@ -632,9 +630,10 @@ export default function HomepageEditor() {
         setSaveSuccessState(prev => ({ ...prev, featuredDealsSection: false }));
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [3] Error saving:', error);
-      setSaveError(error.message || 'Failed to save Featured Deals Section. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save Featured Deals Section. Please try again.';
+      setSaveError(errorMessage);
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
@@ -703,9 +702,10 @@ export default function HomepageEditor() {
         setSaveSuccessState(prev => ({ ...prev, featuredDeals: false }));
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [3] Error saving:', error);
-      setSaveError(error.message || 'Failed to save Featured Deals. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save Featured Deals. Please try again.';
+      setSaveError(errorMessage);
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);

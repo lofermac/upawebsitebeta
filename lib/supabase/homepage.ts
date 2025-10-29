@@ -767,7 +767,7 @@ export async function updateFAQs(faqs: FAQ[]): Promise<boolean> {
 /**
  * Get featured deals section texts (title, subtitle, button)
  */
-export async function getHomeFeaturedDeals(): Promise<{ data: HomeFeaturedDeals | null; error: any }> {
+export async function getHomeFeaturedDeals(): Promise<{ data: HomeFeaturedDeals | null; error: unknown }> {
   try {
     console.log('🔧 [getHomeFeaturedDeals] Fetching featured deals section...');
     
@@ -794,7 +794,7 @@ export async function getHomeFeaturedDeals(): Promise<{ data: HomeFeaturedDeals 
  */
 export async function updateHomeFeaturedDeals(
   sectionData: Partial<HomeFeaturedDeals>
-): Promise<{ success: boolean; error?: any }> {
+): Promise<{ success: boolean; error?: unknown }> {
   try {
     console.log('🔧 [updateHomeFeaturedDeals] Updating featured deals section...', sectionData);
     
@@ -838,7 +838,7 @@ export async function updateHomeFeaturedDeals(
  * Get the 3 featured deals displayed on homepage
  * Joins with deals table to get full deal data
  */
-export async function getHomeFeaturedDealsCards(): Promise<{ data: HomeFeaturedDealsCard[] | null; error: any }> {
+export async function getHomeFeaturedDealsCards(): Promise<{ data: HomeFeaturedDealsCard[] | null; error: unknown }> {
   try {
     console.log('🔧 [getHomeFeaturedDealsCards] Fetching featured deals...');
     
@@ -856,7 +856,7 @@ export async function getHomeFeaturedDealsCards(): Promise<{ data: HomeFeaturedD
     }
     
     // Filter out deals that are not active
-    const activeDeals = data?.filter((item: any) => item.deal && item.deal.is_active) || [];
+    const activeDeals = data?.filter((item: HomeFeaturedDealsCard) => item.deal && item.deal.is_active) || [];
     
     console.log('✅ [getHomeFeaturedDealsCards] Success:', activeDeals.length, 'featured deals');
     return { data: activeDeals as HomeFeaturedDealsCard[], error: null };
@@ -873,7 +873,7 @@ export async function getHomeFeaturedDealsCards(): Promise<{ data: HomeFeaturedD
  */
 export async function updateHomeFeaturedDealsCards(
   cards: Array<{ display_order: number; deal_id: number }>
-): Promise<{ success: boolean; error?: any }> {
+): Promise<{ success: boolean; error?: unknown }> {
   try {
     console.log('🔧 [updateHomeFeaturedDealsCards] Updating featured deals...', cards);
     

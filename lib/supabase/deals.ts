@@ -410,7 +410,7 @@ export async function uploadDealLogo(file: File, dealId?: number) {
       : `temp-${timestamp}.${fileExt}`;
 
     // Upload to deal-logos bucket
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
       .from('deal-logos')
       .upload(fileName, file, {
         cacheControl: '3600',
