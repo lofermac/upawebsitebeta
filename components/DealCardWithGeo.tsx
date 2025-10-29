@@ -5,9 +5,9 @@
 
 'use client';
 
-import { ReactNode, cloneElement, isValidElement } from 'react';
+import { ReactNode, cloneElement, isValidElement, useState, useEffect } from 'react';
 import { useDealAvailability } from '@/lib/hooks/useGeoLocation';
-import { getDealById } from '@/lib/utils/dealsData';
+import { getDealById, type Deal } from '@/lib/supabase/deals';
 import { MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -17,7 +17,17 @@ interface DealCardWithGeoProps {
 }
 
 export default function DealCardWithGeo({ children, dealId }: DealCardWithGeoProps) {
-  const deal = getDealById(dealId) || null;
+  const [deal, setDeal] = useState<Deal | null>(null);
+
+  // Buscar deal do Supabase
+  useEffect(() => {
+    async function loadDeal() {
+      const { data } = await getDealById(dealId);
+      if (data) setDeal(data);
+    }
+    loadDeal();
+  }, [dealId]);
+
   const { isAvailable, isLoading } = useDealAvailability(deal);
 
   // Banner que cobre os botões - estética melhorada

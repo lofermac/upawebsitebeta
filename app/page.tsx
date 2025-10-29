@@ -11,7 +11,8 @@ import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
-import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, getFAQs } from "@/lib/supabase/homepage";
+import { getTestimonials, getHomeHero, getHomeStats, getHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, getFAQs, getHomeFeaturedDeals, getHomeFeaturedDealsCards } from "@/lib/supabase/homepage";
+import { generateRadialGradient, generateGlowClasses } from "@/lib/utils/colorUtils";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Autoplay, EffectCoverflow } from 'swiper/modules';
 import 'swiper/css';
@@ -425,6 +426,18 @@ export default function Home() {
   }>>([]);
   const [isLoadingTestimonials, setIsLoadingTestimonials] = useState(true);
 
+  // Featured Deals from Supabase
+  const [featuredDeals, setFeaturedDeals] = useState<any[]>([]);
+  const [isFeaturedDealsLoading, setIsFeaturedDealsLoading] = useState(true);
+
+  // Featured Deals Section (texts)
+  const [featuredSection, setFeaturedSection] = useState({
+    section_title: 'Stop Leaving Money On The Table',
+    section_subtitle: 'Take a look at our deals and start maximising your rewards through our promotions',
+    button_text: 'View All Deals',
+    button_link: '/deals'
+  });
+
   // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
   const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault(); // Sempre previne navegação
@@ -528,8 +541,33 @@ export default function Home() {
           })));
           console.log('✅ [Homepage] Loaded', faqsList.length, 'FAQs');
         }
+        
+        // Load Featured Deals
+        console.log('📥 [Homepage] Loading featured deals from Supabase...');
+        setIsFeaturedDealsLoading(true);
+        
+        // Load section texts
+        const { data: sectionData } = await getHomeFeaturedDeals();
+        if (sectionData) {
+          setFeaturedSection({
+            section_title: sectionData.section_title,
+            section_subtitle: sectionData.section_subtitle,
+            button_text: sectionData.button_text,
+            button_link: sectionData.button_link
+          });
+          console.log('✅ [Homepage] Loaded featured deals section texts');
+        }
+        
+        // Load featured cards
+        const { data: featuredCardsData } = await getHomeFeaturedDealsCards();
+        if (featuredCardsData && featuredCardsData.length > 0) {
+          setFeaturedDeals(featuredCardsData);
+          console.log('✅ [Homepage] Loaded', featuredCardsData.length, 'featured deals');
+        }
+        setIsFeaturedDealsLoading(false);
       } catch (error) {
         console.error('❌ Error loading homepage data:', error);
+        setIsFeaturedDealsLoading(false);
       } finally {
         setIsLoadingTestimonials(false);
       }
@@ -791,7 +829,7 @@ export default function Home() {
                     letterSpacing: '-0.02em',
                     fontWeight: '600'
                   }}>
-                Stop Leaving Money On The Table
+                {featuredSection.section_title}
               </h2>
               <p className="text-gray-400 text-center text-base md:text-lg mb-20 font-normal leading-relaxed"
                  style={{ 
@@ -799,177 +837,120 @@ export default function Home() {
                    letterSpacing: '-0.01em',
                    fontWeight: '400'
                  }}>
-                Take a look at our deals and start maximising your rewards through our promotions
+                {featuredSection.section_subtitle}
               </p>
           
           {/* Deals Grid - 3 columns */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-auto">
 
-            {/* Deal 2: PARTYPOKER - Primeira Linha */}
-            <DealCardWithGeo dealId={2}>
-            <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative border border-orange-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-orange-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                   style={{
-                     background: 'radial-gradient(ellipse at center top, #C8582B 0%, #B85425 20%, #A04920 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)'
-                   }}>
-                {/* Subtle vignette for extra depth */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-                
-                {/* Logo Container at Top */}
-                <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/07/07144334/ENT_PartyPoker_Landscape_FullWhite_RGB.png" alt="PartyPoker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                
-                {/* Content */}
-                <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                  <div className="text-center space-y-0 mb-8">
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">65%</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
-                  </div>
-                  
-                  {/* Buttons - 2 side by side */}
-                  <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Register Style */}
-                    <a href="/platform-connection?platform_id=1368" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                      <span className="relative z-10">Claim Offer</span>
-                      {/* Animated shine effect */}
-                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                      {/* Subtle inner glow */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    {/* Learn More Button - Secondary */}
-                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                    </a>
-                  </div>
-                  
-                  {/* Terms */}
-                  <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                    <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full PartyPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                  </div>
-                </div>
+            {isFeaturedDealsLoading ? (
+              <div className="col-span-full flex justify-center py-20">
+                <div className="w-12 h-12 border-4 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
               </div>
-            </div>
-            </DealCardWithGeo>
-
-            {/* Deal 3: 888POKER - Primeira Linha */}
-            <DealCardWithGeo dealId={3}>
-            <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-              {/* Gradient Border Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/50 via-cyan-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-              
-              {/* Card Content */}
-              <div className="relative border border-blue-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-blue-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                   style={{
-                     background: 'radial-gradient(ellipse at center top, #3B5FA3 0%, #2E56A3 20%, #264A8C 40%, #234489 60%, #1A3470 80%, #142958 100%)'
-                   }}>
-                {/* Subtle vignette for extra depth */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
+            ) : (
+              featuredDeals.map((item) => {
+                const deal = item.deal; // Extract deal from JOIN
+                if (!deal) return null;
                 
-                {/* Logo Container at Top */}
-                <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                  <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183728/888-LOGO-webp-1024x309.webp" alt="888poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
+                const gradientStyle = generateRadialGradient(deal.primary_color);
+                const glowClasses = generateGlowClasses(deal.glow_color);
                 
-                {/* Content */}
-                <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                  <div className="text-center space-y-0 mb-8">
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Extra</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">50%</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
-                  </div>
-                  
-                  {/* Buttons - 2 side by side */}
-                  <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Register Style */}
-                    <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                      <span className="relative z-10">Claim Offer</span>
-                      {/* Animated shine effect */}
-                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                      {/* Subtle inner glow */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    {/* Learn More Button - Secondary */}
-                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                    </a>
-                  </div>
-                  
-                  {/* Terms */}
-                  <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                    <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">#Ad | 18+ | Please Play Responsibly | Full 888Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            </DealCardWithGeo>
-
-            {/* Deal 10: COINPOKER - Quarta Linha */}
-            <DealCardWithGeo dealId={10}>
-            <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-              <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-orange-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-              <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                   style={{
-                     background: 'radial-gradient(ellipse at center top, #7D2C2C 0%, #6E2424 20%, #5F1F1F 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)'
-                   }}>
-                {/* Subtle vignette for extra depth */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-                
-                {/* Logo Container at Top */}
-                <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                  <img src="/images/coinlogo.png" alt="CoinPoker Logo" className="max-h-60 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-                </div>
-                
-                <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                  <div className="text-center space-y-0 mb-8">
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Join Our</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
-                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
-                    <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Up To $1500 Every Month</p>
-                  </div>
-                  
-                  {/* Buttons - 2 side by side */}
-                  <div className="flex gap-3 justify-center mb-4 px-2">
-                    {/* Claim Offer Button - Register Style */}
-                    <a href="#" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                      <span className="relative z-10">Claim Offer</span>
-                      {/* Animated shine effect */}
-                      <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                      {/* Subtle inner glow */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                    </a>
-                    {/* Learn More Button - Secondary */}
-                    <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                    </a>
-                  </div>
-                  
-                  {/* Terms */}
-                  <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                    <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full CoinPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            </DealCardWithGeo>
+                return (
+                  <DealCardWithGeo key={deal.id} dealId={deal.id}>
+                    <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
+                      {/* Gradient Border Effect */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${glowClasses.outerGlowFrom} ${glowClasses.outerGlowVia} ${glowClasses.outerGlowTo} rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500`}></div>
+                      
+                      {/* Card Content */}
+                      <div 
+                        className={`relative border ${glowClasses.borderColor} rounded-[2rem] overflow-hidden shadow-2xl ${glowClasses.hoverShadow} group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]`}
+                        style={{ background: gradientStyle }}
+                      >
+                        {/* Subtle vignette for extra depth */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
+                        
+                        {/* Logo Container at Top */}
+                        <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
+                          {deal.logo_url && (
+                            <img 
+                              src={deal.logo_url} 
+                              alt={deal.logo_alt || deal.name} 
+                              className={`${deal.logo_max_height || 'max-h-14'} max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10`} 
+                            />
+                          )}
+                        </div>
+                        
+                        {/* Content */}
+                        <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
+                          <div className="text-center space-y-0 mb-8">
+                            <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">
+                              {deal.title}
+                            </p>
+                            <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">
+                              {deal.main_value}
+                            </p>
+                            {deal.main_value_second_line && (
+                              <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">
+                                {deal.main_value_second_line}
+                              </p>
+                            )}
+                            {deal.subtitle && (
+                              <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">
+                                {deal.subtitle}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Buttons - 2 side by side */}
+                          <div className="flex gap-3 justify-center mb-4 px-2">
+                            {/* Claim Offer Button */}
+                            <a 
+                              href={deal.claim_offer_url}
+                              onClick={deal.id === 3 ? handleClaimOffer888 : undefined}
+                              className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center"
+                            >
+                              <span className="relative z-10">Claim Offer</span>
+                              {/* Animated shine effect */}
+                              <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                              {/* Subtle inner glow */}
+                              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
+                            </a>
+                            
+                            {/* Learn More Button */}
+                            {deal.learn_more_url && (
+                              <a 
+                                href={deal.learn_more_url} 
+                                className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm"
+                              >
+                                <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
+                              </a>
+                            )}
+                          </div>
+                          
+                          {/* Terms */}
+                          <div className="mt-auto pt-5 border-t border-white/[0.15]">
+                            <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">
+                              {deal.terms}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </DealCardWithGeo>
+                );
+              })
+            )}
 
             </div>
 
           {/* View All Deals Button - Register Style */}
           <div className="text-center mt-12">
             <Link 
-              href="/deals"
+              href={featuredSection.button_link}
               className="relative font-semibold text-lg md:text-xl px-10 py-4 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden inline-flex items-center gap-3"
             >
               <span className="relative z-10 flex items-center gap-3">
-                View All Deals
+                {featuredSection.button_text}
                 <ArrowRight className="w-5 h-5 transition-all duration-300" strokeWidth={2.5} />
               </span>
               {/* Animated shine effect */}

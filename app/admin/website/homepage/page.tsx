@@ -11,10 +11,13 @@ import {
   Plus,
   Trash2,
   Eye,
-  AlertCircle
+  AlertCircle,
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import Link from 'next/link';
-import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep, getFAQs, updateFAQ } from '@/lib/supabase/homepage';
+import { uploadTestimonialPhoto, deleteTestimonialPhoto, getTestimonials, updateTestimonial, createTestimonial, deleteTestimonial, getHomeHero, updateHomeHero, getHomeStats, updateHomeStats, getHomeCashback, updateHomeCashback, getHomeFeaturedDeals, updateHomeFeaturedDeals, getHomeHowItWorks, getHomeHowItWorksSteps, updateHomeHowItWorks, updateHomeHowItWorksStep, getFAQs, updateFAQ, getHomeFeaturedDealsCards, updateHomeFeaturedDealsCards } from '@/lib/supabase/homepage';
+import { Deal, getDeals } from '@/lib/supabase/deals';
 import {
   DndContext,
   closestCenter,
@@ -75,6 +78,8 @@ export default function HomepageEditor() {
     hero: false,
     stats: false,
     cashback: false,
+    featuredDealsSection: false,
+    featuredDeals: false,
     howItWorks: false,
     testimonials: false,
     faqs: false
@@ -118,6 +123,24 @@ export default function HomepageEditor() {
     amount: 0
   });
   const [isLoadingCashback, setIsLoadingCashback] = useState(true);
+  
+  // Featured Deals Section States (texts)
+  const [featuredDealsSectionData, setFeaturedDealsSectionData] = useState({
+    section_title: '',
+    section_subtitle: '',
+    button_text: '',
+    button_link: ''
+  });
+  const [isLoadingFeaturedSection, setIsLoadingFeaturedSection] = useState(true);
+  
+  // Featured Deals States
+  const [featuredDealsCards, setFeaturedDealsCards] = useState<Array<{position: number, dealId: number}>>([
+    { position: 1, dealId: 0 },
+    { position: 2, dealId: 0 },
+    { position: 3, dealId: 0 }
+  ]);
+  const [allDeals, setAllDeals] = useState<Deal[]>([]);
+  const [isLoadingFeaturedDeals, setIsLoadingFeaturedDeals] = useState(true);
   
   const [howItWorksData, setHowItWorksData] = useState({
     id: '',
@@ -348,6 +371,44 @@ export default function HomepageEditor() {
         }
         setIsLoadingCashback(false);
         
+        // Load Featured Deals Section (texts)
+        console.log('📥 Loading featured deals section from Supabase...');
+        setIsLoadingFeaturedSection(true);
+        const { data: featuredSection } = await getHomeFeaturedDeals();
+        if (featuredSection) {
+          setFeaturedDealsSectionData({
+            section_title: featuredSection.section_title,
+            section_subtitle: featuredSection.section_subtitle,
+            button_text: featuredSection.button_text,
+            button_link: featuredSection.button_link
+          });
+          console.log('✅ Loaded featured deals section');
+        }
+        setIsLoadingFeaturedSection(false);
+        
+        // Load Featured Deals
+        console.log('📥 Loading featured deals from Supabase...');
+        setIsLoadingFeaturedDeals(true);
+        
+        // Load all active deals for dropdowns
+        const { data: dealsData } = await getDeals();
+        if (dealsData) {
+          setAllDeals(dealsData);
+          console.log('✅ Loaded', dealsData.length, 'deals for selection');
+        }
+        
+        // Load current featured deals cards
+        const { data: featuredCards } = await getHomeFeaturedDealsCards();
+        if (featuredCards && featuredCards.length > 0) {
+          const mappedCards = featuredCards.map(card => ({
+            position: card.display_order,
+            dealId: card.deal_id
+          }));
+          setFeaturedDealsCards(mappedCards);
+          console.log('✅ Loaded', mappedCards.length, 'featured deals cards');
+        }
+        setIsLoadingFeaturedDeals(false);
+        
         // Load How It Works
         console.log('📥 Loading how it works from Supabase...');
         setIsLoadingHowItWorks(true);
@@ -537,6 +598,114 @@ export default function HomepageEditor() {
     } catch (error) {
       console.error('❌ [3] Erro ao salvar:', error);
       setSaveError('Failed to save cashback section. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const saveFeaturedDealsSectionData = async () => {
+    console.log('💾 [1] Saving Featured Deals Section...');
+    
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, featuredDealsSection: false }));
+    
+    try {
+      const { success, error } = await updateHomeFeaturedDeals({
+        section_title: featuredDealsSectionData.section_title,
+        section_subtitle: featuredDealsSectionData.section_subtitle,
+        button_text: featuredDealsSectionData.button_text,
+        button_link: featuredDealsSectionData.button_link
+      });
+      
+      if (!success) {
+        throw new Error(error || 'Failed to save featured deals section');
+      }
+      
+      console.log('✅ [2] Featured Deals Section saved!');
+      setSaveSuccess('Featured Deals Section saved successfully!');
+      setSaveSuccessState(prev => ({ ...prev, featuredDealsSection: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, featuredDealsSection: false }));
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('❌ [3] Error saving:', error);
+      setSaveError(error.message || 'Failed to save Featured Deals Section. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Featured Deals Helper Functions
+  const hasDuplicateDeals = (): boolean => {
+    const ids = featuredDealsCards
+      .map(card => card.dealId)
+      .filter(id => id > 0);
+    return new Set(ids).size !== ids.length;
+  };
+
+  const isDuplicateDeal = (position: number): boolean => {
+    const currentId = featuredDealsCards[position - 1].dealId;
+    if (currentId === 0) return false;
+    
+    return featuredDealsCards.some((card, idx) => 
+      card.dealId === currentId && idx !== (position - 1)
+    );
+  };
+
+  const isFeaturedDealsValid = (): boolean => {
+    const selectedIds = featuredDealsCards.map(card => card.dealId);
+    return selectedIds.length === 3 && !hasDuplicateDeals();
+  };
+
+  const getSelectedDeal = (position: number): Deal | null => {
+    const dealId = featuredDealsCards[position - 1]?.dealId;
+    if (!dealId || dealId === 0) return null;
+    return allDeals.find(d => d.id === dealId) || null;
+  };
+
+  const saveFeaturedDealsSection = async () => {
+    console.log('💾 [1] Saving Featured Deals...');
+    
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccessState(prev => ({ ...prev, featuredDeals: false }));
+    
+    try {
+      // Validate
+      if (!isFeaturedDealsValid()) {
+        throw new Error('Please select 3 different deals');
+      }
+      
+      // Prepare data
+      const cards = featuredDealsCards.map(card => ({
+        display_order: card.position,
+        deal_id: card.dealId
+      }));
+      
+      const { success, error } = await updateHomeFeaturedDealsCards(cards);
+      
+      if (!success) {
+        throw new Error(error || 'Failed to save featured deals');
+      }
+      
+      console.log('✅ [2] Featured Deals saved!');
+      setSaveSuccess('Featured Deals saved successfully!');
+      setSaveSuccessState(prev => ({ ...prev, featuredDeals: true }));
+      
+      setTimeout(() => {
+        setSaveSuccess(null);
+        setSaveSuccessState(prev => ({ ...prev, featuredDeals: false }));
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('❌ [3] Error saving:', error);
+      setSaveError(error.message || 'Failed to save Featured Deals. Please try again.');
       setTimeout(() => setSaveError(null), 5000);
     } finally {
       setIsSaving(false);
@@ -1322,7 +1491,405 @@ export default function HomepageEditor() {
               )}
             </div>
 
-            {/* SECTION 4: How It Works */}
+            {/* SECTION 4: Featured Deals Section (Texts) */}
+            <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('featureddealsection')}
+                className="w-full flex items-center justify-between p-6 hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center text-white text-sm font-bold">
+                    4
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-white">Featured Deals Section</h3>
+                    <p className="text-xs text-gray-500">Section texts and call-to-action button</p>
+                  </div>
+                </div>
+                {openSection === 'featureddealsection' ? (
+                  <ChevronUp size={20} className="text-gray-400" />
+                ) : (
+                  <ChevronDown size={20} className="text-gray-400" />
+                )}
+              </button>
+              
+              {openSection === 'featureddealsection' && (
+                <div className="p-6 pt-0 border-t border-white/[0.06]">
+                  {isLoadingFeaturedSection ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading featured deals section...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-5 mt-6">
+                      
+                      {/* Section Title */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Section Title <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={featuredDealsSectionData.section_title}
+                          onChange={(e) => setFeaturedDealsSectionData({ ...featuredDealsSectionData, section_title: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="Stop Leaving Money On The Table"
+                          maxLength={100}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">💡 Main heading displayed above the deals</p>
+                      </div>
+
+                      {/* Section Subtitle */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Section Subtitle <span className="text-red-400">*</span>
+                        </label>
+                        <textarea
+                          value={featuredDealsSectionData.section_subtitle}
+                          onChange={(e) => setFeaturedDealsSectionData({ ...featuredDealsSectionData, section_subtitle: e.target.value })}
+                          rows={3}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors resize-none"
+                          placeholder="Take a look at our deals and start maximising your rewards through our promotions"
+                          maxLength={200}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">💡 Description text below the heading</p>
+                      </div>
+
+                      {/* Button Text */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Button Text <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={featuredDealsSectionData.button_text}
+                          onChange={(e) => setFeaturedDealsSectionData({ ...featuredDealsSectionData, button_text: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="View All Deals"
+                          maxLength={50}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">💡 Text displayed on the CTA button</p>
+                      </div>
+
+                      {/* Button Link */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-2">
+                          Button Link <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={featuredDealsSectionData.button_link}
+                          onChange={(e) => setFeaturedDealsSectionData({ ...featuredDealsSectionData, button_link: e.target.value })}
+                          className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
+                          placeholder="/deals"
+                          maxLength={200}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">💡 URL the button redirects to</p>
+                      </div>
+
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveFeaturedDealsSectionData}
+                          disabled={isSaving}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.featuredDealsSection ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 5: Featured Deal Cards */}
+            <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('featureddeals')}
+                className="w-full flex items-center justify-between p-6 hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center text-white text-sm font-bold">
+                    5
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-white">Featured Deal Cards</h3>
+                    <p className="text-xs text-gray-500">Select 3 deals to showcase on homepage</p>
+                  </div>
+                </div>
+                {openSection === 'featureddeals' ? (
+                  <ChevronUp size={20} className="text-gray-400" />
+                ) : (
+                  <ChevronDown size={20} className="text-gray-400" />
+                )}
+              </button>
+              
+              {openSection === 'featureddeals' && (
+                <div className="p-6 pt-0 border-t border-white/[0.06]">
+                  {isLoadingFeaturedDeals ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin"></div>
+                        <p className="text-sm text-gray-400">Loading featured deals...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6 mt-6">
+                      
+                      {/* Position 1 */}
+                      <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
+                        <label className="block text-sm font-semibold text-gray-300 mb-3">
+                          Position 1 <span className="text-red-400">*</span>
+                        </label>
+                        
+                        <select
+                          value={featuredDealsCards[0].dealId}
+                          onChange={(e) => {
+                            const newCards = [...featuredDealsCards];
+                            newCards[0] = { position: 1, dealId: parseInt(e.target.value) };
+                            setFeaturedDealsCards(newCards);
+                          }}
+                          className="w-full px-4 py-3 pr-10 bg-white/[0.03] border border-white/[0.08] rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/50 focus:border-[#10b981] transition-all"
+                        >
+                          {allDeals.map(deal => (
+                            <option key={deal.id} value={deal.id} className="bg-[#0f1419] text-white">
+                              {deal.name}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        {isDuplicateDeal(1) && (
+                          <p className="text-xs text-red-400 flex items-center gap-1 mt-2">
+                            <AlertCircle className="w-3 h-3" />
+                            This deal is already selected
+                          </p>
+                        )}
+                        
+                        {/* Preview */}
+                        {getSelectedDeal(1) && (
+                          <div className="mt-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                            <p className="text-xs text-gray-500 mb-3">Preview:</p>
+                            <div className="flex items-center gap-4">
+                              {getSelectedDeal(1)!.logo_url && (
+                                <img 
+                                  src={getSelectedDeal(1)!.logo_url!}
+                                  alt={getSelectedDeal(1)!.logo_alt || getSelectedDeal(1)!.name}
+                                  className="max-h-12 object-contain"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-400 mb-1">{getSelectedDeal(1)!.title}</p>
+                                <p className="text-lg font-bold text-white">
+                                  {getSelectedDeal(1)!.main_value}
+                                  {getSelectedDeal(1)!.main_value_second_line && (
+                                    <> {getSelectedDeal(1)!.main_value_second_line}</>
+                                  )}
+                                </p>
+                                {getSelectedDeal(1)!.subtitle && (
+                                  <p className="text-sm text-gray-400 mt-1">{getSelectedDeal(1)!.subtitle}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Position 2 */}
+                      <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
+                        <label className="block text-sm font-semibold text-gray-300 mb-3">
+                          Position 2 <span className="text-red-400">*</span>
+                        </label>
+                        
+                        <select
+                          value={featuredDealsCards[1].dealId}
+                          onChange={(e) => {
+                            const newCards = [...featuredDealsCards];
+                            newCards[1] = { position: 2, dealId: parseInt(e.target.value) };
+                            setFeaturedDealsCards(newCards);
+                          }}
+                          className="w-full px-4 py-3 pr-10 bg-white/[0.03] border border-white/[0.08] rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/50 focus:border-[#10b981] transition-all"
+                        >
+                          {allDeals.map(deal => (
+                            <option key={deal.id} value={deal.id} className="bg-[#0f1419] text-white">
+                              {deal.name}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        {isDuplicateDeal(2) && (
+                          <p className="text-xs text-red-400 flex items-center gap-1 mt-2">
+                            <AlertCircle className="w-3 h-3" />
+                            This deal is already selected
+                          </p>
+                        )}
+                        
+                        {/* Preview */}
+                        {getSelectedDeal(2) && (
+                          <div className="mt-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                            <p className="text-xs text-gray-500 mb-3">Preview:</p>
+                            <div className="flex items-center gap-4">
+                              {getSelectedDeal(2)!.logo_url && (
+                                <img 
+                                  src={getSelectedDeal(2)!.logo_url!}
+                                  alt={getSelectedDeal(2)!.logo_alt || getSelectedDeal(2)!.name}
+                                  className="max-h-12 object-contain"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-400 mb-1">{getSelectedDeal(2)!.title}</p>
+                                <p className="text-lg font-bold text-white">
+                                  {getSelectedDeal(2)!.main_value}
+                                  {getSelectedDeal(2)!.main_value_second_line && (
+                                    <> {getSelectedDeal(2)!.main_value_second_line}</>
+                                  )}
+                                </p>
+                                {getSelectedDeal(2)!.subtitle && (
+                                  <p className="text-sm text-gray-400 mt-1">{getSelectedDeal(2)!.subtitle}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Position 3 */}
+                      <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-5">
+                        <label className="block text-sm font-semibold text-gray-300 mb-3">
+                          Position 3 <span className="text-red-400">*</span>
+                        </label>
+                        
+                        <select
+                          value={featuredDealsCards[2].dealId}
+                          onChange={(e) => {
+                            const newCards = [...featuredDealsCards];
+                            newCards[2] = { position: 3, dealId: parseInt(e.target.value) };
+                            setFeaturedDealsCards(newCards);
+                          }}
+                          className="w-full px-4 py-3 pr-10 bg-white/[0.03] border border-white/[0.08] rounded-lg text-white appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#10b981]/50 focus:border-[#10b981] transition-all"
+                        >
+                          {allDeals.map(deal => (
+                            <option key={deal.id} value={deal.id} className="bg-[#0f1419] text-white">
+                              {deal.name}
+                            </option>
+                          ))}
+                        </select>
+                        
+                        {isDuplicateDeal(3) && (
+                          <p className="text-xs text-red-400 flex items-center gap-1 mt-2">
+                            <AlertCircle className="w-3 h-3" />
+                            This deal is already selected
+                          </p>
+                        )}
+                        
+                        {/* Preview */}
+                        {getSelectedDeal(3) && (
+                          <div className="mt-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700">
+                            <p className="text-xs text-gray-500 mb-3">Preview:</p>
+                            <div className="flex items-center gap-4">
+                              {getSelectedDeal(3)!.logo_url && (
+                                <img 
+                                  src={getSelectedDeal(3)!.logo_url!}
+                                  alt={getSelectedDeal(3)!.logo_alt || getSelectedDeal(3)!.name}
+                                  className="max-h-12 object-contain"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-400 mb-1">{getSelectedDeal(3)!.title}</p>
+                                <p className="text-lg font-bold text-white">
+                                  {getSelectedDeal(3)!.main_value}
+                                  {getSelectedDeal(3)!.main_value_second_line && (
+                                    <> {getSelectedDeal(3)!.main_value_second_line}</>
+                                  )}
+                                </p>
+                                {getSelectedDeal(3)!.subtitle && (
+                                  <p className="text-sm text-gray-400 mt-1">{getSelectedDeal(3)!.subtitle}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Validation Warning */}
+                      {!isFeaturedDealsValid() && (
+                        <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 text-sm">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                          <span>Each deal can only be selected once. Please select 3 different deals.</span>
+                        </div>
+                      )}
+
+                      {/* Save Button */}
+                      <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                        <button
+                          onClick={saveFeaturedDealsSection}
+                          disabled={isSaving || !isFeaturedDealsValid()}
+                          className="flex items-center gap-2 px-6 py-3 bg-[#10b981] hover:bg-emerald-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all"
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                              </svg>
+                              Saving...
+                            </>
+                          ) : saveSuccessState.featuredDeals ? (
+                            <>
+                              <svg 
+                                className="w-4 h-4 animate-bounce" 
+                                fill="none" 
+                                viewBox="0 0 24 24" 
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save size={16} />
+                              Save Changes
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 6: How It Works */}
             <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleSection('howitworks')}
@@ -1330,7 +1897,7 @@ export default function HomepageEditor() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                    4
+                    6
                   </div>
                   <div className="text-left">
                     <h3 className="text-lg font-semibold text-white">How It Works</h3>
@@ -1484,7 +2051,7 @@ export default function HomepageEditor() {
               )}
             </div>
 
-            {/* SECTION 5: Testimonials */}
+            {/* SECTION 7: Testimonials */}
             <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleSection('testimonials')}
@@ -1492,7 +2059,7 @@ export default function HomepageEditor() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center text-white text-sm font-bold">
-                    5
+                    7
                   </div>
                   <div className="text-left">
                     <h3 className="text-lg font-semibold text-white">Testimonials</h3>
@@ -1744,7 +2311,7 @@ export default function HomepageEditor() {
               )}
             </div>
 
-            {/* SECTION 6: FAQ */}
+            {/* SECTION 8: FAQ */}
             <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
               <button
                 onClick={() => toggleSection('faq')}
@@ -1752,7 +2319,7 @@ export default function HomepageEditor() {
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 flex items-center justify-center text-white text-sm font-bold">
-                    6
+                    8
                   </div>
                   <div className="text-left">
                     <h3 className="text-lg font-semibold text-white">FAQ Section</h3>

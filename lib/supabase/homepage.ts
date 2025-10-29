@@ -6,6 +6,7 @@
  */
 
 import { supabase } from './client';
+import { Deal } from './deals';
 
 // ============================================
 // TYPE DEFINITIONS
@@ -100,6 +101,25 @@ export interface FAQ {
   answer: string;
   display_order: number;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface HomeFeaturedDealsCard {
+  id: string;
+  deal_id: number;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  deal?: Deal; // Full deal data via JOIN
+}
+
+export interface HomeFeaturedDeals {
+  id: string;
+  section_title: string;
+  section_subtitle: string;
+  button_text: string;
+  button_link: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -737,6 +757,172 @@ export async function updateFAQs(faqs: FAQ[]): Promise<boolean> {
   } catch (error) {
     console.error('Error updating FAQs:', error);
     return false;
+  }
+}
+
+// ============================================
+// FEATURED DEALS SECTION
+// ============================================
+
+/**
+ * Get featured deals section texts (title, subtitle, button)
+ */
+export async function getHomeFeaturedDeals(): Promise<{ data: HomeFeaturedDeals | null; error: any }> {
+  try {
+    console.log('🔧 [getHomeFeaturedDeals] Fetching featured deals section...');
+    
+    const { data, error } = await supabase
+      .from('home_featured_deals')
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('❌ [getHomeFeaturedDeals] Error:', error);
+      return { data: null, error };
+    }
+    
+    console.log('✅ [getHomeFeaturedDeals] Success:', data);
+    return { data: data as HomeFeaturedDeals, error: null };
+  } catch (error) {
+    console.error('❌ [getHomeFeaturedDeals] Exception:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Update featured deals section texts
+ */
+export async function updateHomeFeaturedDeals(
+  sectionData: Partial<HomeFeaturedDeals>
+): Promise<{ success: boolean; error?: any }> {
+  try {
+    console.log('🔧 [updateHomeFeaturedDeals] Updating featured deals section...', sectionData);
+    
+    // Get the existing record
+    const { data: existing } = await supabase
+      .from('home_featured_deals')
+      .select('id')
+      .single();
+    
+    if (!existing) {
+      console.error('❌ [updateHomeFeaturedDeals] No record found');
+      return { success: false, error: 'Featured deals section not found' };
+    }
+    
+    // Update the record
+    const { error } = await supabase
+      .from('home_featured_deals')
+      .update({
+        section_title: sectionData.section_title,
+        section_subtitle: sectionData.section_subtitle,
+        button_text: sectionData.button_text,
+        button_link: sectionData.button_link,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', existing.id);
+    
+    if (error) {
+      console.error('❌ [updateHomeFeaturedDeals] Error:', error);
+      return { success: false, error };
+    }
+    
+    console.log('✅ [updateHomeFeaturedDeals] Success!');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ [updateHomeFeaturedDeals] Exception:', error);
+    return { success: false, error };
+  }
+}
+
+/**
+ * Get the 3 featured deals displayed on homepage
+ * Joins with deals table to get full deal data
+ */
+export async function getHomeFeaturedDealsCards(): Promise<{ data: HomeFeaturedDealsCard[] | null; error: any }> {
+  try {
+    console.log('🔧 [getHomeFeaturedDealsCards] Fetching featured deals...');
+    
+    const { data, error } = await supabase
+      .from('home_featured_deals_cards')
+      .select(`
+        *,
+        deal:deals(*)
+      `)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('❌ [getHomeFeaturedDealsCards] Error:', error);
+      return { data: null, error };
+    }
+    
+    // Filter out deals that are not active
+    const activeDeals = data?.filter((item: any) => item.deal && item.deal.is_active) || [];
+    
+    console.log('✅ [getHomeFeaturedDealsCards] Success:', activeDeals.length, 'featured deals');
+    return { data: activeDeals as HomeFeaturedDealsCard[], error: null };
+  } catch (error) {
+    console.error('❌ [getHomeFeaturedDealsCards] Exception:', error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Update featured deals on homepage
+ * Replaces all existing cards with new selection
+ * @param cards - Array of {display_order, deal_id}
+ */
+export async function updateHomeFeaturedDealsCards(
+  cards: Array<{ display_order: number; deal_id: number }>
+): Promise<{ success: boolean; error?: any }> {
+  try {
+    console.log('🔧 [updateHomeFeaturedDealsCards] Updating featured deals...', cards);
+    
+    // Validate: must have exactly 3 cards
+    if (cards.length !== 3) {
+      console.error('❌ [updateHomeFeaturedDealsCards] Invalid count:', cards.length);
+      return { success: false, error: 'Must have exactly 3 featured deals' };
+    }
+    
+    // Validate: no duplicate deal_ids
+    const dealIds = cards.map(c => c.deal_id);
+    if (new Set(dealIds).size !== dealIds.length) {
+      console.error('❌ [updateHomeFeaturedDealsCards] Duplicate deal IDs detected');
+      return { success: false, error: 'Cannot select the same deal multiple times' };
+    }
+    
+    // Delete all existing cards
+    console.log('🔧 [updateHomeFeaturedDealsCards] Deleting existing cards...');
+    const { error: deleteError } = await supabase
+      .from('home_featured_deals_cards')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+    
+    if (deleteError) {
+      console.error('❌ [updateHomeFeaturedDealsCards] Delete error:', deleteError);
+      return { success: false, error: deleteError };
+    }
+    
+    // Insert new cards
+    console.log('🔧 [updateHomeFeaturedDealsCards] Inserting new cards...');
+    const { error: insertError } = await supabase
+      .from('home_featured_deals_cards')
+      .insert(
+        cards.map(card => ({
+          deal_id: card.deal_id,
+          display_order: card.display_order
+        }))
+      );
+    
+    if (insertError) {
+      console.error('❌ [updateHomeFeaturedDealsCards] Insert error:', insertError);
+      return { success: false, error: insertError };
+    }
+    
+    console.log('✅ [updateHomeFeaturedDealsCards] Success!');
+    return { success: true };
+  } catch (error) {
+    console.error('❌ [updateHomeFeaturedDealsCards] Exception:', error);
+    return { success: false, error };
   }
 }
 

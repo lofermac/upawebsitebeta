@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { 
@@ -17,6 +18,7 @@ import {
   TrendingDown,
   Globe
 } from 'lucide-react';
+import { getDeals } from '@/lib/supabase/deals';
 
 // Network platforms data
 const platformsData = [
@@ -152,6 +154,16 @@ export default function AdminDashboard() {
   const { logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [dealsCount, setDealsCount] = useState(0);
+
+  // Load deals count
+  useEffect(() => {
+    async function loadDealsCount() {
+      const { data } = await getDeals();
+      setDealsCount(data?.length || 0);
+    }
+    loadDealsCount();
+  }, []);
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -828,7 +840,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   
                   {/* Homepage Card */}
-                  <a 
+                  <Link 
                     href="/admin/website/homepage"
                     className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
@@ -864,60 +876,88 @@ export default function AdminDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                  </a>
+                  </Link>
 
-                  {/* Deals Card - Coming Soon */}
-                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                  {/* Deals Card - Now Live */}
+                  <Link 
+                    href="/admin/website/deals"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
                     <div className="flex flex-col h-full">
                       {/* Icon */}
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                         <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-white mb-2">Deals</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-orange-500 transition-colors">Deals</h3>
                       
                       {/* Description */}
                       <p className="text-sm text-gray-400 mb-4 flex-grow">Manage poker site deals and promotions</p>
                       
-                      {/* Coming Soon Badge */}
-                      <div className="pt-4 border-t border-white/[0.06]">
-                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
-                          Coming Soon
-                        </span>
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">{dealsCount} Deals</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
 
-                  {/* News Card - Coming Soon */}
-                  <div className="relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 opacity-60 cursor-not-allowed">
+                  {/* News Card */}
+                  <Link 
+                    href="/admin/website/news"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
                     <div className="flex flex-col h-full">
                       {/* Icon */}
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center mb-5">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                         <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                         </svg>
                       </div>
                       
                       {/* Title */}
-                      <h3 className="text-xl font-bold text-white mb-2">News</h3>
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-500 transition-colors">News</h3>
                       
                       {/* Description */}
                       <p className="text-sm text-gray-400 mb-4 flex-grow">Create and manage blog posts and news articles</p>
                       
-                      {/* Coming Soon Badge */}
-                      <div className="pt-4 border-t border-white/[0.06]">
-                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-gray-700/50 text-gray-400 border border-gray-600/50">
-                          Coming Soon
-                        </span>
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">0 Articles</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
 
                   {/* Team Card */}
-                  <a 
+                  <Link 
                     href="/admin/website/team"
                     className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
@@ -951,10 +991,10 @@ export default function AdminDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                  </a>
+                  </Link>
 
                   {/* Contact Card */}
-                  <a 
+                  <Link 
                     href="/admin/website/contact"
                     className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                   >
@@ -990,7 +1030,7 @@ export default function AdminDashboard() {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                  </a>
+                  </Link>
 
                 </div>
               </>

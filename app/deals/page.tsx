@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import HeaderWithAuth from "../components/HeaderWithAuth";
 import Footer from "../components/Footer";
 import DealCardWithGeo from "@/components/DealCardWithGeo";
@@ -7,10 +8,35 @@ import AuthModal from "@/components/AuthModal";
 import JoinDealModal from "@/components/JoinDealModal";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { useAuthModal } from "@/lib/hooks/useAuthModal";
+import { getDeals, type Deal } from "@/lib/supabase/deals";
+import { generateRadialGradient, generateGlowClasses } from "@/lib/utils/colorUtils";
 
 export default function DealsPage() {
   const { isLoggedIn } = useAuth();
   const authModal = useAuthModal();
+  
+  // Deals state
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load deals from Supabase
+  useEffect(() => {
+    async function loadDeals() {
+      try {
+        const { data, error } = await getDeals();
+        if (data && !error) {
+          setDeals(data);
+        } else {
+          console.error('Error loading deals:', error);
+        }
+      } catch (err) {
+        console.error('Failed to load deals:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadDeals();
+  }, []);
 
   // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
   const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -90,403 +116,106 @@ export default function DealsPage() {
         <div className="w-full pt-2 md:pt-4 pb-20 md:pb-24 px-4">
           <div className="max-w-7xl mx-auto">
         
-        {/* Deals Grid - 3 columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-auto">
-          
-          {/* Deal 1: GGPOKER */}
-          <DealCardWithGeo dealId={1}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-red-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #962727 0%, #7D1F1F 20%, #6A1A1A 40%, #5C1616 60%, #3D0E0E 80%, #2B0A0A 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144333/ggpoker_logo-1_white-1.webp" alt="GGPoker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">60%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">With GGPoker Fish Buffet</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1365" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="/ggpoker-deal" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full GGPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"></div>
           </div>
-          </DealCardWithGeo>
-
-          {/* Deal 2: PARTYPOKER */}
-          <DealCardWithGeo dealId={2}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-orange-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-orange-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #C8582B 0%, #B85425 20%, #A04920 40%, #8B3D1A 60%, #6B2F15 80%, #4D2310 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/07/07144334/ENT_PartyPoker_Landscape_FullWhite_RGB.png" alt="PartyPoker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">65%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1368" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full PartyPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
+        ) : (
+          <>
+            {/* Deals Grid - 3 columns */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 auto-rows-auto">
+              {deals.map((deal) => {
+                const gradientStyle = generateRadialGradient(deal.primary_color);
+                const glowClasses = generateGlowClasses(deal.glow_color);
+                
+                // Special handler for 888poker if platform_id matches
+                const isClaimHandlerDeal = deal.platform_id === 1367;
+                
+                return (
+                  <DealCardWithGeo key={deal.id} dealId={deal.id}>
+                    <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
+                      <div className={`absolute inset-0 bg-gradient-to-br ${glowClasses.outerGlowFrom} ${glowClasses.outerGlowVia} ${glowClasses.outerGlowTo} rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500`}></div>
+                      <div 
+                        className={`relative border ${glowClasses.borderColor} rounded-[2rem] overflow-hidden shadow-2xl group-hover:${glowClasses.hoverShadow} group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]`}
+                        style={{ background: gradientStyle }}
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
+                        
+                        {/* Logo */}
+                        {deal.logo_url && (
+                          <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
+                            <img 
+                              src={deal.logo_url} 
+                              alt={deal.logo_alt} 
+                              className={`${deal.logo_max_height} max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10`} 
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Content */}
+                        <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
+                          <div className="text-center space-y-0 mb-8">
+                            <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">
+                              {deal.title}
+                            </p>
+                            <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">
+                              {deal.main_value}
+                            </p>
+                            {deal.main_value_second_line && (
+                              <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">
+                                {deal.main_value_second_line}
+                              </p>
+                            )}
+                            {deal.subtitle && (
+                              <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">
+                                {deal.subtitle}
+                              </p>
+                            )}
+                          </div>
+                          
+                          {/* Buttons */}
+                          <div className="flex gap-3 justify-center mb-4 px-2">
+                            {/* Claim Offer Button */}
+                            <a 
+                              href={deal.claim_offer_url} 
+                              onClick={isClaimHandlerDeal ? handleClaimOffer888 : undefined}
+                              className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center"
+                            >
+                              <span className="relative z-10">Claim Offer</span>
+                              <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
+                            </a>
+                            
+                            {/* Learn More Button */}
+                            {deal.learn_more_url && (
+                              <a 
+                                href={deal.learn_more_url} 
+                                className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm"
+                              >
+                                <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
+                              </a>
+                            )}
+                          </div>
+                          
+                          {/* Terms */}
+                          <div className="mt-auto pt-5 border-t border-white/[0.15]">
+                            <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">
+                              {deal.terms}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </DealCardWithGeo>
+                );
+              })}
             </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 3: 888POKER */}
-          <DealCardWithGeo dealId={3}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/50 via-cyan-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-blue-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-blue-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #3B5FA3 0%, #2E56A3 20%, #264A8C 40%, #234489 60%, #1A3470 80%, #142958 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183728/888-LOGO-webp-1024x309.webp" alt="888poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Extra</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">50%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Through Our Promotions</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1367" onClick={handleClaimOffer888} className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">#Ad | 18+ | Please Play Responsibly | Full 888Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 4: WPT GLOBAL */}
-          <DealCardWithGeo dealId={4}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/50 via-indigo-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-purple-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-purple-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #633C9A 0%, #563391 20%, #4A2C7D 40%, #43277A 60%, #301C63 80%, #20134C 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp" alt="WPT Global Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To An Extra</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">40%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Every Month</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1364" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ | Please Play Responsibly | Full WPT Global T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 5: UNIBET */}
-          <DealCardWithGeo dealId={5}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/50 via-green-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-emerald-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-emerald-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #398654 0%, #2F7547 20%, #28653D 40%, #235935 60%, #183E24 80%, #0F2A18 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/15110203/Unitbet-Logo.png" alt="Unibet Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Enhanced Welcome Bonus</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Worth</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">£540</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Plus 4 x €500 Freerolls</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=9074" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ | GambleAware | Full Unibet T&amp;C&apos;s apply | Full Universal Poker T&amp;C&apos;s apply | Play Responsibly | New UK players only</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 6: BETFAIR POKER */}
-          <DealCardWithGeo dealId={6}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/50 via-amber-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-yellow-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-yellow-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #AA872C 0%, #947625 20%, #80651F 40%, #705A1C 60%, #4D3F14 80%, #352B0E 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp" alt="Betfair Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Instant VIP Upgrade To</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">35%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">+ €50k In Races</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1363" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ | Please Play Responsibly | Full Betfair T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 7: CHAMPION POKER */}
-          <DealCardWithGeo dealId={7}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-rose-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #943636 0%, #7D2D2D 20%, #6A2626 40%, #5C2121 60%, #3D1616 80%, #2B0F0F 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp" alt="Champion Poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get An Instant Upgrade To</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">30%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">+ All On-Site Promotions</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=6016" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ | Play Responsibly | Full Champion Poker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 8: WSOP.CA */}
-          <DealCardWithGeo dealId={8}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/50 via-yellow-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-amber-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-amber-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #AA7F2B 0%, #947225 20%, #7F611F 40%, #70541C 60%, #4D3914 80%, #35270E 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/12/11192441/wsop-ontario-logo-1024x376.webp" alt="WSOP.CA Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Play On A</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">GGPoker</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Alternative</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">From Ontario Only</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=2933" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">19+ | Please Play Responsibly | Full WSOP.ca T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | www.ConnexOntario.ca</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 9: OPTIBET POKER */}
-          <DealCardWithGeo dealId={9}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/50 via-pink-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-rose-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-rose-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #A23D56 0%, #8E3750 20%, #7C3044 40%, #6C2A3D 60%, #491D29 80%, #31141C 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17100841/Optibet-Poker-logo-2D-horizontal-red-bg-1024x298.png" alt="Optibet Poker Logo" className="max-h-14 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Get Up To</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">60%</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Cashback</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Every Month</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="/platform-connection?platform_id=1362" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ | Please Play Responsibly | GambleAware | Full Optibet T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | EE &amp; LAT Only</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
-          {/* Deal 10: COINPOKER */}
-          <DealCardWithGeo dealId={10}>
-          <div className="group relative rounded-[2rem] overflow-hidden backdrop-blur-xl transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-500/50 via-orange-600/40 to-zinc-900/50 rounded-[2rem] blur-sm group-hover:blur-md transition-all duration-500"></div>
-            <div className="relative border border-red-900/20 rounded-[2rem] overflow-hidden shadow-2xl group-hover:shadow-red-500/40 group-hover:shadow-2xl transition-all duration-500 flex flex-col min-h-[540px]"
-                 style={{ background: 'radial-gradient(ellipse at center top, #7D2C2C 0%, #6E2424 20%, #5F1F1F 40%, #551B1B 60%, #3D1414 80%, #2B0F0F 100%)' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/30 pointer-events-none"></div>
-              <div className="relative h-36 flex items-center justify-center px-8 pt-8 pb-6 flex-shrink-0">
-                <img src="/images/coinlogo.png" alt="CoinPoker Logo" className="max-h-60 max-w-full object-contain drop-shadow-2xl filter brightness-110 z-10" />
-              </div>
-              <div className="relative px-8 pt-0 pb-6 flex flex-col flex-grow">
-                <div className="text-center space-y-0 mb-8">
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] font-semibold text-white/95 tracking-wide mb-3">Join Our</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none">Monthly Rake</p>
-                  <p className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-black text-white drop-shadow-lg leading-none mt-1">Chase</p>
-                  <p className="text-sm sm:text-base md:text-lg lg:text-[1.5rem] text-white/90 leading-relaxed pt-4 font-medium">Up To $1500 Every Month</p>
-                </div>
-                <div className="flex gap-3 justify-center mb-4 px-2">
-                  {/* Claim Offer Button - Register Style */}
-                  <a href="#" className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center">
-                    <span className="relative z-10">Claim Offer</span>
-                    {/* Animated shine effect */}
-                    <div className="absolute inset-0 translate-x-[-100%] group-hover/claimBtn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                    {/* Subtle inner glow */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/claimBtn:opacity-100 transition-opacity duration-300"></div>
-                  </a>
-                  {/* Learn More Button - Secondary */}
-                  <a href="#" className="relative group/btn2 overflow-hidden bg-white/10 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-full text-center text-sm transition-all duration-300 hover:bg-white/15 hover:border-white/30 active:scale-[0.98] flex-1 backdrop-blur-sm">
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Learn More</span>
-                  </a>
-                </div>
-                <div className="mt-auto pt-5 border-t border-white/[0.15]">
-                  <p className="text-[0.7rem] text-white/60 leading-tight text-center px-2">18+ (19+ in Canada) | Please Play Responsibly | Full CoinPoker T&amp;C&apos;s Apply | Full Universal Poker T&amp;C&apos;s Apply | GambleAware</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          </DealCardWithGeo>
-
+          </>
+        )}
         </div>
       </div>
-      </div>
-
+      
       <style jsx global>{`
         @keyframes pulse-slow {
           0%, 100% { opacity: 0.5; }
