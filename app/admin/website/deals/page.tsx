@@ -160,13 +160,13 @@ export default function DealsManagementPage() {
       case 'title':
       case 'main_value':
       case 'terms':
-        return value && value.trim().length > 0;
+        return typeof value === 'string' && value.trim().length > 0;
       case 'primary_color':
-        return isValidHex(value);
+        return typeof value === 'string' && isValidHex(value);
       case 'glow_color':
-        return GLOW_COLORS.includes(value);
+        return typeof value === 'string' && GLOW_COLORS.includes(value);
       case 'claim_offer_url':
-        return isValidUrl(value);
+        return typeof value === 'string' && isValidUrl(value);
       default:
         return true;
     }
