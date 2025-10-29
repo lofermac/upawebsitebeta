@@ -249,14 +249,15 @@ export default function DealsManagementPage() {
       }
       
       // Update deal in database
-      const updateData = {
+      const updateData: Partial<Deal> = {
         ...formData[dealId],
         logo_url: logoUrl,
       };
       
       // Parse available_countries if it's a string
       if (typeof updateData.available_countries === 'string') {
-        updateData.available_countries = updateData.available_countries
+        const countriesStr = updateData.available_countries as string;
+        updateData.available_countries = countriesStr
           .split(',')
           .map(c => c.trim())
           .filter(c => c.length > 0);
@@ -264,7 +265,8 @@ export default function DealsManagementPage() {
       
       // Parse platform_id if it's a string
       if (typeof updateData.platform_id === 'string') {
-        updateData.platform_id = updateData.platform_id ? parseInt(updateData.platform_id) : null;
+        const platformIdStr = updateData.platform_id as string;
+        updateData.platform_id = platformIdStr ? parseInt(platformIdStr) : null;
       }
       
       const { error } = await updateDeal(dealId, updateData);
