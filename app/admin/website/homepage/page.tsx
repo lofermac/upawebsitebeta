@@ -618,7 +618,7 @@ export default function HomepageEditor() {
       });
       
       if (!success) {
-        throw new Error(error || 'Failed to save featured deals section');
+        throw new Error(typeof error === 'string' ? error : 'Failed to save featured deals section');
       }
       
       console.log('✅ [2] Featured Deals Section saved!');
@@ -690,7 +690,7 @@ export default function HomepageEditor() {
       const { success, error } = await updateHomeFeaturedDealsCards(cards);
       
       if (!success) {
-        throw new Error(error || 'Failed to save featured deals');
+        throw new Error(typeof error === 'string' ? error : 'Failed to save featured deals');
       }
       
       console.log('✅ [2] Featured Deals saved!');

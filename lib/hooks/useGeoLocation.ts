@@ -16,7 +16,7 @@
 
 import { useState, useEffect } from 'react';
 import { getUserCountry } from '../utils/geolocation';
-import { Deal } from '../utils/dealsData';
+import { Deal } from '../supabase/deals';
 
 interface UseGeoLocationReturn {
   userCountry: string | null;
@@ -99,18 +99,18 @@ export function useGeoLocation(): UseGeoLocationReturn {
       return true;
     }
 
-    // Se availableCountries está vazio [], disponível globalmente
-    if (!deal.availableCountries || deal.availableCountries.length === 0) {
+    // Se available_countries está vazio [], disponível globalmente
+    if (!deal.available_countries || deal.available_countries.length === 0) {
       return true;
     }
 
     // Verificar se o país do usuário está na lista de países disponíveis
-    const isAvailable = deal.availableCountries.includes(userCountry);
+    const isAvailable = deal.available_countries.includes(userCountry);
     
     if (!isAvailable) {
       console.log(
         `🚫 Deal "${deal.name}" não disponível em ${userCountry}.`,
-        `Disponível em: ${deal.availableCountries.join(', ')}`
+        `Disponível em: ${deal.available_countries.join(', ')}`
       );
     }
 

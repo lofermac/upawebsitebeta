@@ -24,7 +24,8 @@ import {
   deleteDeal,
   uploadDealLogo,
   updateDealsOrder,
-  type Deal 
+  type Deal,
+  type DealInput
 } from '@/lib/supabase/deals';
 import { generateRadialGradient } from '@/lib/utils/colorUtils';
 import MultiCountrySelect from '@/app/components/MultiCountrySelect';
@@ -154,7 +155,9 @@ export default function DealsManagementPage() {
   // (Removed - now handled by MultiCountrySelect component)
 
   // Validation Functions
-  const validateField = (field: string, value: string | number): boolean => {
+  const validateField = (field: string, value: string | number | undefined): boolean => {
+    if (value === undefined) return false;
+    
     switch (field) {
       case 'name':
       case 'title':
