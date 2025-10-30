@@ -138,7 +138,7 @@ export async function addFooterPokerSite(deal_id: number, display_order?: number
 
   try {
     // Check if deal_id already exists
-    const { data: existing, error: checkError } = await supabase
+    const { data: existing } = await supabase
       .from('footer_poker_sites')
       .select('id')
       .eq('deal_id', deal_id)

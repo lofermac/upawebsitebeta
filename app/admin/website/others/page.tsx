@@ -201,7 +201,8 @@ export default function OthersEditor() {
         
         if (error) {
           console.error('❌ Error adding button:', error);
-          setHeaderSaveError(error.message || 'Failed to add new button');
+          const errorMessage = error instanceof Error ? error.message : 'Failed to add new button';
+          setHeaderSaveError(errorMessage);
           setIsSavingHeader(false);
           return;
         }
@@ -225,7 +226,7 @@ export default function OthersEditor() {
 
         console.log('Updating existing buttons:', buttonsToUpdate);
 
-        const { success, error } = await updateHeaderNavigation(buttonsToUpdate);
+        const { error } = await updateHeaderNavigation(buttonsToUpdate);
         
         if (error) {
           console.error('❌ Error updating buttons:', error);
@@ -450,7 +451,7 @@ export default function OthersEditor() {
       }));
 
       console.log('Saving poker sites:', sitesToSave);
-      const { success: sitesSuccess, error: sitesError } = await updateFooterPokerSites(sitesToSave);
+      const { error: sitesError } = await updateFooterPokerSites(sitesToSave);
       
       if (sitesError) {
         console.error('❌ Error saving poker sites:', sitesError);
@@ -468,7 +469,7 @@ export default function OthersEditor() {
       }));
 
       console.log('Saving quick links:', linksToSave);
-      const { success: linksSuccess, error: linksError } = await updateFooterQuickLinks(linksToSave);
+      const { error: linksError } = await updateFooterQuickLinks(linksToSave);
       
       if (linksError) {
         console.error('❌ Error saving quick links:', linksError);
