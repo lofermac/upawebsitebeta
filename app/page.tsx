@@ -278,7 +278,6 @@ function AnimatedStat({
       {/* Icon */}
       <div className="relative flex justify-center mb-6">
         <div className="relative">
-          <div className="absolute inset-0 bg-[#077124] rounded-2xl blur-lg opacity-30"></div>
           <div className="relative bg-[#077124] p-4 rounded-2xl shadow-lg">
             <Icon className="w-8 h-8 text-white" strokeWidth={2.5} />
           </div>
@@ -794,9 +793,6 @@ export default function Home() {
             ref={cashbackRef}
             className="relative max-w-5xl mx-auto text-center"
           >
-            {/* Ambient glow effects */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#077124]/[0.08] rounded-full blur-[120px] animate-pulse-slow pointer-events-none"></div>
-            
             <div className="relative z-10">
               {/* Title with Apple-like typography */}
               <h2 className="text-white text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold mb-4 leading-relaxed tracking-tight animate-fade-up"

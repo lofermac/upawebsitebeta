@@ -16,7 +16,8 @@ import {
   Building2,
   TrendingUp,
   TrendingDown,
-  Globe
+  Globe,
+  LayoutGrid
 } from 'lucide-react';
 import { getDeals } from '@/lib/supabase/deals';
 
@@ -1027,6 +1028,43 @@ export default function AdminDashboard() {
                     {/* Arrow Icon */}
                     <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <svg className="w-5 h-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
+
+                  {/* Others Card */}
+                  <Link 
+                    href="/admin/website/others"
+                    className="group relative bg-[#0f1419] border border-white/[0.06] rounded-xl p-8 hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex flex-col h-full">
+                      {/* Icon */}
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+                        <LayoutGrid className="w-7 h-7 text-white" strokeWidth={2} />
+                      </div>
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-violet-500 transition-colors">Others</h3>
+                      
+                      {/* Description */}
+                      <p className="text-sm text-gray-400 mb-4 flex-grow">Edit header, footer and other site-wide elements</p>
+                      
+                      {/* Stats */}
+                      <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">2 Sections</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-xs text-gray-500">Live</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Arrow Icon */}
+                    <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg className="w-5 h-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>

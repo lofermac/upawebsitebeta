@@ -1,4 +1,61 @@
+'use client'
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getFooterPokerSites, getFooterQuickLinks, FooterPokerSite, FooterQuickLink } from '@/lib/supabase/footer';
+
 export default function Footer() {
+  const [pokerSites, setPokerSites] = useState<FooterPokerSite[]>([]);
+  const [quickLinks, setQuickLinks] = useState<FooterQuickLink[]>([]);
+  const [isLoadingPokerSites, setIsLoadingPokerSites] = useState(true);
+  const [isLoadingQuickLinks, setIsLoadingQuickLinks] = useState(true);
+
+  // Load poker sites
+  useEffect(() => {
+    async function loadPokerSites() {
+      try {
+        const { data, error } = await getFooterPokerSites();
+        
+        if (!error && data) {
+          setPokerSites(data);
+        } else {
+          console.warn('Failed to load footer poker sites, using defaults');
+          setPokerSites([]);
+        }
+      } catch (err) {
+        console.error('Error loading footer poker sites:', err);
+        setPokerSites([]);
+      } finally {
+        setIsLoadingPokerSites(false);
+      }
+    }
+
+    loadPokerSites();
+  }, []);
+
+  // Load quick links
+  useEffect(() => {
+    async function loadQuickLinks() {
+      try {
+        const { data, error } = await getFooterQuickLinks();
+        
+        if (!error && data) {
+          setQuickLinks(data);
+        } else {
+          console.warn('Failed to load footer quick links, using defaults');
+          setQuickLinks([]);
+        }
+      } catch (err) {
+        console.error('Error loading footer quick links:', err);
+        setQuickLinks([]);
+      } finally {
+        setIsLoadingQuickLinks(false);
+      }
+    }
+
+    loadQuickLinks();
+  }, []);
+
   return (
     <footer className="relative w-full px-3 md:px-4 pb-0" style={{ backgroundColor: '#0e0f12' }}>
       {/* Premium Container Card - Rounded top, cut bottom */}
@@ -31,42 +88,42 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Poker Sites</h3>
             <ul className="space-y-3.5">
-              <li>
-                <a href="#partypoker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  PartyPoker
-                </a>
-              </li>
-              <li>
-                <a href="#optibet" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  Optibet
-                </a>
-              </li>
-              <li>
-                <a href="#betfair" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  Betfair
-                </a>
-              </li>
-              <li>
-                <a href="#wpt" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  WPT Global
-                </a>
-              </li>
-              <li>
-                <a href="#ggpoker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  GGPoker
-                </a>
-              </li>
-              <li>
-                <a href="#888poker" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  888Poker
-                </a>
-              </li>
+              {isLoadingPokerSites ? (
+                // Loading skeleton
+                <>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-32"></div>
+                  </li>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-28"></div>
+                  </li>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-36"></div>
+                  </li>
+                </> 
+              ) : pokerSites.length > 0 ? (
+                pokerSites.map((site) => (
+                  <li key={site.id}>
+                    <Link 
+                      href={site.deal?.learn_more_url || '/deals'} 
+                      className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      {site.deal?.name || 'Poker Site'}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                // Fallback to default sites if none configured
+                <>
+                  <li>
+                    <Link href="/deals" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      View All Deals
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 
@@ -74,30 +131,60 @@ export default function Footer() {
           <div className="space-y-6">
             <h3 className="text-base font-bold text-white tracking-wide uppercase text-sm">Quick Links</h3>
             <ul className="space-y-3.5">
-              <li>
-                <a href="#deals" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  Deals
-                </a>
-              </li>
-              <li>
-                <a href="#news" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  News and Updates
-                </a>
-              </li>
-              <li>
-                <a href="#partners" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  Partners
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
-                  Contact Us
-                </a>
-              </li>
+              {isLoadingQuickLinks ? (
+                // Loading skeleton
+                <>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-24"></div>
+                  </li>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-32"></div>
+                  </li>
+                  <li>
+                    <div className="h-5 bg-gray-700/30 rounded animate-pulse w-28"></div>
+                  </li>
+                </>
+              ) : quickLinks.length > 0 ? (
+                quickLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link 
+                      href={link.link_url} 
+                      className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      {link.link_text}
+                    </Link>
+                  </li>
+                ))
+              ) : (
+                // Fallback to default links if none configured
+                <>
+                  <li>
+                    <Link href="/deals" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      Deals
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/news" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      News and Updates
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/team" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      Partners
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/contact-us" className="group inline-flex items-center text-gray-400 hover:text-white transition-all duration-300 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gray-600 group-hover:bg-[#077124] transition-colors duration-300 mr-3"></span>
+                      Contact Us
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

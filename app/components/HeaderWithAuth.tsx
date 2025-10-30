@@ -1,13 +1,16 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/contexts/AuthContext";
 import { LogOut, User } from "lucide-react";
+import { getHeaderNavigation, HeaderNavigation } from "@/lib/supabase/header";
 
 export default function HeaderWithAuth() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { isLoggedIn, isLoading, userType, logout } = useAuth();
+  const [navButtons, setNavButtons] = useState<HeaderNavigation[]>([]);
+  const [isLoadingNav, setIsLoadingNav] = useState(true);
 
   // Get username based on userType
   const getUsername = () => {
@@ -15,6 +18,41 @@ export default function HeaderWithAuth() {
     if (userType === 'player') return 'Player';
     return '';
   };
+
+  // Load navigation buttons
+  useEffect(() => {
+    async function loadNavigation() {
+      try {
+        const { data, error } = await getHeaderNavigation();
+        
+        if (!error && data) {
+          setNavButtons(data);
+        } else {
+          // Fallback to default navigation if error
+          console.warn('Failed to load navigation, using defaults');
+          setNavButtons([
+            { id: '1', button_text: 'Deals', button_url: '/deals', display_order: 1, is_active: true, created_at: '', updated_at: '' },
+            { id: '2', button_text: 'News', button_url: '/news', display_order: 2, is_active: true, created_at: '', updated_at: '' },
+            { id: '3', button_text: 'Team', button_url: '/team', display_order: 3, is_active: true, created_at: '', updated_at: '' },
+            { id: '4', button_text: 'Contact Us', button_url: '/contact-us', display_order: 4, is_active: true, created_at: '', updated_at: '' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Error loading navigation:', err);
+        // Use fallback
+        setNavButtons([
+          { id: '1', button_text: 'Deals', button_url: '/deals', display_order: 1, is_active: true, created_at: '', updated_at: '' },
+          { id: '2', button_text: 'News', button_url: '/news', display_order: 2, is_active: true, created_at: '', updated_at: '' },
+          { id: '3', button_text: 'Team', button_url: '/team', display_order: 3, is_active: true, created_at: '', updated_at: '' },
+          { id: '4', button_text: 'Contact Us', button_url: '/contact-us', display_order: 4, is_active: true, created_at: '', updated_at: '' }
+        ]);
+      } finally {
+        setIsLoadingNav(false);
+      }
+    }
+
+    loadNavigation();
+  }, []);
 
   return (
     <header className="flex justify-center transition-all duration-500">
@@ -49,34 +87,26 @@ export default function HeaderWithAuth() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex gap-1 lg:gap-2 text-sm font-medium items-center flex-1 justify-center relative z-10">
-          <Link 
-            href="/deals" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Deals</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </Link>
-          <Link 
-            href="/news" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">News</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </Link>
-          <a 
-            href="/team" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Team</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
-          <a 
-            href="/contact-us" 
-            className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
-          >
-            <span className="relative z-10">Contact Us</span>
-            <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
-          </a>
+          {isLoadingNav ? (
+            // Loading skeleton
+            <>
+              <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
+              <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
+              <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
+              <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
+            </>
+          ) : (
+            navButtons.map((button) => (
+              <Link 
+                key={button.id}
+                href={button.button_url} 
+                className="relative px-4 py-2 text-gray-300 hover:text-white transition-all duration-300 group/nav rounded-full"
+              >
+                <span className="relative z-10">{button.button_text}</span>
+                <div className="absolute inset-0 rounded-full bg-white/5 scale-0 group-hover/nav:scale-100 transition-transform duration-300"></div>
+              </Link>
+            ))
+          )}
         </nav>
         
         {/* Auth Section - Conditional rendering based on auth state */}
@@ -175,38 +205,27 @@ export default function HeaderWithAuth() {
               
               {/* Navigation */}
               <nav className="flex flex-col gap-3 mt-20 px-8 relative z-10">
-                <Link 
-                  href="/deals" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Deals</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </Link>
-                <Link 
-                  href="/news" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">News</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </Link>
-                <a 
-                  href="/team" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Team</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
-                <a 
-                  href="/contact-us" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Contact Us</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </a>
+                {isLoadingNav ? (
+                  // Loading skeleton for mobile nav
+                  <>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                    <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>
+                  </>
+                ) : (
+                  navButtons.map((button) => (
+                    <Link 
+                      key={button.id}
+                      href={button.button_url} 
+                      className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="relative z-10">{button.button_text}</span>
+                      <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                    </Link>
+                  ))
+                )}
                 
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
