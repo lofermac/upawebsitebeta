@@ -8,7 +8,7 @@ import { getHeaderNavigation, HeaderNavigation } from "@/lib/supabase/header";
 
 export default function HeaderWithAuth() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isLoggedIn, isLoading, userType, logout } = useAuth();
+  const { isLoggedIn, loading, userType, logout } = useAuth();
   const [navButtons, setNavButtons] = useState<HeaderNavigation[]>([]);
   const [isLoadingNav, setIsLoadingNav] = useState(true);
 
@@ -111,7 +111,7 @@ export default function HeaderWithAuth() {
         
         {/* Auth Section - Conditional rendering based on auth state */}
         <div className="hidden md:flex items-center gap-3 relative z-10">
-          {isLoading ? (
+          {loading ? (
             // Loading skeleton
             <>
               <div className="h-9 w-20 bg-white/5 rounded-full animate-pulse"></div>
@@ -231,7 +231,7 @@ export default function HeaderWithAuth() {
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
                 
                 {/* Mobile Auth Section */}
-                {isLoading ? (
+                {loading ? (
                   // Loading skeleton for mobile
                   <>
                     <div className="h-14 bg-white/5 rounded-xl animate-pulse"></div>

@@ -10,7 +10,9 @@ import {
   Plus,
   Trash2,
   Save,
-  AlertCircle
+  AlertCircle,
+  Award,
+  Upload
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -30,6 +32,14 @@ import {
   FooterPokerSite,
   FooterQuickLink
 } from '@/lib/supabase/footer';
+import {
+  getFooterBadges,
+  updateFooterBadges,
+  deleteFooterBadge,
+  uploadBadgeImage,
+  deleteBadgeImage,
+  FooterBadge
+} from '@/lib/supabase/badges';
 import { Deal, getDeals } from '@/lib/supabase/deals';
 
 export default function OthersEditor() {
@@ -52,6 +62,14 @@ export default function OthersEditor() {
   const [footerSaveSuccess, setFooterSaveSuccess] = useState(false);
   const [footerSaveError, setFooterSaveError] = useState<string | null>(null);
   
+  // Badges Section States
+  const [footerBadges, setFooterBadges] = useState<FooterBadge[]>([]);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+  const [isSavingBadges, setIsSavingBadges] = useState(false);
+  const [badgesSaveSuccess, setBadgesSaveSuccess] = useState(false);
+  const [badgesSaveError, setBadgesSaveError] = useState<string | null>(null);
+  const [uploadingBadgeId, setUploadingBadgeId] = useState<string | null>(null);
+  
   // Toggle Accordion Section
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
@@ -61,6 +79,7 @@ export default function OthersEditor() {
   useEffect(() => {
     loadHeaderNavigation();
     loadFooterData();
+    loadBadgesData();
   }, []);
 
   const loadHeaderNavigation = async () => {
@@ -494,6 +513,221 @@ export default function OthersEditor() {
     }
   };
 
+  // ============================================
+  // BADGES FUNCTIONS
+  // ============================================
+
+  const loadBadgesData = async () => {
+    console.log('📥 Loading badges data...');
+    setIsLoadingBadges(true);
+    
+    try {
+      const { data, error } = await getFooterBadges();
+      
+      if (data) {
+        setFooterBadges(data);
+        console.log(`✅ Loaded ${data.length} badges`);
+      }
+      
+      if (error) {
+        console.error('❌ Error loading badges:', error);
+        setBadgesSaveError('Failed to load badges');
+      }
+    } catch (err) {
+      console.error('❌ Error loading badges data:', err);
+      setBadgesSaveError('Failed to load badges data');
+    } finally {
+      setIsLoadingBadges(false);
+    }
+  };
+
+  // Add new badge
+  const addBadge = () => {
+    const tempBadge: FooterBadge = {
+      id: `temp-${Date.now()}`,
+      badge_name: '',
+      badge_image_url: '',
+      external_link: null,
+      display_order: footerBadges.length + 1,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    setFooterBadges([...footerBadges, tempBadge]);
+  };
+
+  // Update badge name
+  const updateBadgeName = (index: number, name: string) => {
+    const newBadges = [...footerBadges];
+    newBadges[index].badge_name = name;
+    setFooterBadges(newBadges);
+  };
+
+  // Update badge external link
+  const updateBadgeLink = (index: number, link: string) => {
+    const newBadges = [...footerBadges];
+    newBadges[index].external_link = link || null;
+    setFooterBadges(newBadges);
+  };
+
+  // Handle badge image change
+  const handleBadgeImageChange = async (index: number, file: File) => {
+    const badge = footerBadges[index];
+    setUploadingBadgeId(badge.id);
+    setBadgesSaveError(null);
+
+    try {
+      // Validate file
+      const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+      if (!validTypes.includes(file.type)) {
+        setBadgesSaveError('Invalid file type. Please upload PNG, JPG, WEBP, or SVG.');
+        setUploadingBadgeId(null);
+        return;
+      }
+
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSize) {
+        setBadgesSaveError('File too large. Maximum size is 2MB.');
+        setUploadingBadgeId(null);
+        return;
+      }
+
+      console.log('📤 Uploading badge image...');
+      
+      // Delete old image if exists and not a temp badge
+      if (badge.badge_image_url && !badge.id.startsWith('temp-')) {
+        try {
+          await deleteBadgeImage(badge.badge_image_url);
+        } catch (err) {
+          console.warn('⚠️ Failed to delete old image:', err);
+        }
+      }
+
+      // Upload new image
+      const { data: imageUrl, error } = await uploadBadgeImage(file);
+
+      if (error) {
+        console.error('❌ Error uploading image:', error);
+        setBadgesSaveError('Failed to upload image');
+        setUploadingBadgeId(null);
+        return;
+      }
+
+      if (imageUrl) {
+        // Update badge with new image URL
+        const newBadges = [...footerBadges];
+        newBadges[index].badge_image_url = imageUrl;
+        setFooterBadges(newBadges);
+        console.log('✅ Image uploaded successfully');
+      }
+    } catch (err) {
+      console.error('❌ Unexpected error:', err);
+      setBadgesSaveError('Unexpected error uploading image');
+    } finally {
+      setUploadingBadgeId(null);
+    }
+  };
+
+  // Delete badge
+  const handleDeleteBadge = async (index: number, badgeId: string) => {
+    if (badgeId.startsWith('temp-')) {
+      // Just remove from UI if temporary
+      const newBadges = footerBadges.filter((_, i) => i !== index);
+      setFooterBadges(newBadges);
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this badge?')) {
+      return;
+    }
+
+    console.log(`🗑️ Deleting badge ${badgeId}...`);
+    
+    const { success, error } = await deleteFooterBadge(badgeId);
+    
+    if (error) {
+      console.error('❌ Error deleting badge:', error);
+      setBadgesSaveError('Failed to delete badge');
+      return;
+    }
+
+    if (success) {
+      await loadBadgesData();
+      setBadgesSaveSuccess(true);
+      setTimeout(() => setBadgesSaveSuccess(false), 3000);
+    }
+  };
+
+  // Save badges changes
+  const saveBadgesChanges = async () => {
+    console.log('💾 Saving badges changes...');
+    console.log('=== DEBUG SAVE BADGES ===');
+    console.log('Badges:', footerBadges);
+    
+    setBadgesSaveError(null);
+    setBadgesSaveSuccess(false);
+    
+    // Validate all badges
+    for (let i = 0; i < footerBadges.length; i++) {
+      const badge = footerBadges[i];
+      if (!badge.badge_name.trim()) {
+        setBadgesSaveError(`Badge ${i + 1}: Name is required`);
+        return;
+      }
+      if (badge.badge_name.length > 50) {
+        setBadgesSaveError(`Badge ${i + 1}: Name must be 50 characters or less`);
+        return;
+      }
+      if (!badge.badge_image_url) {
+        setBadgesSaveError(`Badge ${i + 1}: Image is required`);
+        return;
+      }
+      if (badge.external_link && badge.external_link.trim()) {
+        if (!badge.external_link.startsWith('http://') && !badge.external_link.startsWith('https://')) {
+          setBadgesSaveError(`Badge ${i + 1}: External link must start with http:// or https://`);
+          return;
+        }
+      }
+    }
+
+    setIsSavingBadges(true);
+
+    try {
+      // Save badges
+      const badgesToSave = footerBadges.map((badge, index) => ({
+        id: badge.id.startsWith('temp-') ? undefined : badge.id,
+        badge_name: badge.badge_name,
+        badge_image_url: badge.badge_image_url,
+        external_link: badge.external_link?.trim() || null,
+        display_order: index + 1
+      }));
+
+      console.log('Saving badges:', badgesToSave);
+      const { error } = await updateFooterBadges(badgesToSave);
+      
+      if (error) {
+        console.error('❌ Error saving badges:', error);
+        setBadgesSaveError('Failed to save badges');
+        setIsSavingBadges(false);
+        return;
+      }
+
+      // Reload to get fresh data
+      console.log('🔄 Reloading badges data...');
+      await loadBadgesData();
+      
+      setBadgesSaveSuccess(true);
+      setTimeout(() => setBadgesSaveSuccess(false), 3000);
+      
+      console.log('✅ Badges saved successfully');
+    } catch (err) {
+      console.error('❌ Unexpected error:', err);
+      setBadgesSaveError('Unexpected error saving badges');
+    } finally {
+      setIsSavingBadges(false);
+    }
+  };
+
   return (
     <ProtectedRoute allowedUserType="admin">
       <div className="min-h-screen bg-black text-white">
@@ -559,6 +793,13 @@ export default function OthersEditor() {
               <span className="text-green-400 text-sm font-medium">Footer configuration saved successfully!</span>
             </div>
           )}
+          
+          {badgesSaveSuccess && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-green-400 text-sm font-medium">Badges saved successfully!</span>
+            </div>
+          )}
 
           {/* Error Message */}
           {headerSaveError && (
@@ -572,6 +813,13 @@ export default function OthersEditor() {
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
               <AlertCircle size={16} className="text-red-400" />
               <span className="text-red-400 text-sm font-medium">{footerSaveError}</span>
+            </div>
+          )}
+          
+          {badgesSaveError && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3">
+              <AlertCircle size={16} className="text-red-400" />
+              <span className="text-red-400 text-sm font-medium">{badgesSaveError}</span>
             </div>
           )}
 
@@ -967,6 +1215,210 @@ export default function OthersEditor() {
                             `}
                           >
                             {isSavingFooter ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Saving...
+                              </>
+                            ) : (
+                              <>
+                                <Save size={16} />
+                                Save Changes
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 3: Badges */}
+            <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+              <button
+                onClick={() => toggleSection('badges')}
+                className="w-full flex items-center justify-between p-6 hover:bg-white/[0.02] transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                    3
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-lg font-semibold text-white">Badges</h3>
+                    <p className="text-xs text-gray-500">Footer certification badges</p>
+                  </div>
+                </div>
+                {openSection === 'badges' ? (
+                  <ChevronUp size={20} className="text-gray-400" />
+                ) : (
+                  <ChevronDown size={20} className="text-gray-400" />
+                )}
+              </button>
+              
+              {openSection === 'badges' && (
+                <div className="p-6 pt-0 border-t border-white/[0.06]">
+                  <div className="space-y-5 mt-6">
+                    
+                    {/* Loading State */}
+                    {isLoadingBadges ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                          <p className="text-sm text-gray-400">Loading badges...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Info Box */}
+                        <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                          <p className="text-purple-400 text-sm">
+                            <strong>Certification and compliance badges:</strong> These badges will be displayed at the bottom of your footer.
+                            Upload badge images, add names, and optionally link to external certification pages.
+                          </p>
+                        </div>
+
+                        {/* Badge Cards */}
+                        {footerBadges.map((badge, index) => (
+                          <div 
+                            key={badge.id}
+                            className="bg-white/[0.02] border border-white/[0.04] rounded-lg p-5"
+                          >
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="w-6 h-6 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs font-bold">
+                                {index + 1}
+                              </div>
+                              <h4 className="text-sm font-medium text-white/80">Badge {index + 1}</h4>
+                            </div>
+
+                            {/* Image Preview */}
+                            {badge.badge_image_url && (
+                              <div className="mb-4">
+                                <label className="block text-xs font-medium text-white/60 mb-2">
+                                  Badge Image Preview
+                                </label>
+                                <div className="relative inline-block">
+                                  <img 
+                                    src={badge.badge_image_url}
+                                    alt={badge.badge_name || 'Badge preview'}
+                                    className="max-h-16 w-auto object-contain border border-white/[0.1] rounded-lg p-2 bg-white/[0.02]"
+                                  />
+                                  {uploadingBadgeId === badge.id && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                                      <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Change Image Button */}
+                            <div className="mb-4">
+                              <label className="block text-xs font-medium text-white/60 mb-2">
+                                Badge Image <span className="text-red-400">*</span>
+                              </label>
+                              <input
+                                type="file"
+                                id={`badge-image-${badge.id}`}
+                                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleBadgeImageChange(index, file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                              <button
+                                onClick={() => document.getElementById(`badge-image-${badge.id}`)?.click()}
+                                disabled={uploadingBadgeId === badge.id}
+                                className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/30 rounded-lg text-purple-400 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {uploadingBadgeId === badge.id ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
+                                    Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload size={14} />
+                                    {badge.badge_image_url ? 'Change Image' : 'Upload Image'}
+                                  </>
+                                )}
+                              </button>
+                              <p className="text-xs text-white/40 mt-1">PNG, JPG, WEBP, or SVG (max 2MB)</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {/* Badge Name */}
+                              <div>
+                                <label className="block text-xs font-medium text-white/60 mb-2">
+                                  Badge Name <span className="text-red-400">*</span>
+                                </label>
+                                <input
+                                  type="text"
+                                  value={badge.badge_name}
+                                  onChange={(e) => updateBadgeName(index, e.target.value)}
+                                  placeholder="e.g., EGBA"
+                                  maxLength={50}
+                                  className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40 focus:outline-none focus:border-purple-500 transition-colors"
+                                />
+                                <p className="text-xs text-white/40 mt-1">{badge.badge_name.length}/50 characters</p>
+                              </div>
+
+                              {/* External Link */}
+                              <div>
+                                <label className="block text-xs font-medium text-white/60 mb-2">
+                                  External Link (Optional)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={badge.external_link || ''}
+                                  onChange={(e) => updateBadgeLink(index, e.target.value)}
+                                  placeholder="https://www.example.com"
+                                  maxLength={255}
+                                  className="w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-lg text-white text-sm placeholder-white/40 focus:outline-none focus:border-purple-500 transition-colors"
+                                />
+                                <p className="text-xs text-white/40 mt-1">Must start with http:// or https://</p>
+                              </div>
+                            </div>
+
+                            {/* Delete Button */}
+                            <div className="flex justify-end mt-4 pt-4 border-t border-white/[0.06]">
+                              <button
+                                onClick={() => handleDeleteBadge(index, badge.id)}
+                                className="flex items-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 rounded-lg text-red-400 text-sm transition-colors"
+                              >
+                                <Trash2 size={14} />
+                                Delete Badge
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Add Badge Button */}
+                        <button
+                          onClick={addBadge}
+                          className="w-full p-4 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] hover:border-purple-500/30 rounded-lg text-gray-400 hover:text-purple-400 transition-all duration-200 flex items-center justify-center gap-2"
+                        >
+                          <Plus size={18} />
+                          <span className="text-sm font-medium">Add Badge</span>
+                        </button>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end pt-4 border-t border-white/[0.06]">
+                          <button
+                            onClick={saveBadgesChanges}
+                            disabled={isSavingBadges || footerBadges.length === 0}
+                            className={`
+                              flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm transition-all duration-200
+                              ${isSavingBadges || footerBadges.length === 0
+                                ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                                : 'bg-purple-500 hover:bg-purple-600 text-white shadow-lg shadow-purple-500/20'
+                              }
+                            `}
+                          >
+                            {isSavingBadges ? (
                               <>
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 Saving...

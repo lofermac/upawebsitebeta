@@ -178,31 +178,40 @@ export default function AdminDashboard() {
   // Dashboard stats data
   const stats = [
     { 
-      label: 'Active Players',
-      subtitle: 'Active players across all networks',
-      value: '1,303', 
+      label: 'Total Players',
+      subtitle: 'Total players registered on the platform',
+      value: '1,450', 
       icon: Users,
       color: 'from-blue-500 to-blue-600',
       iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
       textColor: 'text-blue-500'
     },
     { 
-      label: 'Rake Generated',
-      subtitle: 'Total rake generated this month',
-      value: '$248,790', 
-      icon: DollarSign,
+      label: 'Active Players',
+      subtitle: 'Active players across all networks',
+      value: '1,096', 
+      icon: Users,
+      color: 'from-green-500 to-green-600',
+      iconBg: 'bg-gradient-to-br from-green-500 to-green-600',
+      textColor: 'text-green-500'
+    },
+    { 
+      label: 'Monthly Sign Ups',
+      subtitle: 'New registrations this month',
+      value: '127', 
+      icon: Users,
       color: 'from-orange-500 to-orange-600',
       iconBg: 'bg-gradient-to-br from-orange-500 to-orange-600',
       textColor: 'text-orange-500'
     },
     { 
-      label: 'Total Revenue',
-      subtitle: 'Monthly revenue across all networks',
-      value: '$125,450', 
-      icon: DollarSign,
-      color: 'from-green-500 to-green-600',
-      iconBg: 'bg-gradient-to-br from-green-500 to-green-600',
-      textColor: 'text-green-500'
+      label: 'Monthly Deals Applications',
+      subtitle: 'Deal applications received this month',
+      value: '284', 
+      icon: FileText,
+      color: 'from-purple-500 to-purple-600',
+      iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      textColor: 'text-purple-500'
     },
   ];
 

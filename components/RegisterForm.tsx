@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/lib/contexts/AuthContext';
+import { supabase } from '@/lib/supabase/client';
 import { User, Mail, Lock, Eye, EyeOff, MessageCircle, Send } from 'lucide-react';
 import CountrySelect from '@/app/components/CountrySelect';
 
@@ -11,7 +11,6 @@ interface RegisterFormProps {
 }
 
 export default function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) {
-  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -76,19 +75,60 @@ export default function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFor
     // Tentar registro
     setIsLoading(true);
     try {
-      await register({
+      // 1. Criar conta no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        country: formData.country,
-        fullName: formData.fullName,
-        telegram: formData.telegram,
-        discord: formData.discord,
-        agreeTerms: formData.agreeTerms,
-        agreePrivacy: formData.agreePrivacy,
-      }, true); // skipRedirect = true quando registro via modal
-      onSuccess(); // Fecha modal de Auth e executa callback (ex: abrir JoinDealModal)
-    } catch {
-      setErrors({ general: 'Registration failed. Please try again.' });
+        options: {
+          data: {
+            full_name: formData.fullName,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Criar perfil completo na tabela profiles
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            email: formData.email,
+            full_name: formData.fullName,
+            country: formData.country,
+            discord_id: formData.discord || null,
+            whatsapp: formData.whatsapp || null,
+            telegram: formData.telegram || null,
+            user_type: 'player',
+            is_sub_affiliate: false,
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // Se já existe o profile (criado pelo trigger), fazer update
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              full_name: formData.fullName,
+              country: formData.country,
+              discord_id: formData.discord || null,
+              whatsapp: formData.whatsapp || null,
+              telegram: formData.telegram || null,
+            })
+            .eq('id', authData.user.id);
+          
+          if (updateError) {
+            console.error('Profile update error:', updateError);
+          }
+        }
+
+        // 3. Sucesso - executar callback
+        onSuccess();
+      }
+    } catch (error: unknown) {
+      console.error('Registration error:', error);
+      setErrors({ general: error instanceof Error ? error.message : 'Registration failed. Please try again.' });
     } finally {
       setIsLoading(false);
     }

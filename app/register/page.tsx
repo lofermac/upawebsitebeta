@@ -7,11 +7,13 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CountrySelect from "../components/CountrySelect";
 import WelcomeModal from "@/components/WelcomeModal";
+import { supabase } from '@/lib/supabase/client';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     country: '',
@@ -37,14 +39,82 @@ export default function RegisterPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Registration logic will be implemented later
-    console.log(formData);
-    
-    // Simula registro bem-sucedido e mostra o modal de boas-vindas
-    // TODO: Integrar com Supabase Auth
-    setShowWelcomeModal(true);
+    setError('');
+
+    // Validações
+    if (formData.email !== formData.confirmEmail) {
+      setError('Emails do not match');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (!formData.agreeTerms || !formData.agreePrivacy) {
+      setError('You must agree to the Terms and Privacy Policy');
+      return;
+    }
+
+    try {
+      // 1. Criar conta no Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+          }
+        }
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        // 2. Criar perfil completo na tabela profiles
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authData.user.id,
+            email: formData.email,
+            full_name: formData.fullName,
+            country: formData.country,
+            discord_id: formData.discordId || null,
+            whatsapp: formData.whatsapp || null,
+            telegram: formData.telegram || null,
+            user_type: 'player',
+            is_sub_affiliate: false,
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          // Se já existe o profile (criado pelo trigger), fazer update
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              full_name: formData.fullName,
+              country: formData.country,
+              discord_id: formData.discordId || null,
+              whatsapp: formData.whatsapp || null,
+              telegram: formData.telegram || null,
+            })
+            .eq('id', authData.user.id);
+          
+          if (updateError) {
+            console.error('Profile update error:', updateError);
+          }
+        }
+
+        // 3. Mostrar modal de boas-vindas
+        setShowWelcomeModal(true);
+      }
+    } catch (error: unknown) {
+      console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
+    }
   };
 
   const handleCloseWelcomeModal = () => {
@@ -488,6 +558,13 @@ export default function RegisterPage() {
                     </label>
                   </div>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6">
+                    <p className="text-red-400 text-sm">{error}</p>
+                  </div>
+                )}
 
                 {/* Register Button - Same premium style as login */}
                 <div className="flex justify-center mt-10">

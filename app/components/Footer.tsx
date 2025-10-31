@@ -3,12 +3,18 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getFooterPokerSites, getFooterQuickLinks, FooterPokerSite, FooterQuickLink } from '@/lib/supabase/footer';
+import { getFooterBadges, FooterBadge } from '@/lib/supabase/badges';
 
-export default function Footer() {
+export default function Footer({ bgColor = 'black' }: { bgColor?: 'black' | 'dark-gray' }) {
   const [pokerSites, setPokerSites] = useState<FooterPokerSite[]>([]);
   const [quickLinks, setQuickLinks] = useState<FooterQuickLink[]>([]);
+  const [badges, setBadges] = useState<FooterBadge[]>([]);
   const [isLoadingPokerSites, setIsLoadingPokerSites] = useState(true);
   const [isLoadingQuickLinks, setIsLoadingQuickLinks] = useState(true);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(true);
+  
+  // Define background color based on prop
+  const footerBgColor = bgColor === 'dark-gray' ? '#0e0f12' : '#000000';
 
   // Load poker sites
   useEffect(() => {
@@ -56,8 +62,31 @@ export default function Footer() {
     loadQuickLinks();
   }, []);
 
+  // Load badges
+  useEffect(() => {
+    async function loadBadges() {
+      try {
+        const { data, error } = await getFooterBadges();
+        
+        if (!error && data) {
+          setBadges(data);
+        } else {
+          console.warn('Failed to load footer badges');
+          setBadges([]);
+        }
+      } catch (err) {
+        console.error('Error loading footer badges:', err);
+        setBadges([]);
+      } finally {
+        setIsLoadingBadges(false);
+      }
+    }
+
+    loadBadges();
+  }, []);
+
   return (
-    <footer className="relative w-full px-3 md:px-4 pb-0" style={{ backgroundColor: '#0e0f12' }}>
+    <footer className="relative w-full px-3 md:px-4 pb-0" style={{ backgroundColor: footerBgColor }}>
       {/* Premium Container Card - Rounded top, cut bottom */}
       <div className="relative w-full rounded-t-[2.5rem] overflow-hidden group/footer transition-all duration-700">
         {/* Background with gradient - tom intermediário entre preto e cinza */}
@@ -232,7 +261,7 @@ export default function Footer() {
           {/* Subtle gradient line on top of border */}
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
           
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-8">
             <p className="text-sm text-gray-400 font-medium">
               <span className="text-white font-bold">UNIVERSALPOKER.COM</span> © {new Date().getFullYear()} All rights reserved.
             </p>
@@ -243,6 +272,157 @@ export default function Footer() {
               <span className="w-1 h-1 rounded-full bg-gray-600"></span>
               <span>T&Cs Apply</span>
             </div>
+          </div>
+        </div>
+
+        {/* Gambling Commission Badges */}
+        <div className="relative pb-8">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4">
+            {isLoadingBadges ? (
+              // Loading skeleton
+              <>
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-8 w-16 bg-gray-700/30 rounded-lg animate-pulse"></div>
+                ))}
+              </>
+            ) : badges.length > 0 ? (
+              // Dynamic badges from database
+              badges.map((badge) => {
+                const BadgeWrapper = badge.external_link ? 'a' : 'div';
+                const wrapperProps = badge.external_link
+                  ? {
+                      href: badge.external_link,
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                      className: 'group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center cursor-pointer'
+                    }
+                  : {
+                      className: 'group relative bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 flex items-center justify-center'
+                    };
+
+                return (
+                  <BadgeWrapper key={badge.id} {...wrapperProps}>
+                    <img
+                      src={badge.badge_image_url}
+                      alt={badge.badge_name}
+                      className="h-7 w-auto max-w-[60px] object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+                      loading="lazy"
+                    />
+                  </BadgeWrapper>
+                );
+              })
+            ) : (
+              // Fallback to placeholder badges if none configured
+              <>
+                {/* Badge 1 - EGBA */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">EGBA</span>
+                  </div>
+                </a>
+
+                {/* Badge 2 - BeGambleAware */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">BeGamble</span>
+                  </div>
+                </a>
+
+                {/* Badge 3 - MGA */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">MGA</span>
+                  </div>
+                </a>
+
+                {/* Badge 4 - Know Your Limits */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">Know</span>
+                  </div>
+                </a>
+
+                {/* Badge 5 - eCOGRA */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">eCOGRA</span>
+                  </div>
+                </a>
+
+                {/* Badge 6 - Problem Gambling */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">Problem</span>
+                  </div>
+                </a>
+
+                {/* Badge 7 - HM Government Gibraltar */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">Gibraltar</span>
+                  </div>
+                </a>
+
+                {/* Badge 8 - Gambling Commission */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">UK GC</span>
+                  </div>
+                </a>
+
+                {/* Badge 9 - 18+ */}
+                <a 
+                  href="#" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg px-2 py-1.5 transition-all duration-300 flex items-center justify-center"
+                >
+                  <div className="w-14 h-6 bg-gray-700/30 rounded flex items-center justify-center">
+                    <span className="text-[8px] text-gray-500 font-semibold">18+</span>
+                  </div>
+                </a>
+              </>
+            )}
           </div>
         </div>
         </div>

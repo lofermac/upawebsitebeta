@@ -1,119 +1,136 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-type UserType = 'admin' | 'player' | null;
+import { supabase } from '@/lib/supabase/client';
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  isLoading: boolean;
-  user: { email: string; fullName?: string; userType?: UserType } | null;
-  userType: UserType;
+  userType: 'player' | 'admin' | null;
+  user: { email: string; userType: string } | null;
   login: (email: string, password: string, skipRedirect?: boolean) => Promise<void>;
-  register: (data: RegisterData, skipRedirect?: boolean) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
-interface RegisterData {
-  email: string;
-  password: string;
-  country: string;
-  fullName?: string;
-  telegram?: string;
-  discord?: string;
-  agreeTerms: boolean;
-  agreePrivacy: boolean;
-}
+const AuthContext = createContext<AuthContextType>({
+  isLoggedIn: false,
+  userType: null,
+  user: null,
+  login: async () => {},
+  logout: () => {},
+  loading: true,
+});
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const useAuth = () => useContext(AuthContext);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Começa como loading
-  const [user, setUser] = useState<{ email: string; fullName?: string; userType?: UserType } | null>(null);
-  const [userType, setUserType] = useState<UserType>(null);
+  const [userType, setUserType] = useState<'player' | 'admin' | null>(null);
+  const [user, setUser] = useState<{ email: string; userType: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Load auth state from localStorage on mount
+  // Verificar se o usuário já está logado ao carregar a página
   useEffect(() => {
-    const storedUserType = localStorage.getItem('userType') as UserType;
-    const storedEmail = localStorage.getItem('userEmail');
-    if (storedUserType && storedEmail) {
-      setUserType(storedUserType);
-      setIsLoggedIn(true);
-      setUser({ email: storedEmail, userType: storedUserType });
-    }
-    setIsLoading(false); // Terminou de carregar
+    checkUser();
   }, []);
 
+  const checkUser = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        // Buscar o perfil do usuário para saber o tipo (player/admin)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type, email')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile) {
+          setIsLoggedIn(true);
+          setUserType(profile.user_type as 'player' | 'admin');
+          setUser({ email: profile.email, userType: profile.user_type });
+        }
+      }
+    } catch (error) {
+      console.error('Error checking user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (email: string, password: string, skipRedirect?: boolean) => {
-    // Mock authentication with validation
-    await new Promise(resolve => setTimeout(resolve, 300)); // Simula delay de API
-    
-    // Validar credenciais
-    if (email === 'admin' && password === 'admin') {
-      setUserType('admin');
-      setIsLoggedIn(true);
-      setUser({ email, userType: 'admin' });
-      localStorage.setItem('userType', 'admin');
-      localStorage.setItem('userEmail', email);
-      if (!skipRedirect) {
-        router.push('/admin/dashboard');
+    try {
+      console.log('🔐 Login: Iniciando...', { email });
+      
+      // Fazer login no Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      console.log('🔐 Login: Resposta do Supabase', { data, error });
+
+      if (error) throw error;
+
+      if (data.user) {
+        console.log('🔐 Login: Usuário autenticado, buscando profile...');
+        
+        // Buscar o perfil para saber o tipo de usuário
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('user_type, email')
+          .eq('id', data.user.id)
+          .single();
+
+        console.log('🔐 Login: Profile encontrado', { profile });
+
+        if (profile) {
+          setIsLoggedIn(true);
+          setUserType(profile.user_type as 'player' | 'admin');
+          setUser({ email: profile.email, userType: profile.user_type });
+
+          console.log('🔐 Login: Estados atualizados', { 
+            userType: profile.user_type, 
+            skipRedirect 
+          });
+
+          // Redirecionar para o dashboard correto
+          if (!skipRedirect) {
+            if (profile.user_type === 'admin') {
+              console.log('🔐 Login: Redirecionando para /admin/dashboard');
+              // Aguardar sessão ser salva nos cookies
+              await new Promise(resolve => setTimeout(resolve, 500));
+              window.location.href = '/admin/dashboard';
+            } else {
+              console.log('🔐 Login: Redirecionando para /player/dashboard');
+              // Aguardar sessão ser salva nos cookies
+              await new Promise(resolve => setTimeout(resolve, 500));
+              window.location.href = '/player/dashboard';
+            }
+          }
+        }
       }
-    } else if (email === 'player' && password === 'player') {
-      setUserType('player');
-      setIsLoggedIn(true);
-      setUser({ email, userType: 'player' });
-      localStorage.setItem('userType', 'player');
-      localStorage.setItem('userEmail', email);
-      if (!skipRedirect) {
-        router.push('/player/dashboard');
-      }
-    } else {
-      // Credenciais inválidas
-      throw new Error('Invalid credentials');
+    } catch (error: unknown) {
+      console.error('🔐 Login: ERRO', error);
+      throw new Error(error instanceof Error ? error.message : 'Invalid credentials');
     }
   };
 
-  const register = async (data: RegisterData, skipRedirect?: boolean) => {
-    // TODO: Integrar com Supabase
-    // Por enquanto, mock authentication
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simula delay de API
-    
-    console.log('Register mockado:', data);
-    setUserType('player'); // Novos registros são players por padrão
-    setIsLoggedIn(true);
-    setUser({ email: data.email, fullName: data.fullName, userType: 'player' });
-    localStorage.setItem('userType', 'player');
-    localStorage.setItem('userEmail', data.email);
-    
-    if (!skipRedirect) {
-      router.push('/player/dashboard');
-    }
-  };
-
-  const logout = () => {
-    setUserType(null);
+  const logout = async () => {
+    await supabase.auth.signOut();
     setIsLoggedIn(false);
+    setUserType(null);
     setUser(null);
-    localStorage.removeItem('userType');
-    localStorage.removeItem('userEmail');
-    router.push('/'); // Redireciona para homepage
+    router.push('/');
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, user, userType, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, userType, user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 }
 

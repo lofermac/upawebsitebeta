@@ -1341,7 +1341,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
+      <Footer bgColor="dark-gray" />
 
       {/* Auth Modal */}
       <AuthModal 
