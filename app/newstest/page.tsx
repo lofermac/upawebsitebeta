@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase/client';
 
 interface NewsArticle {
   id: string;
@@ -29,7 +29,6 @@ export default function NewsTestPage() {
   const [loading, setLoading] = useState(true);
   const filterRef = useRef<HTMLDivElement>(null);
   const postsPerPage = 12; // Grid 3x4 (3 colunas × 4 linhas)
-  const supabase = createClientComponentClient();
   
   // Buscar artigos do Supabase
   useEffect(() => {

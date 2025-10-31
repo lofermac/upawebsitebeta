@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase/client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { 
   ArrowLeft, 
@@ -33,8 +33,6 @@ export default function NewsPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
     fetchNews();

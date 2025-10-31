@@ -113,9 +113,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('🔐 Login: ERRO', error);
-      throw new Error(error instanceof Error ? error.message : 'Invalid credentials');
+      throw new Error(error.message || 'Invalid credentials');
     }
   };
 

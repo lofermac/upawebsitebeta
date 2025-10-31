@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase/client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TiptapEditor from '@/components/TiptapEditor';
 import { 
@@ -34,7 +34,6 @@ export default function NewArticlePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const handleSave = async () => {
     if (!title.trim()) {

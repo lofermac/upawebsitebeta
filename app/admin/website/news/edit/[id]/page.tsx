@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase/client';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TiptapEditor from '@/components/TiptapEditor';
 import { 
@@ -37,7 +37,6 @@ export default function EditArticlePage() {
   
   const router = useRouter();
   const params = useParams();
-  const supabase = createClientComponentClient();
   const id = params.id as string;
 
   useEffect(() => {

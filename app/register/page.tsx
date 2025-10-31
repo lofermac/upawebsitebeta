@@ -111,9 +111,9 @@ export default function RegisterPage() {
         // 3. Mostrar modal de boas-vindas
         setShowWelcomeModal(true);
       }
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Registration error:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
+      setError(error.message || 'Failed to create account. Please try again.');
     }
   };
 
