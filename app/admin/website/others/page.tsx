@@ -11,7 +11,6 @@ import {
   Trash2,
   Save,
   AlertCircle,
-  Award,
   Upload
 } from 'lucide-react';
 import Link from 'next/link';

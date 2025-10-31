@@ -47,7 +47,6 @@ export default function NewsTestPage() {
     }
 
     fetchArticles();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Extrair categorias únicas dos artigos

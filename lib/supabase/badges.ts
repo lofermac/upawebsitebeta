@@ -299,7 +299,7 @@ export async function uploadBadgeImage(file: File) {
     console.log('📊 [uploadBadgeImage] Generated file name:', fileName);
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('footer-badges')
       .upload(fileName, file, {
         cacheControl: '3600',

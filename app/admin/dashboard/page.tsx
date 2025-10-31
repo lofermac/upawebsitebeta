@@ -12,7 +12,6 @@ import {
   LogOut,
   Menu,
   X,
-  DollarSign,
   Building2,
   TrendingUp,
   TrendingDown,
