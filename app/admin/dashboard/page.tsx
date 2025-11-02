@@ -1105,19 +1105,32 @@ export default function AdminDashboard() {
   );
 }
 
+// Type for deal data
+interface DealData {
+  id: string;
+  user_id: string;
+  deal_id: number;
+  deal_name: string;
+  deal_logo: string;
+  player_email: string;
+  player_name: string;
+  platform_username: string;
+  platform_email: string;
+  status: string;
+  requested_at: string;
+  rejection_reason?: string | null;
+  admin_notes?: string | null;
+}
+
 // Deal Requests Component
 function DealRequestsContent() {
-  const [deals, setDeals] = useState<any[]>([]);
+  const [deals, setDeals] = useState<DealData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
-  const [rejectingDeal, setRejectingDeal] = useState<any | null>(null);
-  const [viewingNotes, setViewingNotes] = useState<any | null>(null);
+  const [rejectingDeal, setRejectingDeal] = useState<DealData | null>(null);
+  const [viewingNotes, setViewingNotes] = useState<DealData | null>(null);
 
-  useEffect(() => {
-    fetchDeals();
-  }, [filter]);
-
-  async function fetchDeals() {
+  const fetchDeals = async () => {
     setLoading(true);
     console.log('🔍 [DealRequests] Iniciando fetch...');
     console.log('🔍 [DealRequests] Filtro atual:', filter);
@@ -1146,20 +1159,20 @@ function DealRequestsContent() {
 
       console.log('🔍 [DealRequests] Raw data:', JSON.stringify(data, null, 2));
 
-      const formatted = data.map((item: any) => ({
-        id: item.id,
-        user_id: item.user_id,
-        deal_id: item.deal_id,
-        deal_name: item.deal_name || 'Unknown',
-        deal_logo: item.deal_logo || '',
-        player_email: item.player_email || '',
-        player_name: item.player_name || 'Unknown',
-        platform_username: item.platform_username,
-        platform_email: item.platform_email,
-        status: item.status,
-        requested_at: item.requested_at,
-        rejection_reason: item.rejection_reason,
-        admin_notes: item.admin_notes,
+      const formatted = data.map((item: Record<string, unknown>) => ({
+        id: item.id as string,
+        user_id: item.user_id as string,
+        deal_id: item.deal_id as number,
+        deal_name: (item.deal_name as string) || 'Unknown',
+        deal_logo: (item.deal_logo as string) || '',
+        player_email: (item.player_email as string) || '',
+        player_name: (item.player_name as string) || 'Unknown',
+        platform_username: item.platform_username as string,
+        platform_email: item.platform_email as string,
+        status: item.status as string,
+        requested_at: item.requested_at as string,
+        rejection_reason: item.rejection_reason as string | null | undefined,
+        admin_notes: item.admin_notes as string | null | undefined,
       }));
 
       console.log('✅ [DealRequests] Formatted data:', formatted);
@@ -1171,7 +1184,12 @@ function DealRequestsContent() {
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchDeals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
 
   async function handleApprove(dealId: string) {
     try {
@@ -1433,8 +1451,8 @@ function DealRequestsContent() {
         <ViewNotesModal
           dealName={viewingNotes.deal_name}
           playerName={viewingNotes.player_name}
-          rejectionReason={viewingNotes.rejection_reason}
-          adminNotes={viewingNotes.admin_notes}
+          rejectionReason={viewingNotes.rejection_reason ?? null}
+          adminNotes={viewingNotes.admin_notes ?? null}
           onClose={() => setViewingNotes(null)}
         />
       )}

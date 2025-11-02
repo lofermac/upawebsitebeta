@@ -59,47 +59,6 @@ export interface PlayerEarning {
 }
 
 // ============================================
-// SUPABASE RAW TYPES (from database)
-// ============================================
-
-interface SupabasePlayerDeal {
-  id: string;
-  deal_id: number;
-  platform_username: string;
-  platform_email: string;
-  status: string;
-  rakeback_percentage: number | null;
-  payment_schedule: string | null;
-  payment_day: number | null;
-  currency: string | null;
-  payment_method: string | null;
-  requested_at: string;
-  approved_at: string | null;
-  deals: {
-    name: string;
-    logo_url: string;
-    slug: string;
-  } | null;
-}
-
-interface SupabasePlayerEarning {
-  id: string;
-  deal_name: string;
-  platform_username: string;
-  period_month: number;
-  period_year: number;
-  gross_rake: string;
-  net_rake: string;
-  rakeback_amount: string;
-  data_updated_at: string;
-  payment_status: string;
-  payment_date: string | null;
-  payment_amount: string | null;
-  payment_reference: string | null;
-}
-
-
-// ============================================
 // API FUNCTIONS
 // ============================================
 

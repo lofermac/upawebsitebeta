@@ -56,7 +56,6 @@ export default function PlayerDashboard() {
   const [earningsData, setEarningsData] = useState<PlayerEarning[]>([]);
   const [isLoadingDeals, setIsLoadingDeals] = useState(true);
   const [isLoadingEarnings, setIsLoadingEarnings] = useState(true);
-  const [error, setError] = useState('');
   
   const [selectedDeal, setSelectedDeal] = useState<DealDetailsType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -105,7 +104,6 @@ export default function PlayerDashboard() {
       } catch (err: unknown) {
         console.error('❌ [PlayerDashboard] Erro no catch:', err);
         console.error('❌ [PlayerDashboard] Error fetching data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load data');
         setIsLoadingDeals(false);
         setIsLoadingEarnings(false);
       }
@@ -225,14 +223,6 @@ export default function PlayerDashboard() {
                       key={deal.id}
                       className="relative group/deal overflow-visible rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-[#10b981]/30 hover:shadow-xl hover:shadow-[#10b981]/10 transition-all duration-300"
                     >
-                      {/* Debug log for rejected deals */}
-                      {deal.status === 'rejected' && console.log('🔍 [Rejected Deal]:', { 
-                        name: deal.dealName, 
-                        status: deal.status, 
-                        hasRejectionReason: !!deal.rejectionReason,
-                        rejectionReason: deal.rejectionReason 
-                      })}
-                      
                       {/* Ambient glow effect on hover */}
                       <div className="absolute inset-0 bg-gradient-to-br from-[#10b981]/0 via-[#10b981]/0 to-[#10b981]/5 opacity-0 group-hover/deal:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                       
