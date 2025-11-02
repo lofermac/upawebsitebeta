@@ -25,6 +25,10 @@ export interface PlayerDeal {
   dealName: string;
   dealLogo: string;
   dealSlug: string;
+  dealTitle?: string;
+  dealMainValue?: string;
+  dealMainValueSecondLine?: string;
+  dealSubtitle?: string;
   platformUsername: string;
   platformEmail: string;
   status: 'pending' | 'approved' | 'active' | 'rejected' | 'suspended';
@@ -35,6 +39,7 @@ export interface PlayerDeal {
   paymentMethod: string | null;
   requestedAt: string;
   approvedAt: string | null;
+  rejectionReason?: string | null;
 }
 
 export interface PlayerEarning {
@@ -161,15 +166,23 @@ export async function getPlayerDeals(): Promise<{
   deals?: PlayerDeal[];
   error?: string;
 }> {
+  console.log('🚀 [playerApi] getPlayerDeals() chamado');
+  
   try {
     // 1. Verificar autenticação
+    console.log('🔍 [playerApi] Verificando autenticação...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
+    console.log('🔍 [playerApi] User:', user?.id);
+    console.log('🔍 [playerApi] Auth error:', authError);
+    
     if (authError || !user) {
+      console.log('❌ [playerApi] Not authenticated');
       return { success: false, error: 'Not authenticated' };
     }
 
     // 2. Buscar deals com JOIN
+    console.log('🔍 [playerApi] Fazendo fetch de player_deals para user:', user.id);
     const { data: playerDeals, error: fetchError } = await supabase
       .from('player_deals')
       .select(`
@@ -185,21 +198,30 @@ export async function getPlayerDeals(): Promise<{
         payment_method,
         requested_at,
         approved_at,
+        rejection_reason,
         deals (
           name,
           logo_url,
-          slug
+          slug,
+          title,
+          main_value,
+          main_value_second_line,
+          subtitle
         )
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    console.log('🔍 [playerApi] Fetch result:', { data: playerDeals, error: fetchError });
+    console.log('🔍 [playerApi] Total deals encontrados:', playerDeals?.length || 0);
+
     if (fetchError) {
-      console.error('Fetch error:', fetchError);
+      console.error('❌ [playerApi] Fetch error:', fetchError);
       return { success: false, error: fetchError.message };
     }
 
     // 3. Formatar resposta
+    console.log('🔍 [playerApi] Formatando deals...');
     const formattedDeals: PlayerDeal[] = (playerDeals || []).map((deal) => {
       // Supabase JOIN pode retornar deals como array, pegar o primeiro
       const dealInfo = Array.isArray(deal.deals) ? deal.deals[0] : deal.deals;
@@ -210,6 +232,10 @@ export async function getPlayerDeals(): Promise<{
         dealName: dealInfo?.name || 'Unknown Deal',
         dealLogo: dealInfo?.logo_url || '',
         dealSlug: dealInfo?.slug || '',
+        dealTitle: dealInfo?.title,
+        dealMainValue: dealInfo?.main_value,
+        dealMainValueSecondLine: dealInfo?.main_value_second_line,
+        dealSubtitle: dealInfo?.subtitle,
         platformUsername: deal.platform_username,
         platformEmail: deal.platform_email,
         status: deal.status as 'pending' | 'approved' | 'active' | 'rejected' | 'suspended',
@@ -219,13 +245,26 @@ export async function getPlayerDeals(): Promise<{
         currency: deal.currency,
         paymentMethod: deal.payment_method,
         requestedAt: deal.requested_at,
-        approvedAt: deal.approved_at
+        approvedAt: deal.approved_at,
+        rejectionReason: deal.rejection_reason
       };
     });
 
+    console.log('✅ [playerApi] Deals formatados:', formattedDeals);
+    console.log('✅ [playerApi] Primeiro deal com rejectionReason:', formattedDeals[0]?.rejectionReason);
+    console.log('✅ [playerApi] Todos rejection reasons:', 
+      formattedDeals.map(d => ({ 
+        name: d.dealName, 
+        status: d.status, 
+        rejection: d.rejectionReason 
+      }))
+    );
+    console.log('✅ [playerApi] Retornando sucesso com', formattedDeals.length, 'deals');
+
     return { success: true, deals: formattedDeals };
   } catch (error: unknown) {
-    console.error('Get player deals error:', error);
+    console.error('❌ [playerApi] Erro no catch:', error);
+    console.error('❌ [playerApi] Get player deals error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Network error' };
   }
 }

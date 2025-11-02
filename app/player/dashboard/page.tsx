@@ -43,6 +43,11 @@ interface DealDetailsType {
   currency: string;
   nextPayment: string;
   paymentMethod: string;
+  rejectionReason?: string | null;
+  dealTitle?: string;
+  dealMainValue?: string;
+  dealMainValueSecondLine?: string;
+  dealSubtitle?: string;
 }
 
 export default function PlayerDashboard() {
@@ -59,37 +64,64 @@ export default function PlayerDashboard() {
 
   // Fetch deals e earnings ao carregar
   useEffect(() => {
+    console.log('🚀 [PlayerDashboard] useEffect executado - iniciando fetch de dados');
+    
     async function fetchData() {
+      console.log('🔍 [PlayerDashboard] fetchData iniciado');
+      
       try {
         // Fetch deals
+        console.log('🔍 [PlayerDashboard] Chamando getPlayerDeals()...');
         const dealsResult = await getPlayerDeals();
+        console.log('✅ [PlayerDashboard] getPlayerDeals() retornou:', dealsResult);
+        console.log('🔍 [PlayerDashboard] API Response:', dealsResult);
+        
         if (dealsResult.success && dealsResult.deals) {
+          console.log('✅ [PlayerDashboard] Success! Total deals:', dealsResult.deals.length);
+          console.log('🔍 [PlayerDashboard] Deals data:', dealsResult.deals);
+          console.log('🔍 [PlayerDashboard] First deal:', dealsResult.deals[0]);
+          console.log('🔍 [PlayerDashboard] Rejection reasons:', dealsResult.deals.map(d => ({ 
+            name: d.dealName, 
+            status: d.status, 
+            rejection: d.rejectionReason 
+          })));
           setConnectedDeals(dealsResult.deals);
         } else {
-          console.error('Failed to load deals:', dealsResult.error);
+          console.error('❌ [PlayerDashboard] Failed to load deals:', dealsResult.error);
         }
         setIsLoadingDeals(false);
 
         // Fetch earnings
+        console.log('🔍 [PlayerDashboard] Chamando getPlayerEarnings()...');
         const earningsResult = await getPlayerEarnings();
+        console.log('✅ [PlayerDashboard] getPlayerEarnings() retornou:', earningsResult);
+        
         if (earningsResult.success && earningsResult.earnings) {
           setEarningsData(earningsResult.earnings);
         } else {
-          console.error('Failed to load earnings:', earningsResult.error);
+          console.error('❌ [PlayerDashboard] Failed to load earnings:', earningsResult.error);
         }
         setIsLoadingEarnings(false);
       } catch (err: unknown) {
-        console.error('Error fetching data:', err);
+        console.error('❌ [PlayerDashboard] Erro no catch:', err);
+        console.error('❌ [PlayerDashboard] Error fetching data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load data');
         setIsLoadingDeals(false);
         setIsLoadingEarnings(false);
       }
     }
 
+    console.log('🔍 [PlayerDashboard] Chamando fetchData()...');
     fetchData();
+    console.log('🔍 [PlayerDashboard] fetchData() chamado (async)');
   }, []);
 
   const handleViewDetails = (deal: PlayerDeal) => {
+    console.log('🔍 [handleViewDetails] Deal clicado:', deal);
+    console.log('🔍 [handleViewDetails] Status original:', deal.status);
+    console.log('🔍 [handleViewDetails] RejectionReason:', deal.rejectionReason);
+    console.log('🔍 [handleViewDetails] Deal completo:', JSON.stringify(deal, null, 2));
+    
     // Converter PlayerDeal para formato esperado pelo modal
     const dealDetails: DealDetailsType = {
       id: deal.id,
@@ -97,17 +129,32 @@ export default function PlayerDashboard() {
       logo: deal.dealLogo,
       deal: deal.dealName, // Usar dealName como descrição do deal
       description: `${deal.status} deal`,
-      status: deal.status.charAt(0).toUpperCase() + deal.status.slice(1),
+      status: deal.status, // Manter lowercase para funcionar com o modal
       rakeback: deal.rakebackPercentage ? `${deal.rakebackPercentage}%` : 'N/A',
       username: deal.platformUsername,
       paymentSchedule: deal.paymentSchedule || 'N/A',
       currency: deal.currency || 'USD',
       nextPayment: 'TBD', // Calcular baseado em payment_day
-      paymentMethod: deal.paymentMethod || 'N/A'
+      paymentMethod: deal.paymentMethod || 'N/A',
+      rejectionReason: deal.rejectionReason,
+      dealTitle: deal.dealTitle,
+      dealMainValue: deal.dealMainValue,
+      dealMainValueSecondLine: deal.dealMainValueSecondLine,
+      dealSubtitle: deal.dealSubtitle
     };
+    
+    console.log('🔍 [handleViewDetails] DealDetails criado:', dealDetails);
+    console.log('🔍 [handleViewDetails] Status formatado:', dealDetails.status);
+    console.log('🔍 [handleViewDetails] RejectionReason no dealDetails:', dealDetails.rejectionReason);
     
     setSelectedDeal(dealDetails);
     setIsModalOpen(true);
+    
+    console.log('✅ [handleViewDetails] Modal aberto com deal:', {
+      id: dealDetails.id,
+      status: dealDetails.status,
+      rejectionReason: dealDetails.rejectionReason
+    });
   };
 
   const handleCloseModal = () => {
@@ -172,12 +219,20 @@ export default function PlayerDashboard() {
                   <p className="text-sm text-gray-500">Browse available deals and request access to get started.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-visible">
                   {connectedDeals.map((deal) => (
                     <div
                       key={deal.id}
-                      className="relative group/deal overflow-hidden rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-[#10b981]/30 hover:shadow-xl hover:shadow-[#10b981]/10 transition-all duration-300"
+                      className="relative group/deal overflow-visible rounded-2xl bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.06] p-6 hover:border-[#10b981]/30 hover:shadow-xl hover:shadow-[#10b981]/10 transition-all duration-300"
                     >
+                      {/* Debug log for rejected deals */}
+                      {deal.status === 'rejected' && console.log('🔍 [Rejected Deal]:', { 
+                        name: deal.dealName, 
+                        status: deal.status, 
+                        hasRejectionReason: !!deal.rejectionReason,
+                        rejectionReason: deal.rejectionReason 
+                      })}
+                      
                       {/* Ambient glow effect on hover */}
                       <div className="absolute inset-0 bg-gradient-to-br from-[#10b981]/0 via-[#10b981]/0 to-[#10b981]/5 opacity-0 group-hover/deal:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
                       
@@ -192,19 +247,71 @@ export default function PlayerDashboard() {
                             className="h-8 w-auto object-contain brightness-110 transition-transform duration-300 group-hover/deal:scale-105"
                           />
                         </div>
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                          deal.status === 'active' 
-                            ? 'bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10'
-                            : deal.status === 'pending'
-                            ? 'bg-gradient-to-br from-orange-400/10 to-orange-400/5 text-orange-400 border border-orange-400/20 shadow-lg shadow-orange-400/10'
-                            : 'bg-gradient-to-br from-blue-400/10 to-blue-400/5 text-blue-400 border border-blue-400/20 shadow-lg shadow-blue-400/10'
-                        }`}>
-                          {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
-                        </span>
+                        <div className="relative group/status">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            deal.status === 'active' 
+                              ? 'bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10'
+                              : deal.status === 'pending'
+                              ? 'bg-gradient-to-br from-orange-400/10 to-orange-400/5 text-orange-400 border border-orange-400/20 shadow-lg shadow-orange-400/10'
+                              : deal.status === 'rejected'
+                              ? 'bg-gradient-to-br from-red-500/10 to-red-500/5 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10'
+                              : 'bg-gradient-to-br from-blue-400/10 to-blue-400/5 text-blue-400 border border-blue-400/20 shadow-lg shadow-blue-400/10'
+                          }`}>
+                            {deal.status === 'rejected' ? 'Try Again' : deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
+                          </span>
+                          
+                          {/* Tooltip para deals rejeitados */}
+                          {deal.status === 'rejected' && deal.rejectionReason && (
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/status:block w-80 max-w-[90vw] p-4 bg-[#0a0e13] border border-red-500/30 rounded-lg shadow-2xl z-[100]">
+                              <p className="text-sm font-semibold text-red-500 mb-2">
+                                Reason:
+                              </p>
+                              <p className="text-sm text-gray-300 leading-relaxed mb-3">
+                                {deal.rejectionReason}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Please correct the issue and resubmit your application.
+                              </p>
+                              {/* Seta apontando para baixo */}
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-red-500/30"></div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
-                      {/* Deal Summary - Fixed 2 lines */}
-                      <p className="relative text-sm text-gray-400 mb-6 h-10 line-clamp-2 leading-5 font-medium">{deal.dealName}</p>
+                      {/* Deal Summary - Dynamic with full description */}
+                      <div className="relative mb-6 h-5 flex items-center group/description">
+                        <p className="text-xs text-gray-300 leading-tight truncate w-full">
+                          {deal.dealTitle && deal.dealMainValue ? (
+                            <>
+                              {deal.dealTitle}{' '}
+                              <span className="font-bold text-white">{deal.dealMainValue}</span>
+                              {deal.dealMainValueSecondLine && <span className="font-bold text-white"> {deal.dealMainValueSecondLine}</span>}
+                              {deal.dealSubtitle && <span className="text-gray-400"> {deal.dealSubtitle}</span>}
+                            </>
+                          ) : (
+                            <span className="text-sm font-semibold text-white">{deal.dealName}</span>
+                          )}
+                        </p>
+                        
+                        {/* Tooltip com texto completo */}
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover/description:block w-80 max-w-[90vw] p-3 bg-[#0a0e13] border border-white/10 rounded-lg shadow-2xl z-[100] pointer-events-none">
+                          <p className="text-xs text-gray-300 leading-relaxed text-center">
+                            {deal.dealTitle && deal.dealMainValue ? (
+                              <>
+                                {deal.dealTitle}{' '}
+                                <span className="font-bold text-white">{deal.dealMainValue}</span>
+                                {deal.dealMainValueSecondLine && <span className="font-bold text-white"> {deal.dealMainValueSecondLine}</span>}
+                                {deal.dealSubtitle && <span className="text-gray-400"> {deal.dealSubtitle}</span>}
+                              </>
+                            ) : (
+                              <span className="text-sm font-semibold text-white">{deal.dealName}</span>
+                            )}
+                          </p>
+                          {/* Seta apontando para baixo */}
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-6 border-r-6 border-t-6 border-l-transparent border-r-transparent border-t-white/10"></div>
+                        </div>
+                      </div>
                       
                       {/* Details Button */}
                       <button 

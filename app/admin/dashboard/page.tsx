@@ -16,9 +16,12 @@ import {
   TrendingUp,
   TrendingDown,
   Globe,
-  LayoutGrid
+  LayoutGrid,
+  FileCheck
 } from 'lucide-react';
 import { getDeals } from '@/lib/supabase/deals';
+import RejectDealModal from '@/components/admin/RejectDealModal';
+import ViewNotesModal from '@/components/admin/ViewNotesModal';
 
 // Network platforms data
 const platformsData = [
@@ -167,6 +170,7 @@ export default function AdminDashboard() {
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dealrequests', label: 'Deal Requests', icon: FileCheck },
     { id: 'players', label: 'Players', icon: Users },
     { id: 'subaffiliates', label: 'Sub-Affiliates', icon: Building2 },
     { id: 'website', label: 'Website', icon: Globe },
@@ -512,6 +516,11 @@ export default function AdminDashboard() {
                </div>
              </div>
               </>
+            )}
+
+            {/* Deal Requests Tab */}
+            {activeTab === 'dealrequests' && (
+              <DealRequestsContent />
             )}
 
             {/* Players Tab */}
@@ -1093,6 +1102,343 @@ export default function AdminDashboard() {
         )}
       </div>
     </ProtectedRoute>
+  );
+}
+
+// Deal Requests Component
+function DealRequestsContent() {
+  const [deals, setDeals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [rejectingDeal, setRejectingDeal] = useState<any | null>(null);
+  const [viewingNotes, setViewingNotes] = useState<any | null>(null);
+
+  useEffect(() => {
+    fetchDeals();
+  }, [filter]);
+
+  async function fetchDeals() {
+    setLoading(true);
+    console.log('🔍 [DealRequests] Iniciando fetch...');
+    console.log('🔍 [DealRequests] Filtro atual:', filter);
+    
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      
+      let query = supabase
+        .from('admin_deal_requests')
+        .select('*')
+        .order('requested_at', { ascending: false });
+
+      if (filter !== 'all') {
+        query = query.eq('status', filter);
+      }
+
+      const { data, error } = await query;
+
+      console.log('🔍 [DealRequests] Query result:', { data, error });
+      console.log('🔍 [DealRequests] Data length:', data?.length);
+
+      if (error) {
+        console.error('❌ [DealRequests] Error:', error);
+        throw error;
+      }
+
+      console.log('🔍 [DealRequests] Raw data:', JSON.stringify(data, null, 2));
+
+      const formatted = data.map((item: any) => ({
+        id: item.id,
+        user_id: item.user_id,
+        deal_id: item.deal_id,
+        deal_name: item.deal_name || 'Unknown',
+        deal_logo: item.deal_logo || '',
+        player_email: item.player_email || '',
+        player_name: item.player_name || 'Unknown',
+        platform_username: item.platform_username,
+        platform_email: item.platform_email,
+        status: item.status,
+        requested_at: item.requested_at,
+        rejection_reason: item.rejection_reason,
+        admin_notes: item.admin_notes,
+      }));
+
+      console.log('✅ [DealRequests] Formatted data:', formatted);
+      console.log('✅ [DealRequests] Total deals:', formatted.length);
+
+      setDeals(formatted);
+    } catch (error) {
+      console.error('💥 [DealRequests] Catch error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleApprove(dealId: string) {
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      const { error } = await supabase
+        .from('player_deals')
+        .update({
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+
+      if (error) throw error;
+      fetchDeals();
+    } catch (error) {
+      console.error('Error approving deal:', error);
+    }
+  }
+
+  async function handleReject(dealId: string, rejectionReason: string, adminNotes: string) {
+    try {
+      const { supabase } = await import('@/lib/supabase/client');
+      const { error } = await supabase
+        .from('player_deals')
+        .update({
+          status: 'rejected',
+          rejection_reason: rejectionReason,
+          admin_notes: adminNotes,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', dealId);
+
+      if (error) throw error;
+      
+      setRejectingDeal(null);
+      fetchDeals();
+      
+      // TODO: Send email notification to player
+    } catch (error) {
+      console.error('Error rejecting deal:', error);
+      alert('Failed to reject deal. Please try again.');
+    }
+  }
+
+  const pendingCount = deals.filter(d => d.status === 'pending').length;
+  const approvedCount = deals.filter(d => d.status === 'approved').length;
+  const rejectedCount = deals.filter(d => d.status === 'rejected').length;
+
+  return (
+    <>
+      {/* Page Title */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+          <h1 className="text-3xl font-bold text-white">Deal Requests</h1>
+        </div>
+        <p className="text-base text-gray-400 ml-6">Review and approve player deal applications</p>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
+        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
+          <div className="text-2xl font-bold text-yellow-500 mb-1">{pendingCount}</div>
+          <div className="text-sm text-gray-400">Pending</div>
+        </div>
+        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
+          <div className="text-2xl font-bold text-[#10b981] mb-1">{approvedCount}</div>
+          <div className="text-sm text-gray-400">Approved</div>
+        </div>
+        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
+          <div className="text-2xl font-bold text-red-500 mb-1">{rejectedCount}</div>
+          <div className="text-sm text-gray-400">Rejected</div>
+        </div>
+        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
+          <div className="text-2xl font-bold text-blue-500 mb-1">{deals.length}</div>
+          <div className="text-sm text-gray-400">Total</div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            filter === 'all'
+              ? 'bg-[#10b981] text-white'
+              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => setFilter('pending')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            filter === 'pending'
+              ? 'bg-[#10b981] text-white'
+              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
+          }`}
+        >
+          Pending
+        </button>
+        <button
+          onClick={() => setFilter('approved')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            filter === 'approved'
+              ? 'bg-[#10b981] text-white'
+              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
+          }`}
+        >
+          Approved
+        </button>
+        <button
+          onClick={() => setFilter('rejected')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            filter === 'rejected'
+              ? 'bg-[#10b981] text-white'
+              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
+          }`}
+        >
+          Rejected
+        </button>
+      </div>
+
+      {/* Deals Table */}
+      <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-[#0a0e13] border-b border-white/[0.06]">
+            <tr>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Deal</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Player</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Platform Info</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Requested</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Notes</th>
+              <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/[0.06]">
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                  Loading...
+                </td>
+              </tr>
+            ) : deals.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                  No deals found
+                </td>
+              </tr>
+            ) : (
+              deals.map((deal) => (
+                <tr key={deal.id} className="hover:bg-white/[0.02] transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <img src={deal.deal_logo} alt={deal.deal_name} className="w-10 h-10 rounded-lg object-contain bg-white/5 p-1" />
+                      <span className="text-white font-medium">{deal.deal_name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="text-white font-medium">{deal.player_name}</p>
+                      <p className="text-sm text-gray-400">{deal.player_email}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="text-white text-sm">{deal.platform_username}</p>
+                      <p className="text-sm text-gray-400">{deal.platform_email}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <p className="text-white text-sm">
+                      {new Date(deal.requested_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      deal.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
+                      deal.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' :
+                      deal.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
+                      'bg-blue-500/10 text-blue-500'
+                    }`}>
+                      {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {(deal.rejection_reason || deal.admin_notes) ? (
+                      <button
+                        onClick={() => setViewingNotes(deal)}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-[#0f1419] hover:bg-gray-800 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors border border-white/[0.06]"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                        View
+                      </button>
+                    ) : (
+                      <span className="text-sm text-gray-600">—</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    {deal.status === 'pending' && (
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleApprove(deal.id)}
+                          className="px-3 py-1.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => setRejectingDeal(deal)}
+                          className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Reject Modal */}
+      {rejectingDeal && (
+        <RejectDealModal
+          dealName={rejectingDeal.deal_name}
+          playerName={rejectingDeal.player_name}
+          onClose={() => setRejectingDeal(null)}
+          onConfirm={(reason, notes) => handleReject(rejectingDeal.id, reason, notes)}
+        />
+      )}
+
+      {/* View Notes Modal */}
+      {viewingNotes && (
+        <ViewNotesModal
+          dealName={viewingNotes.deal_name}
+          playerName={viewingNotes.player_name}
+          rejectionReason={viewingNotes.rejection_reason}
+          adminNotes={viewingNotes.admin_notes}
+          onClose={() => setViewingNotes(null)}
+        />
+      )}
+    </>
   );
 }
 

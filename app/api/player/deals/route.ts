@@ -16,6 +16,7 @@ interface PlayerDealRow {
   payment_method: string | null;
   requested_at: string;
   approved_at: string | null;
+  rejection_reason: string | null;
   deals: {
     name: string;
     logo_url: string;
@@ -24,13 +25,18 @@ interface PlayerDealRow {
 }
 
 export async function GET() {
+  console.log('🚀 [API /player/deals] GET request received');
+  
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
     // 1. Verificar autenticação
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
+    console.log('🔍 [API /player/deals] User authenticated:', user?.id);
+    
     if (authError || !user) {
+      console.log('❌ [API /player/deals] Unauthorized - no user found');
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -53,6 +59,7 @@ export async function GET() {
         payment_method,
         requested_at,
         approved_at,
+        rejection_reason,
         deals (
           name,
           logo_url,
@@ -64,12 +71,18 @@ export async function GET() {
       .returns<PlayerDealRow[]>();
 
     if (fetchError) {
-      console.error('Fetch error:', fetchError);
+      console.error('❌ [API /player/deals] Fetch error:', fetchError);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch deals' },
         { status: 500 }
       );
     }
+
+    // Debug: Log raw data from Supabase
+    console.log('🔍 [API /player/deals] Raw playerDeals from Supabase:', playerDeals);
+    console.log('🔍 [API /player/deals] First deal raw:', playerDeals?.[0]);
+    console.log('🔍 [API /player/deals] Deals error:', fetchError);
+    console.log('🔍 [API /player/deals] Total deals found:', playerDeals?.length || 0);
 
     // 3. Formatar resposta
     const formattedDeals = playerDeals?.map(deal => ({
@@ -87,8 +100,20 @@ export async function GET() {
       currency: deal.currency,
       paymentMethod: deal.payment_method,
       requestedAt: deal.requested_at,
-      approvedAt: deal.approved_at
+      approvedAt: deal.approved_at,
+      rejectionReason: deal.rejection_reason
     })) || [];
+
+    // Debug log
+    console.log('🔍 [API /player/deals] Formatted deals:', formattedDeals);
+    console.log('🔍 [API /player/deals] Rejection reasons:', 
+      formattedDeals.map(d => ({ 
+        name: d.dealName, 
+        status: d.status, 
+        rejection: d.rejectionReason 
+      }))
+    );
+    console.log('🔍 [API /player/deals] About to return response with', formattedDeals.length, 'deals');
 
     return NextResponse.json({
       success: true,

@@ -20,6 +20,11 @@ interface DealDetailsModalProps {
     currency: string;
     nextPayment: string;
     paymentMethod: string;
+    rejectionReason?: string | null;
+    dealTitle?: string;
+    dealMainValue?: string;
+    dealMainValueSecondLine?: string;
+    dealSubtitle?: string;
   } | null;
 }
 
@@ -69,8 +74,16 @@ export default function DealDetailsModal({ isOpen, onClose, deal }: DealDetailsM
                   className="h-10 w-auto object-contain brightness-110"
                 />
               </div>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10">
-                {deal.status}
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                deal.status === 'rejected' 
+                  ? 'bg-gradient-to-br from-red-500/10 to-red-500/5 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10'
+                  : deal.status === 'pending'
+                  ? 'bg-gradient-to-br from-yellow-500/10 to-yellow-500/5 text-yellow-500 border border-yellow-500/20 shadow-lg shadow-yellow-500/10'
+                  : deal.status === 'approved'
+                  ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 text-emerald-500 border border-emerald-500/20 shadow-lg shadow-emerald-500/10'
+                  : 'bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10'
+              }`}>
+                {deal.status === 'rejected' ? 'Try Again' : deal.status}
               </span>
             </div>
             
@@ -85,6 +98,40 @@ export default function DealDetailsModal({ isOpen, onClose, deal }: DealDetailsM
 
           {/* Content */}
           <div className="p-5 space-y-4">
+            {/* Rejection Reason Section - Show only if rejected */}
+            {deal.status === 'rejected' && deal.rejectionReason && (
+              <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-xl p-4 shadow-lg shadow-red-500/5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                    <svg
+                      className="w-5 h-5 text-red-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-red-500 mb-2">
+                      Application Issues
+                    </h4>
+                    <p className="text-sm text-gray-300 leading-relaxed mb-3">
+                      {deal.rejectionReason}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Please address the issue above and submit a new application.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Connected Account Section */}
             <div className="space-y-2">
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -112,7 +159,7 @@ export default function DealDetailsModal({ isOpen, onClose, deal }: DealDetailsM
               <div className="bg-black/40 rounded-xl p-3 border border-white/[0.06]">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
-                    <p className="text-xs text-gray-500 mb-1.5">Offer</p>
+                    <p className="text-xs text-gray-500 mb-1.5">Room</p>
                     <p className="text-sm text-white font-medium leading-tight">{deal.deal}</p>
                   </div>
                   <button 
@@ -122,14 +169,21 @@ export default function DealDetailsModal({ isOpen, onClose, deal }: DealDetailsM
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/[0.06]">
+                <div className="pt-3 border-t border-white/[0.06]">
                   <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Rakeback</p>
-                    <p className="text-base font-bold text-[#10b981]">{deal.rakeback}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-0.5">Status</p>
-                    <p className="text-base font-bold text-white">Active</p>
+                    <p className="text-xs text-gray-500 mb-1.5">Offer</p>
+                    <p className="text-sm font-bold text-[#10b981] leading-relaxed">
+                      {deal.dealTitle && deal.dealMainValue ? (
+                        <>
+                          {deal.dealTitle}{' '}
+                          {deal.dealMainValue}
+                          {deal.dealMainValueSecondLine && <> {deal.dealMainValueSecondLine}</>}
+                          {deal.dealSubtitle && <> {deal.dealSubtitle}</>}
+                        </>
+                      ) : (
+                        deal.description
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
