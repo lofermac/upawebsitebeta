@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase/client';
 interface AuthContextType {
   isLoggedIn: boolean;
   userType: 'player' | 'admin' | null;
-  user: { email: string; userType: string } | null;
+  user: { email: string; userType: string; full_name?: string } | null;
   login: (email: string, password: string, skipRedirect?: boolean) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -27,9 +27,13 @@ export const useAuth = () => useContext(AuthContext);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<'player' | 'admin' | null>(null);
-  const [user, setUser] = useState<{ email: string; userType: string } | null>(null);
+  const [user, setUser] = useState<{ email: string; userType: string; full_name?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  // Debug: Log do estado atual do user
+  console.log('🔍 AuthContext - User atual:', user);
+  console.log('🔍 AuthContext - isLoggedIn:', isLoggedIn);
 
   // Verificar se o usuário já está logado ao carregar a página
   useEffect(() => {
@@ -40,18 +44,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
+      console.log('🔍 checkUser - Session:', session);
+      
       if (session?.user) {
+        console.log('🔍 checkUser - Supabase user:', session.user);
+        
         // Buscar o perfil do usuário para saber o tipo (player/admin)
         const { data: profile } = await supabase
           .from('profiles')
-          .select('user_type, email')
+          .select('user_type, email, full_name')
           .eq('id', session.user.id)
           .single();
+
+        console.log('🔍 checkUser - Profile data:', profile);
 
         if (profile) {
           setIsLoggedIn(true);
           setUserType(profile.user_type as 'player' | 'admin');
-          setUser({ email: profile.email, userType: profile.user_type });
+          setUser({ 
+            email: profile.email, 
+            userType: profile.user_type,
+            full_name: profile.full_name || undefined
+          });
+          
+          console.log('🔍 checkUser - User setado:', {
+            email: profile.email,
+            userType: profile.user_type,
+            full_name: profile.full_name
+          });
         }
       }
     } catch (error) {
@@ -81,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Buscar o perfil para saber o tipo de usuário
         const { data: profile } = await supabase
           .from('profiles')
-          .select('user_type, email')
+          .select('user_type, email, full_name')
           .eq('id', data.user.id)
           .single();
 
@@ -90,11 +110,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (profile) {
           setIsLoggedIn(true);
           setUserType(profile.user_type as 'player' | 'admin');
-          setUser({ email: profile.email, userType: profile.user_type });
+          setUser({ 
+            email: profile.email, 
+            userType: profile.user_type,
+            full_name: profile.full_name || undefined
+          });
 
           console.log('🔐 Login: Estados atualizados', { 
-            userType: profile.user_type, 
+            userType: profile.user_type,
+            full_name: profile.full_name,
             skipRedirect 
+          });
+          
+          console.log('🔐 Login: User setado:', {
+            email: profile.email,
+            userType: profile.user_type,
+            full_name: profile.full_name
           });
 
           // Redirecionar para o dashboard correto

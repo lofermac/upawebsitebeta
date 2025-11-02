@@ -2,22 +2,24 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from 'next/navigation';
 import { useAuth } from "@/lib/contexts/AuthContext";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, LayoutDashboard } from "lucide-react";
 import { getHeaderNavigation, HeaderNavigation } from "@/lib/supabase/header";
 
 export default function HeaderWithAuth() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { isLoggedIn, loading, userType, logout } = useAuth();
+  const { isLoggedIn, loading, userType, user, logout } = useAuth();
   const [navButtons, setNavButtons] = useState<HeaderNavigation[]>([]);
   const [isLoadingNav, setIsLoadingNav] = useState(true);
+  const pathname = usePathname();
+  const isOnDashboard = pathname === '/player/dashboard';
 
-  // Get username based on userType
-  const getUsername = () => {
-    if (userType === 'admin') return 'Admin';
-    if (userType === 'player') return 'Player';
-    return '';
-  };
+  // Debug logs
+  console.log('🎯 HEADERWITHAUTH - User:', user);
+  console.log('🎯 HEADERWITHAUTH - full_name:', user?.full_name);
+  console.log('🎯 HEADERWITHAUTH - isLoggedIn:', isLoggedIn);
+  console.log('🎯 HEADERWITHAUTH - isOnDashboard:', isOnDashboard);
 
   // Load navigation buttons
   useEffect(() => {
@@ -120,11 +122,23 @@ export default function HeaderWithAuth() {
           ) : isLoggedIn && userType === 'player' ? (
             // Player logged in view
             <>
-              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
-                <User size={18} className="text-[#10b981]" />
-                <span className="text-gray-300 text-sm">Hello,</span>
-                <span className="text-[#10b981] font-semibold text-sm">{getUsername()}</span>
-              </div>
+              {isOnDashboard ? (
+                // Está no dashboard - mostrar saudação
+                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+                  <User size={18} className="text-[#10b981]" />
+                  <span className="text-gray-300 text-sm">Hello,</span>
+                  <span className="text-[#10b981] font-semibold text-sm">{user?.full_name || 'Player'}</span>
+                </div>
+              ) : (
+                // Está em outra página - mostrar botão Dashboard
+                <Link
+                  href="/player/dashboard"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors group/dashboard"
+                >
+                  <LayoutDashboard size={16} className="text-emerald-400" />
+                  <span className="text-sm font-medium text-gray-300 group-hover/dashboard:text-white transition-colors">Dashboard</span>
+                </Link>
+              )}
               <button
                 onClick={logout}
                 className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-full transition-all duration-300 text-red-400 hover:text-red-300 text-sm font-medium"
@@ -239,13 +253,26 @@ export default function HeaderWithAuth() {
                   </>
                 ) : isLoggedIn && userType === 'player' ? (
                   <>
-                    <div className="px-4 py-3.5 bg-white/5 rounded-xl border border-white/10">
-                      <div className="flex items-center gap-2">
-                        <User size={18} className="text-[#10b981]" />
-                        <span className="text-gray-300 text-sm">Hello,</span>
-                        <span className="text-[#10b981] font-semibold text-sm">{getUsername()}</span>
+                    {isOnDashboard ? (
+                      // No dashboard - mostrar saudação
+                      <div className="px-4 py-3.5 bg-white/5 rounded-xl border border-white/10">
+                        <div className="flex items-center gap-2">
+                          <User size={18} className="text-[#10b981]" />
+                          <span className="text-gray-300 text-sm">Hello,</span>
+                          <span className="text-[#10b981] font-semibold text-sm">{user?.full_name || 'Player'}</span>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      // Fora do dashboard - mostrar botão Dashboard
+                      <Link
+                        href="/player/dashboard"
+                        className="flex items-center gap-2 px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <LayoutDashboard size={16} className="text-emerald-400" />
+                        <span className="text-sm font-medium text-gray-300">Dashboard</span>
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         logout();

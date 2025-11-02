@@ -7,20 +7,27 @@ export function useAuthModal() {
   const [initialTab, setInitialTab] = useState<'login' | 'register'>('login');
   const [isJoinDealOpen, setIsJoinDealOpen] = useState(false);
   const [dealName, setDealName] = useState('');
+  const [dealId, setDealId] = useState<number | null>(null);
 
-  const openLogin = (dealNameParam?: string) => {
+  const openLogin = (dealNameParam?: string, dealIdParam?: number) => {
     setInitialTab('login');
     setIsOpen(true);
     if (dealNameParam) {
       setDealName(dealNameParam);
     }
+    if (dealIdParam) {
+      setDealId(dealIdParam);
+    }
   };
 
-  const openRegister = (dealNameParam?: string) => {
+  const openRegister = (dealNameParam?: string, dealIdParam?: number) => {
     setInitialTab('register');
     setIsOpen(true);
     if (dealNameParam) {
       setDealName(dealNameParam);
+    }
+    if (dealIdParam) {
+      setDealId(dealIdParam);
     }
   };
 
@@ -28,8 +35,9 @@ export function useAuthModal() {
     setIsOpen(false);
   };
 
-  const openJoinDeal = (dealNameParam: string) => {
+  const openJoinDeal = (dealNameParam: string, dealIdParam: number) => {
     setDealName(dealNameParam);
+    setDealId(dealIdParam);
     setIsJoinDealOpen(true);
   };
 
@@ -40,9 +48,9 @@ export function useAuthModal() {
   const onAuthSuccess = () => {
     close();
     // Abre o modal Join Deal após autenticação
-    if (dealName) {
+    if (dealName && dealId) {
       setTimeout(() => {
-        openJoinDeal(dealName);
+        openJoinDeal(dealName, dealId);
       }, 300); // Pequeno delay para transição suave
     }
   };
@@ -52,6 +60,7 @@ export function useAuthModal() {
     initialTab,
     isJoinDealOpen,
     dealName,
+    dealId,
     openLogin,
     openRegister,
     close,

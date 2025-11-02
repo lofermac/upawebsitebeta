@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
+import { requestDeal } from '@/lib/api/playerApi';
+import { showToast } from '@/lib/toast';
 
 interface JoinDealModalProps {
   isOpen: boolean;
   onClose: () => void;
   dealName: string; // Nome do deal (ex: "888Poker")
+  dealId: number; // ID do deal para API
 }
 
-export default function JoinDealModal({ isOpen, onClose, dealName }: JoinDealModalProps) {
+export default function JoinDealModal({ isOpen, onClose, dealName, dealId }: JoinDealModalProps) {
   const [formData, setFormData] = useState({
     pokerUsername: '',
     pokerEmail: '',
@@ -79,17 +82,32 @@ export default function JoinDealModal({ isOpen, onClose, dealName }: JoinDealMod
     // Submeter aplicação
     setIsLoading(true);
     try {
-      // TODO: Implementar API call
-      console.log('Join Deal Application:', formData);
-      
-      // Simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Sucesso - fechar modal e mostrar mensagem de sucesso
-      alert('Application submitted successfully!');
-      onClose();
-    } catch {
-      setErrors({ general: 'Failed to submit application. Please try again.' });
+      const result = await requestDeal({
+        dealId: dealId,
+        platformUsername: formData.pokerUsername,
+        platformEmail: formData.pokerEmail,
+      });
+
+      if (result.success) {
+        // Sucesso - mostrar mensagem e fechar modal
+        showToast.success(result.message || 'Application submitted successfully! Our team will review it shortly.');
+        
+        // Reset form
+        setFormData({
+          pokerUsername: '',
+          pokerEmail: '',
+          consentShare: false,
+          agreeTerms: false,
+        });
+        
+        onClose();
+      } else {
+        // Erro da API
+        showToast.error(result.error || 'Failed to submit application. Please try again.');
+      }
+    } catch (error: unknown) {
+      console.error('Submit error:', error);
+      showToast.error(error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

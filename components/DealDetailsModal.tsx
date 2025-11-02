@@ -8,7 +8,7 @@ interface DealDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   deal: {
-    id: number;
+    id: string; // UUID from database
     platform: string;
     logo: string;
     deal: string;

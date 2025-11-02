@@ -445,15 +445,15 @@ export default function Home() {
     button_link: '/deals'
   });
 
-  // Handler para Claim Offer - verifica autenticação (APENAS 888poker para teste)
-  const handleClaimOffer888 = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  // Handler para Claim Offer - verifica autenticação (FUNCIONA PARA TODOS OS DEALS)
+  const handleClaimOffer = (e: React.MouseEvent<HTMLAnchorElement>, dealId: number, dealName: string) => {
     e.preventDefault(); // Sempre previne navegação
     
     if (!isLoggedIn) {
-      authModal.openLogin('888Poker'); // Passa o nome do deal
+      authModal.openLogin(dealName, dealId); // Passa nome e ID do deal
     } else {
       // Se já está logado, abre direto o JoinDealModal
-      authModal.openJoinDeal('888Poker');
+      authModal.openJoinDeal(dealName, dealId);
     }
   };
 
@@ -910,7 +910,7 @@ export default function Home() {
                             {/* Claim Offer Button */}
                             <a 
                               href={deal.claim_offer_url}
-                              onClick={deal.id === 3 ? handleClaimOffer888 : undefined}
+                              onClick={(e) => handleClaimOffer(e, deal.id, deal.name)}
                               className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/claimBtn overflow-hidden flex-1 text-center"
                             >
                               <span className="relative z-10">Claim Offer</span>
@@ -1356,6 +1356,7 @@ export default function Home() {
         isOpen={authModal.isJoinDealOpen}
         onClose={authModal.closeJoinDeal}
         dealName={authModal.dealName}
+        dealId={authModal.dealId || 0}
       />
     </div>
   );

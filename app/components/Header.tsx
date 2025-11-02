@@ -2,12 +2,23 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 import { getHeaderNavigation, HeaderNavigation } from "@/lib/supabase/header";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [navButtons, setNavButtons] = useState<HeaderNavigation[]>([]);
   const [isLoadingNav, setIsLoadingNav] = useState(true);
+  const { isLoggedIn, user, logout } = useAuth();
+  const pathname = usePathname();
+  const isOnDashboard = pathname === '/player/dashboard';
+
+  // Debug: Log do user no Header
+  console.log('🎯 HEADER - User do useAuth:', user);
+  console.log('🎯 HEADER - isLoggedIn:', isLoggedIn);
+  console.log('🎯 HEADER - full_name:', user?.full_name);
 
   // Load navigation buttons
   useEffect(() => {
@@ -98,30 +109,67 @@ export default function Header() {
           )}
         </nav>
         
-        {/* Auth Buttons */}
+        {/* Auth Buttons / Dashboard */}
         <div className="hidden md:flex items-center gap-3 relative z-10">
-          <Link 
-            href="/login" 
-            className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
-          >
-            <span className="relative z-10">Login</span>
-            <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
-          </Link>
-          <Link
-            href="/register"
-            className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              Register
-              <svg className="w-0 group-hover/register:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </span>
-            {/* Animated shine effect */}
-            <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            {/* Subtle inner glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
-          </Link>
+          {isLoggedIn ? (
+            // Usuário logado
+            <>
+              {isOnDashboard ? (
+                // Está no dashboard - mostrar saudação
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5">
+                  <span className="text-sm text-gray-400">Hello,</span>
+                  <span className="text-sm font-medium text-emerald-400">
+                    {user?.full_name || 'Player'}
+                  </span>
+                </div>
+              ) : (
+                // Está em outra página - mostrar botão Dashboard
+                <Link
+                  href="/player/dashboard"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors group/dashboard"
+                >
+                  <LayoutDashboard size={16} className="text-emerald-400" />
+                  <span className="text-sm font-medium text-gray-300 group-hover/dashboard:text-white transition-colors">Dashboard</span>
+                </Link>
+              )}
+              {/* Logout Button */}
+              <button
+                onClick={logout}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-red-500/10 hover:bg-red-500/20 transition-colors group/logout"
+              >
+                <LogOut size={16} className="text-red-400" />
+                <span className="text-sm font-medium text-red-400 group-hover/logout:text-red-300 transition-colors">
+                  Logout
+                </span>
+              </button>
+            </>
+          ) : (
+            // Usuário não logado - mostrar Login e Register
+            <>
+              <Link 
+                href="/login" 
+                className="relative px-5 py-2 text-gray-300 font-medium hover:text-white transition-all duration-300 text-sm group/login rounded-full overflow-hidden"
+              >
+                <span className="relative z-10">Login</span>
+                <div className="absolute inset-0 bg-white/5 scale-0 group-hover/login:scale-100 transition-transform duration-300 rounded-full"></div>
+              </Link>
+              <Link
+                href="/register"
+                className="relative font-semibold text-sm px-6 py-2.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/register overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  Register
+                  <svg className="w-0 group-hover/register:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                {/* Animated shine effect */}
+                <div className="absolute inset-0 translate-x-[-100%] group-hover/register:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                {/* Subtle inner glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/register:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+            </>
+          )}
         </div>
         {/* Mobile Menu Button */}
         <button
@@ -191,27 +239,64 @@ export default function Header() {
                 {/* Divider */}
                 <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4"></div>
                 
-                <Link 
-                  href="/login" 
-                  className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10">Login</span>
-                  <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
-                </Link>
-                <Link
-                  href="/register"
-                  className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    Register
-                    <svg className="w-0 group-hover/register-mobile:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                  <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-                </Link>
+                {isLoggedIn ? (
+                  // Usuário logado - mostrar dashboard, saudação e logout
+                  <>
+                    {isOnDashboard ? (
+                      <div className="flex items-center gap-2 px-4 py-3.5 rounded-xl bg-white/5">
+                        <span className="text-sm text-gray-400">Hello,</span>
+                        <span className="text-sm font-medium text-emerald-400">
+                          {user?.full_name || 'Player'}
+                        </span>
+                      </div>
+                    ) : (
+                      <Link
+                        href="/player/dashboard"
+                        className="flex items-center gap-2 px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        <LayoutDashboard size={16} className="text-emerald-400" />
+                        <span className="text-sm font-medium text-gray-300">Dashboard</span>
+                      </Link>
+                    )}
+                    {/* Logout Button Mobile */}
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileOpen(false);
+                      }}
+                      className="flex items-center gap-2 px-4 py-3.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors w-full mt-2"
+                    >
+                      <LogOut size={16} className="text-red-400" />
+                      <span className="text-sm font-medium text-red-400">Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  // Usuário não logado - mostrar Login e Register
+                  <>
+                    <Link 
+                      href="/login" 
+                      className="relative px-4 py-3.5 text-gray-300 hover:text-white transition-all duration-300 rounded-xl font-medium group/mobile overflow-hidden"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="relative z-10">Login</span>
+                      <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/mobile:translate-x-0 transition-transform duration-300"></div>
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="relative font-semibold text-sm px-6 py-3.5 rounded-xl bg-[#077124] text-white shadow-lg shadow-[#077124]/30 hover:shadow-xl hover:shadow-[#077124]/40 hover:scale-[1.02] transition-all duration-300 text-center group/register-mobile overflow-hidden mt-2"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        Register
+                        <svg className="w-0 group-hover/register-mobile:w-4 transition-all duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </span>
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/register-mobile:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    </Link>
+                  </>
+                )}
               </nav>
             </div>
           </div>

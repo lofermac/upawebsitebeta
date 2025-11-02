@@ -47,7 +47,7 @@ export default function AdminLogin() {
       }
     } catch (err) {
       console.error('Admin login error:', err);
-      setError('Invalid credentials or unauthorized access. Admin access only.');
+      setError('Invalid credentials or unauthorized access.');
       setLoading(false);
     }
   };
@@ -169,7 +169,7 @@ export default function AdminLogin() {
           {/* Footer */}
           <div className="px-8 py-5 bg-neutral-950/30 border-t border-neutral-800/50">
             <p className="text-xs text-neutral-500 text-center leading-relaxed">
-              🔒 Protected by Enterprise-Grade Security
+              Protected by Enterprise-Grade Security
               <br />
               All Access Attempts Are Logged and Monitored
             </p>
