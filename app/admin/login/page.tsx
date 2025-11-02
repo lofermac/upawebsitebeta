@@ -105,7 +105,7 @@ export default function AdminLogin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full pl-11 pr-4 py-3 bg-neutral-950/50 border border-neutral-700/50 rounded-xl text-white text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                    placeholder=""
+                    placeholder="User ID"
                     required
                     disabled={loading}
                   />

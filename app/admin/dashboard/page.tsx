@@ -22,6 +22,26 @@ import {
 import { getDeals } from '@/lib/supabase/deals';
 import RejectDealModal from '@/components/admin/RejectDealModal';
 import ViewNotesModal from '@/components/admin/ViewNotesModal';
+import ReactCountryFlag from 'react-country-flag';
+
+// Interface for Player Profile Modal
+interface PlayerProfile {
+  name: string;
+  email: string;
+  flag: string;
+  country: string;
+  activeDeals: number;
+  totalRake: string;
+  ytdRake: string;
+  joined: string;
+  lastPayment: string;
+  status: string;
+  deals: Array<{
+    name: string;
+    username: string;
+    status: string;
+  }>;
+}
 
 // Network platforms data
 const platformsData = [
@@ -158,6 +178,15 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [dealsCount, setDealsCount] = useState(0);
+  
+  // Players Tab - Filter States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sortFilter, setSortFilter] = useState('joined-desc');
+  
+  // Players Tab - Modal States
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Load deals count
   useEffect(() => {
@@ -167,6 +196,22 @@ export default function AdminDashboard() {
     }
     loadDealsCount();
   }, []);
+
+  // Check if any filters are active
+  const hasActiveFilters = searchQuery !== '' || statusFilter !== '' || sortFilter !== 'joined-desc';
+
+  // Function to clear all filters
+  const handleClearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('');
+    setSortFilter('joined-desc');
+  };
+
+  // Function to handle viewing player details
+  const handleViewPlayer = (player: PlayerProfile) => {
+    setSelectedPlayer(player);
+    setIsViewModalOpen(true);
+  };
 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -288,6 +333,7 @@ export default function AdminDashboard() {
           {/* Sidebar */}
           <aside className={`
             fixed lg:static inset-y-0 left-0 z-40 w-72
+            min-h-screen
             bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] border-r border-gray-800/50
             transform transition-transform duration-300 ease-in-out
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -528,154 +574,574 @@ export default function AdminDashboard() {
               <>
                 {/* Page Title */}
                 <div className="mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                      <h1 className="text-3xl font-bold text-white">Player Management</h1>
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+                    <h1 className="text-3xl font-bold text-white">Player Management</h1>
+                  </div>
+                  <p className="text-base text-gray-400 ml-6 mt-3">Manage poker players and track their performance</p>
+                </div>
+
+                {/* Player Stats - 4 Cards com Ícones */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {/* Card 1: Total Players */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-white">1,303</p>
+                        <p className="text-sm text-gray-400">Total Players</p>
+                      </div>
                     </div>
-                    <button className="px-4 py-2 bg-[#10b981] hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors duration-200">
-                      + Add Player
+                  </div>
+
+                  {/* Card 2: Active Players */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-emerald-500">1,096</p>
+                        <p className="text-sm text-gray-400">Active Players</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3: New This Month */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-blue-500">37</p>
+                        <p className="text-sm text-gray-400">New This Month</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Total Rake */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-orange-500">$248,790</p>
+                        <p className="text-sm text-gray-400">Total Rake</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filters & Search Bar */}
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-4 mb-6">
+                  <div className="flex flex-col lg:flex-row gap-4 items-center">
+                    {/* Search Input */}
+                    <div className="flex-1 w-full lg:w-auto">
+                      <div className="relative">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search by Player Name or Email"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status Filter */}
+                    <select 
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[140px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2 [&>option:checked]:bg-emerald-500/20 [&>option:checked]:text-emerald-400"
+                    >
+                      <option value="">All Status</option>
+                      <option value="active">Active Only</option>
+                      <option value="inactive">Inactive Only</option>
+                    </select>
+
+                    {/* Sort By */}
+                    <select 
+                      value={sortFilter}
+                      onChange={(e) => setSortFilter(e.target.value)}
+                      className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[180px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2 [&>option:checked]:bg-emerald-500/20 [&>option:checked]:text-emerald-400"
+                    >
+                      <option value="joined-desc">Sort: Newest First</option>
+                      <option value="joined-asc">Sort: Oldest First</option>
+                      <option value="rake-desc">Sort: Highest Rake</option>
+                      <option value="name-asc">Sort: Name (A-Z)</option>
+                      <option value="name-desc">Sort: Name (Z-A)</option>
+                    </select>
+
+                    {/* Clear Filters Button */}
+                    <button 
+                      onClick={handleClearFilters}
+                      className={`w-full lg:w-auto px-4 py-2.5 border text-sm font-medium rounded-lg transition-all flex items-center justify-center gap-2 ${
+                        hasActiveFilters 
+                          ? 'bg-red-500/10 hover:bg-red-500/20 border-red-500/50 text-red-500 hover:text-red-400' 
+                          : 'bg-gray-800 hover:bg-gray-700 border-gray-700 text-gray-400 hover:text-gray-300'
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      Clear Filters
                     </button>
                   </div>
-                  <p className="text-base text-gray-400 ml-6">Manage poker players and track their performance</p>
                 </div>
 
-                {/* Player Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-white mb-1">1,303</div>
-                    <div className="text-sm text-gray-400">Total Players</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-[#10b981] mb-1">1,096</div>
-                    <div className="text-sm text-gray-400">Active Players</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-blue-500 mb-1">37</div>
-                    <div className="text-sm text-gray-400">New This Month</div>
-                  </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-orange-500 mb-1">$248,790</div>
-                    <div className="text-sm text-gray-400">Total Rake</div>
-                  </div>
+                {/* Players Table - 6 Colunas */}
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-900/50 border-b border-gray-800">
+                      <tr>
+                        <th className="py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider" style={{ paddingLeft: '5.25rem' }}>
+                          Player
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Active Deals
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Total Rake
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Joined
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {/* Row 1 - Active Player - Brazil Flag */}
+                      <tr className="hover:bg-gray-900/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                              <ReactCountryFlag 
+                                countryCode="BR" 
+                                svg 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">Leonardo</p>
+                              <p className="text-sm text-gray-400">leo@email.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>2</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-emerald-500">$4,250</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-gray-300">Jan 15, 2025</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            Active
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleViewPlayer({
+                              name: 'Leonardo',
+                              email: 'leo@email.com',
+                              flag: 'BR',
+                              country: 'Brazil',
+                              activeDeals: 2,
+                              totalRake: '$4,250',
+                              ytdRake: '$1,850',
+                              joined: 'Jan 15, 2025',
+                              lastPayment: 'Nov 1, 2025',
+                              status: 'Active',
+                              deals: [
+                                { name: 'GGPoker', username: 'ggpokerteste', status: 'Approved' },
+                                { name: '888poker', username: 'testplayer888', status: 'Active' }
+                              ]
+                            })}
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Row 2 - Inactive Player */}
+                      <tr className="hover:bg-gray-900/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                              <ReactCountryFlag 
+                                countryCode="US" 
+                                svg 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">John Mitchell</p>
+                              <p className="text-sm text-gray-400">john.mitchell@email.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>1</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-emerald-500">$1,890</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-gray-300">Dec 28, 2024</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
+                            Inactive
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleViewPlayer({
+                              name: 'John Mitchell',
+                              email: 'john.mitchell@email.com',
+                              flag: 'US',
+                              country: 'United States',
+                              activeDeals: 1,
+                              totalRake: '$1,890',
+                              ytdRake: '$450',
+                              joined: 'Dec 28, 2024',
+                              lastPayment: 'Aug 15, 2025',
+                              status: 'Inactive',
+                              deals: [
+                                { name: 'GGPoker', username: 'johnmitchell123', status: 'Active' }
+                              ]
+                            })}
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Row 3 - Active Player */}
+                      <tr className="hover:bg-gray-900/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                              <ReactCountryFlag 
+                                countryCode="CA" 
+                                svg 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">Sarah Chen</p>
+                              <p className="text-sm text-gray-400">sarah.chen@email.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>3</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-emerald-500">$3,890</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-gray-300">Jan 10, 2025</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            Active
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleViewPlayer({
+                              name: 'Sarah Chen',
+                              email: 'sarah.chen@email.com',
+                              flag: 'CA',
+                              country: 'Canada',
+                              activeDeals: 3,
+                              totalRake: '$3,890',
+                              ytdRake: '$2,100',
+                              joined: 'Jan 10, 2025',
+                              lastPayment: 'Nov 1, 2025',
+                              status: 'Active',
+                              deals: [
+                                { name: 'PartyPoker', username: 'sarahchen', status: 'Active' },
+                                { name: '888poker', username: 'schengaming', status: 'Active' },
+                                { name: 'WPT Global', username: 'sarahc', status: 'Approved' }
+                              ]
+                            })}
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Row 4 - Active Player */}
+                      <tr className="hover:bg-gray-900/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                              <ReactCountryFlag 
+                                countryCode="GB" 
+                                svg 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">Emily Watson</p>
+                              <p className="text-sm text-gray-400">emily.w@email.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>1</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-emerald-500">$2,150</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-gray-300">Jan 8, 2025</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                            Active
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleViewPlayer({
+                              name: 'Emily Watson',
+                              email: 'emily.w@email.com',
+                              flag: 'GB',
+                              country: 'United Kingdom',
+                              activeDeals: 1,
+                              totalRake: '$2,150',
+                              ytdRake: '$1,200',
+                              joined: 'Jan 8, 2025',
+                              lastPayment: 'Oct 28, 2025',
+                              status: 'Active',
+                              deals: [
+                                { name: '888poker', username: 'emilyw888', status: 'Active' }
+                              ]
+                            })}
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+
+                      {/* Row 5 - Inactive Player */}
+                      <tr className="hover:bg-gray-900/30 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                              <ReactCountryFlag 
+                                countryCode="DE" 
+                                svg 
+                                style={{
+                                  width: '100%',
+                                  height: '100%',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-white">David Kim</p>
+                              <p className="text-sm text-gray-400">david.kim@email.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>2</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm font-semibold text-emerald-500">$5,320</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-sm text-gray-300">Dec 28, 2024</span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
+                            Inactive
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <button 
+                            onClick={() => handleViewPlayer({
+                              name: 'David Kim',
+                              email: 'david.kim@email.com',
+                              flag: 'DE',
+                              country: 'Germany',
+                              activeDeals: 2,
+                              totalRake: '$5,320',
+                              ytdRake: '$900',
+                              joined: 'Dec 28, 2024',
+                              lastPayment: 'Jul 20, 2025',
+                              status: 'Inactive',
+                              deals: [
+                                { name: 'WPT Global', username: 'davidkim', status: 'Active' },
+                                { name: 'Unibet', username: 'dkim123', status: 'Active' }
+                              ]
+                            })}
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            View
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                {/* Filters & Search */}
-                <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5 mb-6">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <input 
-                        type="text" 
-                        placeholder="Search players..." 
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                      />
-                    </div>
-                    <select className="bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#10b981] transition-colors">
-                      <option>All Networks</option>
-                      <option>GGPoker</option>
-                      <option>PartyPoker</option>
-                      <option>888poker</option>
-                      <option>WPT Global</option>
-                      <option>Unibet</option>
-                    </select>
-                    <select className="bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#10b981] transition-colors">
-                      <option>All Status</option>
-                      <option>Active</option>
-                      <option>Inactive</option>
-                    </select>
-                  </div>
-                </div>
+                {/* View Player Modal */}
+                {isViewModalOpen && selectedPlayer && (
+                  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-[#0a0e13] border border-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+                      {/* Header */}
+                      <div className="sticky top-0 bg-[#0a0e13] border-b border-gray-800 p-6 flex items-center justify-between">
+                        <h2 className="text-xl font-bold text-white">Player Profile</h2>
+                        <button
+                          onClick={() => setIsViewModalOpen(false)}
+                          className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"
+                        >
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
 
-                {/* Players Table */}
-                <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-white/[0.02] border-b border-white/[0.06]">
-                        <tr>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Player</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Network</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Player ID</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Rake</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Joined</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/[0.06]">
-                        {[
-                          { id: 1, name: 'John Mitchell', email: 'john.mitchell@email.com', network: 'GGPoker', playerId: 'GG-482931', rake: '$4,250', joined: 'Jan 15, 2025', status: 'Active' },
-                          { id: 2, name: 'Sarah Chen', email: 'sarah.chen@email.com', network: 'PartyPoker', playerId: 'PP-729401', rake: '$3,890', joined: 'Jan 10, 2025', status: 'Active' },
-                          { id: 3, name: 'Emily Watson', email: 'emily.w@email.com', network: '888poker', playerId: '888-582047', rake: '$2,150', joined: 'Jan 8, 2025', status: 'Active' },
-                          { id: 4, name: 'David Kim', email: 'david.kim@email.com', network: 'WPT Global', playerId: 'WPT-391827', rake: '$5,320', joined: 'Dec 28, 2024', status: 'Active' },
-                          { id: 5, name: 'Lisa Anderson', email: 'lisa.anderson@email.com', network: 'Unibet', playerId: 'UNI-648293', rake: '$1,890', joined: 'Dec 15, 2024', status: 'Inactive' },
-                          { id: 6, name: 'Maria Garcia', email: 'maria.g@email.com', network: 'Betfair', playerId: 'BF-729401', rake: '$3,240', joined: 'Dec 5, 2024', status: 'Active' },
-                          { id: 7, name: 'Robert Taylor', email: 'r.taylor@email.com', network: 'GGPoker', playerId: 'GG-129485', rake: '$6,780', joined: 'Nov 20, 2024', status: 'Active' },
-                          { id: 8, name: 'Jessica Brown', email: 'jessica.b@email.com', network: 'PartyPoker', playerId: 'PP-384756', rake: '$2,950', joined: 'Nov 12, 2024', status: 'Active' },
-                        ].map((player) => (
-                          <tr key={player.id} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="px-6 py-4">
+                      {/* Player Info */}
+                      <div className="p-6 border-b border-gray-800">
+                        <div className="flex items-center gap-4">
+                          <div className="w-20 h-14 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg">
+                            <ReactCountryFlag 
+                              countryCode={selectedPlayer.flag} 
+                              svg 
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold text-white">{selectedPlayer.name}</h3>
+                            <p className="text-sm text-gray-400">{selectedPlayer.email}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {selectedPlayer.country} • Joined: {selectedPlayer.joined}
+                            </p>
+                          </div>
+                          <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                            selectedPlayer.status === 'Active'
+                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                              : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                          }`}>
+                            {selectedPlayer.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Active Deals Section */}
+                      <div className="p-6 border-b border-gray-800">
+                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                          Active Deals ({selectedPlayer.activeDeals})
+                        </h4>
+                        <div className="space-y-3">
+                          {selectedPlayer.deals.map((deal, index: number) => (
+                            <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
-                                  {player.name.split(' ').map(n => n[0]).join('')}
+                                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
+                                  <span className="text-xs text-gray-400">{deal.name.slice(0, 2)}</span>
                                 </div>
-                                <span className="text-sm font-medium text-white">{player.name}</span>
+                                <div>
+                                  <p className="font-medium text-white">{deal.name}</p>
+                                  <p className="text-sm text-gray-400">Username: {deal.username}</p>
+                                </div>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-400">{player.email}</td>
-                            <td className="px-6 py-4 text-sm text-gray-300">{player.network}</td>
-                            <td className="px-6 py-4 text-sm font-mono text-gray-400">{player.playerId}</td>
-                            <td className="px-6 py-4 text-sm font-semibold text-[#10b981]">{player.rake}</td>
-                            <td className="px-6 py-4 text-sm text-gray-400">{player.joined}</td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                player.status === 'Active' 
-                                  ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                                  : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                deal.status === 'Active' 
+                                  ? 'bg-emerald-500/10 text-emerald-500'
+                                  : 'bg-lime-500/10 text-lime-500'
                               }`}>
-                                {player.status}
+                                {deal.status}
                               </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-xs rounded-lg transition-colors">
-                                  View
-                                </button>
-                                <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-xs rounded-lg transition-colors">
-                                  Edit
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  
-                  {/* Pagination */}
-                  <div className="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
-                    <div className="text-sm text-gray-400">
-                      Showing 1 to 8 of 1,303 players
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
-                        Previous
-                      </button>
-                      <button className="px-3 py-1.5 bg-[#10b981] text-white text-sm rounded-lg font-semibold">
-                        1
-                      </button>
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
-                        2
-                      </button>
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
-                        3
-                      </button>
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
-                        Next
-                      </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Performance Section */}
+                      <div className="p-6">
+                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                          Performance
+                        </h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                            <p className="text-xs text-gray-500 mb-1">Total Rake</p>
+                            <p className="text-xl font-bold text-emerald-500">{selectedPlayer.totalRake}</p>
+                          </div>
+                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                            <p className="text-xs text-gray-500 mb-1">YTD Rake</p>
+                            <p className="text-xl font-bold text-emerald-500">{selectedPlayer.ytdRake}</p>
+                          </div>
+                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                            <p className="text-xs text-gray-500 mb-1">Last Payment</p>
+                            <p className="text-sm font-medium text-gray-300">{selectedPlayer.lastPayment}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer */}
+                      <div className="sticky bottom-0 bg-[#0a0e13] border-t border-gray-800 p-6 flex justify-end gap-3">
+                        <button
+                          onClick={() => setIsViewModalOpen(false)}
+                          className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </>
             )}
 
@@ -697,42 +1163,95 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Sub-Affiliate Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-white mb-1">12</div>
-                    <div className="text-sm text-gray-400">Active Sub-Affiliates</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                  {/* Card 1: Active Sub-Affiliates */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-white">12</p>
+                        <p className="text-sm text-gray-400">Active Sub-Affiliates</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-blue-500 mb-1">247</div>
-                    <div className="text-sm text-gray-400">Total Players Referred</div>
+
+                  {/* Card 2: Total Players Referred */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-purple-500">247</p>
+                        <p className="text-sm text-gray-400">Total Players Referred</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-[#10b981] mb-1">$42,850</div>
-                    <div className="text-sm text-gray-400">Total Rake Generated</div>
+
+                  {/* Card 3: Total Rake Generated */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-emerald-500">$42,850</p>
+                        <p className="text-sm text-gray-400">Total Rake Generated</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-                    <div className="text-2xl font-bold text-orange-500 mb-1">$8,570</div>
-                    <div className="text-sm text-gray-400">Commission Paid</div>
+
+                  {/* Card 4: Commission Paid */}
+                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-orange-500">$8,570</p>
+                        <p className="text-sm text-gray-400">Commission Paid</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Filters & Search */}
-                <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5 mb-6">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <input 
-                        type="text" 
-                        placeholder="Search sub-affiliates..." 
-                        className="w-full bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#10b981] transition-colors"
-                      />
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-4 mb-6">
+                  <div className="flex flex-col lg:flex-row gap-4 items-center">
+                    {/* Search Input */}
+                    <div className="flex-1 w-full lg:w-auto">
+                      <div className="relative">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input 
+                          type="text" 
+                          placeholder="Search sub-affiliates..." 
+                          className="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                        />
+                      </div>
                     </div>
-                    <select className="bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#10b981] transition-colors">
+
+                    {/* Tier Filter */}
+                    <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[180px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
                       <option>All Tiers</option>
                       <option>Bronze (0-50 players)</option>
                       <option>Silver (51-100 players)</option>
                       <option>Gold (101+ players)</option>
                     </select>
-                    <select className="bg-white/[0.03] border border-white/[0.08] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#10b981] transition-colors">
+
+                    {/* Status Filter */}
+                    <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[140px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
                       <option>All Status</option>
                       <option>Active</option>
                       <option>Pending</option>
@@ -742,22 +1261,22 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Sub-Affiliates Table */}
-                <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-white/[0.02] border-b border-white/[0.06]">
+                      <thead className="bg-gray-900/50 border-b border-gray-800">
                         <tr>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Sub-Affiliate</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Email</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Players</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Rake</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Commission</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Tier</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                          <th className="text-left px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
+                          <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Sub-Affiliate</th>
+                          <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Players</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Total Rake</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Commission</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Tier</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/[0.06]">
+                      <tbody className="divide-y divide-gray-800">
                         {[
                           { id: 1, name: 'Michael Rodriguez', email: 'm.rodriguez@email.com', players: 64, rake: '$12,450', commission: '$2,490', tier: 'Silver', status: 'Active' },
                           { id: 2, name: 'James Wilson', email: 'j.wilson@email.com', players: 52, rake: '$8,750', commission: '$1,750', tier: 'Silver', status: 'Active' },
@@ -767,7 +1286,7 @@ export default function AdminDashboard() {
                           { id: 6, name: 'Daniel Cooper', email: 'd.cooper@email.com', players: 31, rake: '$5,120', commission: '$1,024', tier: 'Bronze', status: 'Active' },
                           { id: 7, name: 'Emma Williams', email: 'emma.w@email.com', players: 9, rake: '$1,960', commission: '$392', tier: 'Bronze', status: 'Pending' },
                         ].map((affiliate) => (
-                          <tr key={affiliate.id} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={affiliate.id} className="hover:bg-gray-900/30 transition-colors">
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
@@ -777,63 +1296,58 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-400">{affiliate.email}</td>
-                            <td className="px-6 py-4 text-sm font-semibold text-blue-400">{affiliate.players}</td>
-                            <td className="px-6 py-4 text-sm font-semibold text-[#10b981]">{affiliate.rake}</td>
-                            <td className="px-6 py-4 text-sm font-semibold text-orange-400">{affiliate.commission}</td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            <td className="px-6 py-4 text-center text-sm font-semibold text-blue-400">{affiliate.players}</td>
+                            <td className="px-6 py-4 text-center text-sm font-semibold text-emerald-500">{affiliate.rake}</td>
+                            <td className="px-6 py-4 text-center text-sm font-semibold text-orange-400">{affiliate.commission}</td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${
                                 affiliate.tier === 'Gold' 
-                                  ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' 
+                                  ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' 
                                   : affiliate.tier === 'Silver'
-                                  ? 'bg-gray-400/10 text-gray-300 border border-gray-400/20'
-                                  : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                                  ? 'bg-gray-400/10 text-gray-300 border-gray-400/20'
+                                  : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
                               }`}>
                                 {affiliate.tier}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            <td className="px-6 py-4 text-center">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                                 affiliate.status === 'Active' 
-                                  ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
                                   : affiliate.status === 'Pending'
-                                  ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-                                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                                  ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                  : 'bg-red-500/10 text-red-500 border-red-500/20'
                               }`}>
                                 {affiliate.status}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-xs rounded-lg transition-colors">
-                                  View
-                                </button>
-                                <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-xs rounded-lg transition-colors">
-                                  Edit
-                                </button>
-                              </div>
+                            <td className="px-6 py-4 text-center">
+                              <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors">
+                                View
+                              </button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  
+
                   {/* Pagination */}
-                  <div className="px-6 py-4 border-t border-white/[0.06] flex items-center justify-between">
+                  <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
                     <div className="text-sm text-gray-400">
                       Showing 1 to 7 of 12 sub-affiliates
                     </div>
                     <div className="flex items-center gap-2">
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
+                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
                         Previous
                       </button>
-                      <button className="px-3 py-1.5 bg-[#10b981] text-white text-sm rounded-lg font-semibold">
+                      <button className="px-4 py-2 bg-emerald-500 text-white text-sm rounded-lg font-semibold">
                         1
                       </button>
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
+                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
                         2
                       </button>
-                      <button className="px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-gray-300 text-sm rounded-lg transition-colors">
+                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
                         Next
                       </button>
                     </div>
@@ -1250,84 +1764,129 @@ function DealRequestsContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
-        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-          <div className="text-2xl font-bold text-yellow-500 mb-1">{pendingCount}</div>
-          <div className="text-sm text-gray-400">Pending</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Card 1: Pending */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-yellow-500">{pendingCount}</p>
+              <p className="text-sm text-gray-400">Pending</p>
+            </div>
+          </div>
         </div>
-        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-          <div className="text-2xl font-bold text-[#10b981] mb-1">{approvedCount}</div>
-          <div className="text-sm text-gray-400">Approved</div>
+
+        {/* Card 2: Approved */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-emerald-500">{approvedCount}</p>
+              <p className="text-sm text-gray-400">Approved</p>
+            </div>
+          </div>
         </div>
-        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-          <div className="text-2xl font-bold text-red-500 mb-1">{rejectedCount}</div>
-          <div className="text-sm text-gray-400">Rejected</div>
+
+        {/* Card 3: Rejected */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-red-500">{rejectedCount}</p>
+              <p className="text-sm text-gray-400">Rejected</p>
+            </div>
+          </div>
         </div>
-        <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl p-5">
-          <div className="text-2xl font-bold text-blue-500 mb-1">{deals.length}</div>
-          <div className="text-sm text-gray-400">Total</div>
+
+        {/* Card 4: Total */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-500">{deals.length}</p>
+              <p className="text-sm text-gray-400">Total</p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === 'all'
-              ? 'bg-[#10b981] text-white'
-              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
-          }`}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilter('pending')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === 'pending'
-              ? 'bg-[#10b981] text-white'
-              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
-          }`}
-        >
-          Pending
-        </button>
-        <button
-          onClick={() => setFilter('approved')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === 'approved'
-              ? 'bg-[#10b981] text-white'
-              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
-          }`}
-        >
-          Approved
-        </button>
-        <button
-          onClick={() => setFilter('rejected')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            filter === 'rejected'
-              ? 'bg-[#10b981] text-white'
-              : 'bg-[#0f1419] text-gray-400 hover:bg-gray-800 border border-white/[0.06]'
-          }`}
-        >
-          Rejected
-        </button>
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-4 mb-6">
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              filter === 'all'
+                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter('pending')}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              filter === 'pending'
+                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700'
+            }`}
+          >
+            Pending
+          </button>
+          <button
+            onClick={() => setFilter('approved')}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              filter === 'approved'
+                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700'
+            }`}
+          >
+            Approved
+          </button>
+          <button
+            onClick={() => setFilter('rejected')}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              filter === 'rejected'
+                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white border border-gray-700'
+            }`}
+          >
+            Rejected
+          </button>
+        </div>
       </div>
 
       {/* Deals Table */}
-      <div className="bg-[#0f1419] border border-white/[0.06] rounded-xl overflow-hidden">
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
         <table className="w-full">
-          <thead className="bg-[#0a0e13] border-b border-white/[0.06]">
+          <thead className="bg-gray-900/50 border-b border-gray-800">
             <tr>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Deal</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Player</th>
               <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Platform Info</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Requested</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Notes</th>
-              <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Requested</th>
+              <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Notes</th>
+              <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.06]">
+          <tbody className="divide-y divide-gray-800">
             {loading ? (
               <tr>
                 <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
@@ -1342,10 +1901,10 @@ function DealRequestsContent() {
               </tr>
             ) : (
               deals.map((deal) => (
-                <tr key={deal.id} className="hover:bg-white/[0.02] transition-colors">
+                <tr key={deal.id} className="hover:bg-gray-900/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={deal.deal_logo} alt={deal.deal_name} className="w-10 h-10 rounded-lg object-contain bg-white/5 p-1" />
+                      <img src={deal.deal_logo} alt={deal.deal_name} className="w-10 h-10 rounded-lg object-contain bg-gray-800/50 p-1" />
                       <span className="text-white font-medium">{deal.deal_name}</span>
                     </div>
                   </td>
@@ -1361,8 +1920,8 @@ function DealRequestsContent() {
                       <p className="text-sm text-gray-400">{deal.platform_email}</p>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <p className="text-white text-sm">
+                  <td className="px-6 py-4 text-center">
+                    <p className="text-gray-300 text-sm">
                       {new Date(deal.requested_at).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'short',
@@ -1370,21 +1929,21 @@ function DealRequestsContent() {
                       })}
                     </p>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      deal.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                      deal.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500' :
-                      deal.status === 'rejected' ? 'bg-red-500/10 text-red-500' :
-                      'bg-blue-500/10 text-blue-500'
+                  <td className="px-6 py-4 text-center">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                      deal.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
+                      deal.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                      deal.status === 'rejected' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                      'bg-blue-500/10 text-blue-500 border-blue-500/20'
                     }`}>
                       {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     {(deal.rejection_reason || deal.admin_notes) ? (
                       <button
                         onClick={() => setViewingNotes(deal)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-[#0f1419] hover:bg-gray-800 text-gray-300 hover:text-white text-sm font-medium rounded-lg transition-colors border border-white/[0.06]"
+                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors inline-flex items-center gap-2"
                       >
                         <svg
                           className="w-4 h-4"
@@ -1408,26 +1967,30 @@ function DealRequestsContent() {
                         View
                       </button>
                     ) : (
-                      <span className="text-sm text-gray-600">—</span>
+                      <span className="text-sm text-gray-500">—</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    {deal.status === 'pending' && (
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleApprove(deal.id)}
-                          className="px-3 py-1.5 bg-[#10b981] hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => setRejectingDeal(deal)}
-                          className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-2">
+                      {deal.status === 'pending' ? (
+                        <>
+                          <button
+                            onClick={() => handleApprove(deal.id)}
+                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => setRejectingDeal(deal)}
+                            className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-500 hover:text-red-400 text-sm font-medium rounded-lg transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-sm text-gray-500">—</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
