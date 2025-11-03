@@ -17,7 +17,8 @@ import {
   TrendingDown,
   Globe,
   LayoutGrid,
-  FileCheck
+  FileCheck,
+  RefreshCw
 } from 'lucide-react';
 import { getDeals } from '@/lib/supabase/deals';
 import RejectDealModal from '@/components/admin/RejectDealModal';
@@ -260,6 +261,17 @@ export default function AdminDashboard() {
   });
   const [loadingPlayers, setLoadingPlayers] = useState(true);
 
+  // Dashboard Tab - Real Data States
+  const [dashboardStats, setDashboardStats] = useState({
+    totalPlayers: 0,
+    activePlayers: 0,
+    monthlySignUps: 0,
+    monthlyDealsApplications: 0
+  });
+  const [dealsData, setDealsData] = useState<any[]>([]);
+  const [loadingDashboard, setLoadingDashboard] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Load deals count
   useEffect(() => {
     async function loadDealsCount() {
@@ -422,6 +434,257 @@ export default function AdminDashboard() {
     loadPlayersData();
   }, [activeTab]);
 
+  // Load Dashboard Data
+  useEffect(() => {
+    async function loadDashboardData() {
+      if (activeTab !== 'dashboard') return;
+      
+      console.log('🔄 [Dashboard] Carregando dados da dashboard...');
+      setLoadingDashboard(true);
+
+      try {
+        // 1. TOTAL PLAYERS
+        const { count: totalPlayers } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_type', 'player');
+
+        console.log('✅ [Dashboard] Total Players:', totalPlayers);
+
+        // 2. ACTIVE PLAYERS (status='approved')
+        const { data: activeDeals } = await supabase
+          .from('player_deals')
+          .select('user_id')
+          .eq('status', 'approved');
+        
+        const activePlayers = new Set(activeDeals?.map(d => d.user_id)).size;
+        console.log('✅ [Dashboard] Active Players:', activePlayers);
+
+        // 3. MONTHLY SIGN-UPS (criados este mês)
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const { count: monthlySignUps } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_type', 'player')
+          .gte('created_at', startOfMonth);
+
+        console.log('✅ [Dashboard] Monthly Sign-Ups:', monthlySignUps);
+
+        // 4. MONTHLY DEALS APPLICATIONS (requested_at este mês)
+        const { count: monthlyDealsApplications } = await supabase
+          .from('player_deals')
+          .select('*', { count: 'exact', head: true })
+          .gte('requested_at', startOfMonth);
+
+        console.log('✅ [Dashboard] Monthly Deals Applications:', monthlyDealsApplications);
+
+        // Atualizar stats
+        setDashboardStats({
+          totalPlayers: totalPlayers || 0,
+          activePlayers,
+          monthlySignUps: monthlySignUps || 0,
+          monthlyDealsApplications: monthlyDealsApplications || 0
+        });
+
+        // 5. BUSCAR TODOS OS DEALS
+        const { data: allDeals } = await supabase
+          .from('deals')
+          .select('id, name, logo_url, slug')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        console.log('✅ [Dashboard] Deals encontrados:', allDeals?.length);
+
+        // 6. PARA CADA DEAL, CALCULAR MÉTRICAS
+        const dealsWithMetrics = await Promise.all(
+          (allDeals || []).map(async (deal) => {
+            // Total players do deal
+            const { data: dealPlayers } = await supabase
+              .from('player_deals')
+              .select('id, user_id, status')
+              .eq('deal_id', deal.id);
+
+            const totalPlayers = dealPlayers?.length || 0;
+            
+            // Active players (status='approved')
+            const activePlayers = dealPlayers?.filter(d => d.status === 'approved').length || 0;
+            
+            // Inactive players (outros status)
+            const inactivePlayers = totalPlayers - activePlayers;
+
+            // Buscar earnings do mês atual para este deal
+            const dealPlayerIds = dealPlayers?.map(d => d.id) || [];
+            
+            let monthlyGrossRake = 0;
+            let monthlyNetRake = 0;
+
+            if (dealPlayerIds.length > 0) {
+              const currentMonth = new Date().getMonth() + 1;
+              const currentYear = new Date().getFullYear();
+
+              const { data: earnings } = await supabase
+                .from('player_earnings')
+                .select('gross_rake, net_rake')
+                .in('player_deal_id', dealPlayerIds)
+                .eq('period_month', currentMonth)
+                .eq('period_year', currentYear);
+
+              monthlyGrossRake = earnings?.reduce((sum, e) => sum + (Number(e.gross_rake) || 0), 0) || 0;
+              monthlyNetRake = earnings?.reduce((sum, e) => sum + (Number(e.net_rake) || 0), 0) || 0;
+            }
+
+            // Avg/Player
+            const avgPerPlayer = totalPlayers > 0 ? monthlyGrossRake / totalPlayers : 0;
+
+            // Growth % MOCKADO (entre +5% e +20%)
+            const mockGrowth = Math.floor(Math.random() * 16) + 5; // 5 a 20
+
+            return {
+              id: deal.id,
+              name: deal.name,
+              logo: deal.logo_url,
+              slug: deal.slug,
+              totalPlayers,
+              activePlayers,
+              inactivePlayers,
+              monthlyGrossRake,
+              monthlyNetRake,
+              avgPerPlayer,
+              growthPercentage: mockGrowth,
+              isMocked: true // Flag para indicar que o growth é mockado
+            };
+          })
+        );
+
+        console.log('✅ [Dashboard] Deals processados:', dealsWithMetrics.length);
+        setDealsData(dealsWithMetrics);
+        setLoadingDashboard(false);
+
+      } catch (error) {
+        console.error('❌ [Dashboard] Erro ao carregar dados:', error);
+        setLoadingDashboard(false);
+      }
+    }
+
+    if (activeTab === 'dashboard') {
+      loadDashboardData();
+    }
+  }, [activeTab]);
+
+  // Function to manually refresh Dashboard data
+  const handleRefreshDashboard = async () => {
+    if (activeTab !== 'dashboard' || isRefreshing) return;
+    
+    setIsRefreshing(true);
+    console.log('🔄 [Dashboard] Atualizando dados manualmente...');
+    
+    try {
+      // 1. TOTAL PLAYERS
+      const { count: totalPlayers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_type', 'player');
+
+      // 2. ACTIVE PLAYERS
+      const { data: activeDeals } = await supabase
+        .from('player_deals')
+        .select('user_id')
+        .eq('status', 'approved');
+      
+      const activePlayers = new Set(activeDeals?.map(d => d.user_id)).size;
+
+      // 3. MONTHLY SIGN-UPS
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const { count: monthlySignUps } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_type', 'player')
+        .gte('created_at', startOfMonth);
+
+      // 4. MONTHLY DEALS APPLICATIONS
+      const { count: monthlyDealsApplications } = await supabase
+        .from('player_deals')
+        .select('*', { count: 'exact', head: true })
+        .gte('requested_at', startOfMonth);
+
+      // Atualizar stats
+      setDashboardStats({
+        totalPlayers: totalPlayers || 0,
+        activePlayers,
+        monthlySignUps: monthlySignUps || 0,
+        monthlyDealsApplications: monthlyDealsApplications || 0
+      });
+
+      // 5. BUSCAR TODOS OS DEALS
+      const { data: allDeals } = await supabase
+        .from('deals')
+        .select('id, name, logo_url, slug')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      // 6. PARA CADA DEAL, CALCULAR MÉTRICAS
+      const dealsWithMetrics = await Promise.all(
+        (allDeals || []).map(async (deal) => {
+          const { data: dealPlayers } = await supabase
+            .from('player_deals')
+            .select('id, user_id, status')
+            .eq('deal_id', deal.id);
+
+          const totalPlayers = dealPlayers?.length || 0;
+          const activePlayers = dealPlayers?.filter(d => d.status === 'approved').length || 0;
+          const inactivePlayers = totalPlayers - activePlayers;
+
+          const dealPlayerIds = dealPlayers?.map(d => d.id) || [];
+          let monthlyGrossRake = 0;
+          let monthlyNetRake = 0;
+
+          if (dealPlayerIds.length > 0) {
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+
+            const { data: earnings } = await supabase
+              .from('player_earnings')
+              .select('gross_rake, net_rake')
+              .in('player_deal_id', dealPlayerIds)
+              .eq('period_month', currentMonth)
+              .eq('period_year', currentYear);
+
+            monthlyGrossRake = earnings?.reduce((sum, e) => sum + (Number(e.gross_rake) || 0), 0) || 0;
+            monthlyNetRake = earnings?.reduce((sum, e) => sum + (Number(e.net_rake) || 0), 0) || 0;
+          }
+
+          const avgPerPlayer = totalPlayers > 0 ? monthlyGrossRake / totalPlayers : 0;
+          const mockGrowth = Math.floor(Math.random() * 16) + 5;
+
+          return {
+            id: deal.id,
+            name: deal.name,
+            logo: deal.logo_url,
+            slug: deal.slug,
+            totalPlayers,
+            activePlayers,
+            inactivePlayers,
+            monthlyGrossRake,
+            monthlyNetRake,
+            avgPerPlayer,
+            growthPercentage: mockGrowth,
+            isMocked: true
+          };
+        })
+      );
+
+      setDealsData(dealsWithMetrics);
+      console.log('✅ [Dashboard] Dados atualizados com sucesso!');
+      
+    } catch (error) {
+      console.error('❌ [Dashboard] Erro ao atualizar dados:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   // Check if any filters are active
   const hasActiveFilters = searchQuery !== '' || statusFilter !== '' || sortFilter !== 'joined-desc';
 
@@ -453,7 +716,7 @@ export default function AdminDashboard() {
     { 
       label: 'Total Players',
       subtitle: 'Total players registered on the platform',
-      value: '1,450', 
+      value: loadingDashboard ? '...' : dashboardStats.totalPlayers.toLocaleString(), 
       icon: Users,
       color: 'from-blue-500 to-blue-600',
       iconBg: 'bg-gradient-to-br from-blue-500 to-blue-600',
@@ -462,7 +725,7 @@ export default function AdminDashboard() {
     { 
       label: 'Active Players',
       subtitle: 'Active players across all networks',
-      value: '1,096', 
+      value: loadingDashboard ? '...' : dashboardStats.activePlayers.toLocaleString(), 
       icon: Users,
       color: 'from-green-500 to-green-600',
       iconBg: 'bg-gradient-to-br from-green-500 to-green-600',
@@ -471,7 +734,7 @@ export default function AdminDashboard() {
     { 
       label: 'Monthly Sign Ups',
       subtitle: 'New registrations this month',
-      value: '127', 
+      value: loadingDashboard ? '...' : dashboardStats.monthlySignUps.toLocaleString(), 
       icon: Users,
       color: 'from-orange-500 to-orange-600',
       iconBg: 'bg-gradient-to-br from-orange-500 to-orange-600',
@@ -480,7 +743,7 @@ export default function AdminDashboard() {
     { 
       label: 'Monthly Deals Applications',
       subtitle: 'Deal applications received this month',
-      value: '284', 
+      value: loadingDashboard ? '...' : dashboardStats.monthlyDealsApplications.toLocaleString(), 
       icon: FileText,
       color: 'from-purple-500 to-purple-600',
       iconBg: 'bg-gradient-to-br from-purple-500 to-purple-600',
@@ -618,9 +881,34 @@ export default function AdminDashboard() {
               <>
             {/* Page Title */}
             <div className="mb-8">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                    <h1 className="text-3xl font-bold text-white">General Dashboard</h1>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+                      <h1 className="text-3xl font-bold text-white">General Dashboard</h1>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {/* Live Data Badge */}
+                      <div className="flex items-center gap-2 px-4 py-2.5 bg-green-500/10 border border-green-500/20 rounded-xl">
+                        <div className="relative flex items-center justify-center w-2.5 h-2.5">
+                          <div className="absolute w-2.5 h-2.5 bg-green-500 rounded-full animate-ping opacity-75"></div>
+                          <div className="relative w-2.5 h-2.5 bg-green-500 rounded-full"></div>
+                        </div>
+                        <span className="text-sm font-medium text-green-500">Live Data</span>
+                      </div>
+                      {/* Refresh Button */}
+                      <button
+                        onClick={handleRefreshDashboard}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+                      >
+                        <RefreshCw 
+                          className={`w-4 h-4 text-gray-400 group-hover:text-white transition-colors ${isRefreshing ? 'animate-spin' : ''}`}
+                        />
+                        <span className="text-sm font-medium text-gray-400 group-hover:text-white transition-colors">
+                          {isRefreshing ? 'Updating...' : 'Refresh'}
+                        </span>
+                      </button>
+                    </div>
                   </div>
                   <p className="text-base text-gray-400 ml-6">Overview of Universal Poker affiliate network metrics and operations</p>
             </div>
@@ -643,14 +931,6 @@ export default function AdminDashboard() {
                       <div className={`w-14 h-14 rounded-xl ${stat.iconBg} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
                         <stat.icon className="w-7 h-7 text-white" />
                       </div>
-                      {/* Live indicator with pulsing dot */}
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-green-500/10 border border-green-500/20 rounded-md">
-                        <div className="relative flex items-center justify-center w-2 h-2">
-                          <div className="absolute w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75"></div>
-                          <div className="relative w-2 h-2 bg-green-500 rounded-full"></div>
-                        </div>
-                        <span className="text-xs font-semibold text-green-500">Live</span>
-                    </div>
                   </div>
                     <div className="text-3xl font-bold text-white mb-2 tracking-tight">{stat.value}</div>
                     <div className="text-sm font-semibold text-gray-300 mb-1">{stat.label}</div>
@@ -667,124 +947,124 @@ export default function AdminDashboard() {
 
             {/* Network Management Section */}
             <div>
-               <div className="flex items-center justify-between mb-6">
-                 <div className="flex items-center gap-3">
-                   <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                   <h2 className="text-2xl font-bold text-white">Network Management</h2>
-                 </div>
-                 <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gray-900/50 border border-gray-800 rounded-lg">
-                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                   <span className="text-xs font-medium text-gray-400">Real-time data</span>
-                 </div>
+               <div className="flex items-center gap-3 mb-6">
+                 <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+                 <h2 className="text-2xl font-bold text-white">Network Management</h2>
                </div>
-               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {platformsData.map((platform) => (
-                 <div
-                   key={platform.id}
-                     className="relative bg-[#0f1419] border border-white/[0.06] rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.4)] hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.6)] transition-all duration-300"
-                   >
-                     {/* Header with Logo */}
-                     <div className="relative flex items-center justify-center h-20 mb-4">
-                       {/* Logo centralizada */}
-                       <img 
-                         src={platform.logo} 
-                         alt={`${platform.name} Logo`} 
-                         className="max-h-14 max-w-[80%] object-contain drop-shadow-lg filter brightness-110"
-                       />
-                       {/* Live badge no canto superior direito */}
-                       <div className="absolute top-0 right-0 bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981] text-[10px] font-semibold px-2.5 py-1 rounded-xl uppercase tracking-wide">
-                         Live
+              
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               {loadingDashboard ? (
+                 <div className="col-span-3 text-center py-12 text-gray-400">
+                   Loading deals data...
+                 </div>
+               ) : dealsData.length === 0 ? (
+                 <div className="col-span-3 text-center py-12 text-gray-400">
+                   No deals found
+                 </div>
+               ) : (
+                 dealsData.map((deal) => (
+                  <div
+                    key={deal.id}
+                    className="relative bg-[#0f1419] border border-white/[0.06] rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.4)] hover:bg-[#161b22] hover:border-white/10 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.6)] transition-all duration-300"
+                  >
+                    {/* Header with Logo */}
+                    <div className="relative flex items-center justify-center h-20 mb-4">
+                      {/* Logo centralizada */}
+                      <img 
+                        src={deal.logo} 
+                        alt={`${deal.name} Logo`} 
+                        className="max-h-14 max-w-[80%] object-contain drop-shadow-lg filter brightness-110"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+
+                    {/* Total Players */}
+                    <div className="text-center my-6">
+                      <div className="text-[56px] font-bold text-white leading-none">
+                        {deal.totalPlayers}
+                      </div>
+                      <div className="text-[11px] text-gray-500 uppercase tracking-widest mt-2">Total Players</div>
+                    </div>
+
+                   {/* Player Breakdown */}
+                   <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4 mb-5">
+                     {/* Active Players */}
+                     <div className="flex items-center mb-3">
+                       <div className="flex items-center gap-3 min-w-[140px]">
+                         <span className="text-[13px] text-gray-400">Active</span>
+                         <span className="text-lg font-semibold text-white">{deal.activePlayers}</span>
+                       </div>
+                       <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden ml-4">
+                         <div 
+                           className="h-full bg-[#10b981] rounded-full transition-all duration-500"
+                           style={{ 
+                             width: `${deal.totalPlayers > 0 ? (deal.activePlayers / deal.totalPlayers) * 100 : 0}%`,
+                             boxShadow: '0 0 6px rgba(16, 185, 129, 0.2)'
+                           }}
+                         ></div>
                        </div>
                      </div>
 
-                     {/* Total Players */}
-                     <div className="text-center my-6">
-                       <div className="text-[56px] font-bold text-white leading-none">
-                         {platform.totalPlayers}
+                     {/* Inactive Players */}
+                     <div className="flex items-center">
+                       <div className="flex items-center gap-3 min-w-[140px]">
+                         <span className="text-[13px] text-gray-400">Inactive</span>
+                         <span className="text-lg font-semibold text-white">{deal.inactivePlayers}</span>
                        </div>
-                       <div className="text-[11px] text-gray-500 uppercase tracking-widest mt-2">Total Players</div>
-                     </div>
-
-                     {/* Player Breakdown */}
-                     <div className="bg-white/[0.02] border border-white/[0.04] rounded-xl p-4 mb-5">
-                       {/* Standard Players */}
-                       <div className="flex items-center mb-3">
-                         <div className="flex items-center gap-3 min-w-[140px]">
-                           <span className="text-[13px] text-gray-400">Standard</span>
-                           <span className="text-lg font-semibold text-white">{platform.standardPlayers}</span>
-                         </div>
-                         <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden ml-4">
-                           <div 
-                             className="h-full bg-[#10b981] rounded-full transition-all duration-500"
-                             style={{ 
-                               width: `${(platform.standardPlayers / platform.totalPlayers) * 100}%`,
-                               boxShadow: '0 0 6px rgba(16, 185, 129, 0.2)'
-                             }}
-                           ></div>
-                         </div>
+                       <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden ml-4">
+                         <div 
+                           className="h-full bg-[#f97316] rounded-full transition-all duration-500"
+                           style={{ 
+                             width: `${deal.totalPlayers > 0 ? (deal.inactivePlayers / deal.totalPlayers) * 100 : 0}%`,
+                             boxShadow: '0 0 6px rgba(249, 115, 22, 0.2)'
+                           }}
+                         ></div>
                        </div>
-
-                       {/* Exclusive Players */}
-                       <div className="flex items-center">
-                         <div className="flex items-center gap-3 min-w-[140px]">
-                           <span className="text-[13px] text-gray-400">Exclusive</span>
-                           <span className="text-lg font-semibold text-white">{platform.exclusivePlayers}</span>
-                         </div>
-                         <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden ml-4">
-                           <div 
-                             className="h-full bg-[#f97316] rounded-full transition-all duration-500"
-                             style={{ 
-                               width: `${(platform.exclusivePlayers / platform.totalPlayers) * 100}%`,
-                               boxShadow: '0 0 6px rgba(249, 115, 22, 0.2)'
-                             }}
-                           ></div>
-                         </div>
-                       </div>
-                     </div>
-
-                     {/* Financial Metrics */}
-                     <div className="flex flex-col gap-3 mb-5">
-                       {/* Monthly Rake */}
-                       <div className="flex justify-between items-center">
-                         <span className="text-[11px] text-gray-500 uppercase tracking-wide">Monthly Rake</span>
-                         <span className="text-2xl font-semibold text-[#10b981]" style={{ textShadow: '0 0 10px rgba(16, 185, 129, 0.2)' }}>
-                           {platform.monthlyRake}
-                         </span>
-                       </div>
-
-                       {/* Commission */}
-                       <div className="flex justify-between items-center">
-                         <span className="text-[11px] text-gray-500 uppercase tracking-wide">Commission</span>
-                         <span className="text-xl font-semibold text-[#f97316]" style={{ textShadow: '0 0 10px rgba(249, 115, 22, 0.2)' }}>
-                           {platform.commissionDue}
-                         </span>
-                       </div>
-
-                       {/* Avg/Player */}
-                       <div className="flex justify-between items-center">
-                         <span className="text-[11px] text-gray-500 uppercase tracking-wide">Avg/Player</span>
-                         <span className="text-base font-semibold text-gray-400">
-                           {platform.avgPerPlayer}
-                         </span>
-                       </div>
-                     </div>
-
-                     {/* Trend Footer */}
-                     <div className="flex items-center gap-2 pt-4 border-t border-white/[0.05]">
-                       {platform.trendPositive ? (
-                         <TrendingUp className="w-4 h-4 text-[#10b981]" />
-                       ) : (
-                         <TrendingDown className="w-4 h-4 text-[#ef4444]" />
-                       )}
-                       <span className={`text-[13px] font-semibold ${platform.trendPositive ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                         {platform.trend}
-                       </span>
-                       <span className="text-xs text-gray-500">vs last month</span>
                      </div>
                    </div>
-                 ))}
-               </div>
+
+                   {/* Financial Metrics */}
+                   <div className="flex flex-col gap-3 mb-5">
+                     {/* Monthly Gross Rake */}
+                     <div className="flex justify-between items-center">
+                       <span className="text-[11px] text-gray-500 uppercase tracking-wide">Monthly Gross Rake</span>
+                       <span className="text-2xl font-semibold text-[#10b981]" style={{ textShadow: '0 0 10px rgba(16, 185, 129, 0.2)' }}>
+                         ${deal.monthlyGrossRake.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                       </span>
+                     </div>
+
+                     {/* Monthly Net Rake */}
+                     <div className="flex justify-between items-center">
+                       <span className="text-[11px] text-gray-500 uppercase tracking-wide">Monthly Net Rake</span>
+                       <span className="text-xl font-semibold text-[#f97316]" style={{ textShadow: '0 0 10px rgba(249, 115, 22, 0.2)' }}>
+                         ${deal.monthlyNetRake.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                       </span>
+                     </div>
+
+                     {/* Avg/Player */}
+                     <div className="flex justify-between items-center">
+                       <span className="text-[11px] text-gray-500 uppercase tracking-wide">Avg/Player</span>
+                       <span className="text-base font-semibold text-gray-400">
+                         ${deal.avgPerPlayer.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                       </span>
+                     </div>
+                   </div>
+
+                    {/* Trend Footer */}
+                    <div className="flex items-center gap-2 pt-4 border-t border-white/[0.05]">
+                      <TrendingUp className="w-4 h-4 text-[#10b981]" />
+                      <span className="text-[13px] font-semibold text-[#10b981]">
+                        +{deal.growthPercentage}%
+                      </span>
+                      <span className="text-xs text-gray-500">vs last month</span>
+                      <span className="text-[10px] text-gray-600 italic">(mockado)</span>
+                    </div>
+                  </div>
+                ))
+              )}
+              </div>
              </div>
               </>
             )}
@@ -1505,10 +1785,6 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">7 Sections</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
-                        </div>
                       </div>
                     </div>
                     
@@ -1543,10 +1819,6 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">{dealsCount} Deals</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
                         </div>
                       </div>
                     </div>
@@ -1583,10 +1855,6 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">0 Articles</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
-                        </div>
                       </div>
                     </div>
                     
@@ -1619,10 +1887,6 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">6 Members</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
                         </div>
                       </div>
                     </div>
@@ -1659,10 +1923,6 @@ export default function AdminDashboard() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">3 Links</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
-                        </div>
                       </div>
                     </div>
                     
@@ -1695,10 +1955,6 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-4 pt-4 border-t border-white/[0.06]">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-500">2 Sections</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                          <span className="text-xs text-gray-500">Live</span>
                         </div>
                       </div>
                     </div>
