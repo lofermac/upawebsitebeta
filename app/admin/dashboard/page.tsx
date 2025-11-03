@@ -23,6 +23,7 @@ import { getDeals } from '@/lib/supabase/deals';
 import RejectDealModal from '@/components/admin/RejectDealModal';
 import ViewNotesModal from '@/components/admin/ViewNotesModal';
 import ReactCountryFlag from 'react-country-flag';
+import { supabase } from '@/lib/supabase/client';
 
 // Interface for Player Profile Modal
 interface PlayerProfile {
@@ -30,16 +31,20 @@ interface PlayerProfile {
   email: string;
   flag: string;
   country: string;
-  activeDeals: number;
+  totalDeals: number;
   totalRake: string;
   ytdRake: string;
   joined: string;
   lastPayment: string;
   status: string;
+  telegram?: string;
+  whatsapp?: string;
+  discord?: string;
   deals: Array<{
     name: string;
     username: string;
     status: string;
+    logo?: string;
   }>;
 }
 
@@ -188,6 +193,16 @@ export default function AdminDashboard() {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  // Players Tab - Real Data States
+  const [playersData, setPlayersData] = useState<any[]>([]);
+  const [playersStats, setPlayersStats] = useState({
+    totalPlayers: 0,
+    activePlayers: 0,
+    newThisMonth: 0,
+    newToday: 0,
+  });
+  const [loadingPlayers, setLoadingPlayers] = useState(true);
+
   // Load deals count
   useEffect(() => {
     async function loadDealsCount() {
@@ -196,6 +211,159 @@ export default function AdminDashboard() {
     }
     loadDealsCount();
   }, []);
+
+  // Load Players Data
+  useEffect(() => {
+    async function loadPlayersData() {
+      if (activeTab !== 'players') return;
+      
+      setLoadingPlayers(true);
+
+      try {
+        // Buscar todos os players
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, email, full_name, country, created_at, discord_id, whatsapp, telegram')
+          .eq('user_type', 'player')
+          .order('created_at', { ascending: false });
+
+        if (profilesError) {
+          console.error('❌ Erro ao buscar profiles:', profilesError);
+          setLoadingPlayers(false);
+          return;
+        }
+
+        console.log('✅ Profiles carregados:', profiles?.length);
+
+        // Buscar stats
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+        const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+        // New This Month
+        const { count: newThisMonth } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_type', 'player')
+          .gte('created_at', startOfMonth);
+
+        // New Today
+        const { count: newToday } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_type', 'player')
+          .gte('created_at', startOfToday);
+
+        // Active Players (com earnings nos últimos 90 dias)
+        const { data: recentEarnings } = await supabase
+          .from('player_earnings')
+          .select('player_deals!inner(user_id)')
+          .gte('payment_date', ninetyDaysAgo);
+
+        const activePlayerIds = new Set(
+          recentEarnings?.map((e: any) => e.player_deals?.user_id).filter(Boolean) || []
+        );
+
+        setPlayersStats({
+          totalPlayers: profiles?.length || 0,
+          activePlayers: activePlayerIds.size,
+          newThisMonth: newThisMonth || 0,
+          newToday: newToday || 0,
+        });
+
+        // Para cada player, buscar deals e earnings
+        const playersWithData = await Promise.all(
+          (profiles || []).map(async (player: any) => {
+            // Buscar deals do player
+            const { data: playerDeals } = await supabase
+              .from('player_deals')
+              .select(`
+                id,
+                deal_id,
+                status,
+                platform_username,
+                platform_email,
+                updated_at,
+                deals (
+                  name,
+                  logo_url,
+                  slug
+                )
+              `)
+              .eq('user_id', player.id);
+
+            // Contar TODOS os deals (independente do status)
+            const totalDeals = playerDeals?.length || 0;
+
+            // Buscar earnings
+            const dealIds = playerDeals?.map((d: any) => d.id) || [];
+            let totalRake = 0;
+            let ytdRake = 0;
+            let lastPayment = null;
+
+            if (dealIds.length > 0) {
+              const { data: earnings } = await supabase
+                .from('player_earnings')
+                .select('rakeback_amount, payment_date, period_year')
+                .in('player_deal_id', dealIds)
+                .eq('payment_status', 'paid');
+
+              if (earnings) {
+                totalRake = earnings.reduce((sum: number, e: any) => sum + (Number(e.rakeback_amount) || 0), 0);
+                const currentYear = new Date().getFullYear();
+                ytdRake = earnings
+                  .filter((e: any) => e.period_year === currentYear)
+                  .reduce((sum: number, e: any) => sum + (Number(e.rakeback_amount) || 0), 0);
+
+                // Último pagamento
+                const payments = earnings
+                  .filter((e: any) => e.payment_date)
+                  .map((e: any) => new Date(e.payment_date))
+                  .sort((a: Date, b: Date) => b.getTime() - a.getTime());
+
+                lastPayment = payments[0] || null;
+              }
+            }
+
+            // Status: Active se teve payment nos últimos 90 dias
+            const isActive = activePlayerIds.has(player.id);
+
+            return {
+              id: player.id,
+              name: player.full_name || 'No Name',
+              email: player.email,
+              country: player.country || 'US',
+              discord: player.discord_id,
+              whatsapp: player.whatsapp,
+              telegram: player.telegram,
+              totalDeals,
+              totalRake,
+              ytdRake,
+              joined: player.created_at,
+              lastPayment: lastPayment ? lastPayment.toISOString() : null,
+              status: isActive ? 'Active' : 'Inactive',
+              deals: playerDeals?.map((d: any) => ({
+                name: d.deals?.name || 'Unknown',
+                username: d.platform_username,
+                status: d.status,
+                logo: d.deals?.logo_url || ''
+              })) || []
+            };
+          })
+        );
+
+        console.log('✅ Players processados:', playersWithData.length);
+        setPlayersData(playersWithData);
+      } catch (error) {
+        console.error('❌ Erro ao carregar players:', error);
+      } finally {
+        setLoadingPlayers(false);
+      }
+    }
+
+    loadPlayersData();
+  }, [activeTab]);
 
   // Check if any filters are active
   const hasActiveFilters = searchQuery !== '' || statusFilter !== '' || sortFilter !== 'joined-desc';
@@ -592,7 +760,7 @@ export default function AdminDashboard() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-white">1,303</p>
+                        <p className="text-2xl font-bold text-white">{loadingPlayers ? '...' : playersStats.totalPlayers.toLocaleString()}</p>
                         <p className="text-sm text-gray-400">Total Players</p>
                       </div>
                     </div>
@@ -607,7 +775,7 @@ export default function AdminDashboard() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-emerald-500">1,096</p>
+                        <p className="text-2xl font-bold text-emerald-500">{loadingPlayers ? '...' : playersStats.activePlayers.toLocaleString()}</p>
                         <p className="text-sm text-gray-400">Active Players</p>
                       </div>
                     </div>
@@ -616,29 +784,29 @@ export default function AdminDashboard() {
                   {/* Card 3: New This Month */}
                   <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-12 h-12 rounded-lg bg-blue-600/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-blue-500">37</p>
+                        <p className="text-2xl font-bold text-blue-600">{loadingPlayers ? '...' : playersStats.newThisMonth.toLocaleString()}</p>
                         <p className="text-sm text-gray-400">New This Month</p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 4: Total Rake */}
+                  {/* Card 4: New Today */}
                   <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <div className="w-12 h-12 rounded-lg bg-blue-400/10 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-orange-500">$248,790</p>
-                        <p className="text-sm text-gray-400">Total Rake</p>
+                        <p className="text-2xl font-bold text-blue-400">{loadingPlayers ? '...' : playersStats.newToday.toLocaleString()}</p>
+                        <p className="text-sm text-gray-400">New Today</p>
                       </div>
                     </div>
                   </div>
@@ -713,7 +881,7 @@ export default function AdminDashboard() {
                           Player
                         </th>
                         <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
-                          Active Deals
+                          Deals
                         </th>
                         <th className="px-6 py-4 text-center text-xs font-medium text-gray-400 uppercase tracking-wider">
                           Total Rake
@@ -730,312 +898,103 @@ export default function AdminDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
-                      {/* Row 1 - Active Player - Brazil Flag */}
-                      <tr className="hover:bg-gray-900/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
-                              <ReactCountryFlag 
-                                countryCode="BR" 
-                                svg 
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">Leonardo</p>
-                              <p className="text-sm text-gray-400">leo@email.com</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>2</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-emerald-500">$4,250</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm text-gray-300">Jan 15, 2025</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                            Active
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => handleViewPlayer({
-                              name: 'Leonardo',
-                              email: 'leo@email.com',
-                              flag: 'BR',
-                              country: 'Brazil',
-                              activeDeals: 2,
-                              totalRake: '$4,250',
-                              ytdRake: '$1,850',
-                              joined: 'Jan 15, 2025',
-                              lastPayment: 'Nov 1, 2025',
-                              status: 'Active',
-                              deals: [
-                                { name: 'GGPoker', username: 'ggpokerteste', status: 'Approved' },
-                                { name: '888poker', username: 'testplayer888', status: 'Active' }
-                              ]
-                            })}
-                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-
-                      {/* Row 2 - Inactive Player */}
-                      <tr className="hover:bg-gray-900/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
-                              <ReactCountryFlag 
-                                countryCode="US" 
-                                svg 
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">John Mitchell</p>
-                              <p className="text-sm text-gray-400">john.mitchell@email.com</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>1</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-emerald-500">$1,890</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm text-gray-300">Dec 28, 2024</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
-                            Inactive
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => handleViewPlayer({
-                              name: 'John Mitchell',
-                              email: 'john.mitchell@email.com',
-                              flag: 'US',
-                              country: 'United States',
-                              activeDeals: 1,
-                              totalRake: '$1,890',
-                              ytdRake: '$450',
-                              joined: 'Dec 28, 2024',
-                              lastPayment: 'Aug 15, 2025',
-                              status: 'Inactive',
-                              deals: [
-                                { name: 'GGPoker', username: 'johnmitchell123', status: 'Active' }
-                              ]
-                            })}
-                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-
-                      {/* Row 3 - Active Player */}
-                      <tr className="hover:bg-gray-900/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
-                              <ReactCountryFlag 
-                                countryCode="CA" 
-                                svg 
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">Sarah Chen</p>
-                              <p className="text-sm text-gray-400">sarah.chen@email.com</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>3</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-emerald-500">$3,890</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm text-gray-300">Jan 10, 2025</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                            Active
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => handleViewPlayer({
-                              name: 'Sarah Chen',
-                              email: 'sarah.chen@email.com',
-                              flag: 'CA',
-                              country: 'Canada',
-                              activeDeals: 3,
-                              totalRake: '$3,890',
-                              ytdRake: '$2,100',
-                              joined: 'Jan 10, 2025',
-                              lastPayment: 'Nov 1, 2025',
-                              status: 'Active',
-                              deals: [
-                                { name: 'PartyPoker', username: 'sarahchen', status: 'Active' },
-                                { name: '888poker', username: 'schengaming', status: 'Active' },
-                                { name: 'WPT Global', username: 'sarahc', status: 'Approved' }
-                              ]
-                            })}
-                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-
-                      {/* Row 4 - Active Player */}
-                      <tr className="hover:bg-gray-900/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
-                              <ReactCountryFlag 
-                                countryCode="GB" 
-                                svg 
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">Emily Watson</p>
-                              <p className="text-sm text-gray-400">emily.w@email.com</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>1</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-emerald-500">$2,150</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm text-gray-300">Jan 8, 2025</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                            Active
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => handleViewPlayer({
-                              name: 'Emily Watson',
-                              email: 'emily.w@email.com',
-                              flag: 'GB',
-                              country: 'United Kingdom',
-                              activeDeals: 1,
-                              totalRake: '$2,150',
-                              ytdRake: '$1,200',
-                              joined: 'Jan 8, 2025',
-                              lastPayment: 'Oct 28, 2025',
-                              status: 'Active',
-                              deals: [
-                                { name: '888poker', username: 'emilyw888', status: 'Active' }
-                              ]
-                            })}
-                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-
-                      {/* Row 5 - Inactive Player */}
-                      <tr className="hover:bg-gray-900/30 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
-                              <ReactCountryFlag 
-                                countryCode="DE" 
-                                svg 
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <p className="font-medium text-white">David Kim</p>
-                              <p className="text-sm text-gray-400">david.kim@email.com</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>2</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-emerald-500">$5,320</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm text-gray-300">Dec 28, 2024</span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500 border border-red-500/20">
-                            Inactive
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <button 
-                            onClick={() => handleViewPlayer({
-                              name: 'David Kim',
-                              email: 'david.kim@email.com',
-                              flag: 'DE',
-                              country: 'Germany',
-                              activeDeals: 2,
-                              totalRake: '$5,320',
-                              ytdRake: '$900',
-                              joined: 'Dec 28, 2024',
-                              lastPayment: 'Jul 20, 2025',
-                              status: 'Inactive',
-                              deals: [
-                                { name: 'WPT Global', username: 'davidkim', status: 'Active' },
-                                { name: 'Unibet', username: 'dkim123', status: 'Active' }
-                              ]
-                            })}
-                            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
+                      {loadingPlayers ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                            Loading players...
+                          </td>
+                        </tr>
+                      ) : playersData.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                            No players found
+                          </td>
+                        </tr>
+                      ) : (
+                        playersData.map((player: any) => (
+                          <tr key={player.id} className="hover:bg-gray-900/30 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-8 rounded-md overflow-hidden border border-white/10">
+                                  <ReactCountryFlag 
+                                    countryCode={player.country} 
+                                    svg 
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'cover'
+                                    }}
+                                  />
+                                </div>
+                                <div>
+                                  <p className="font-medium text-white">{player.name}</p>
+                                  <p className="text-sm text-gray-400">{player.email}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="text-2xl font-black text-gray-100 tracking-tight" style={{ fontFamily: 'ui-rounded, system-ui, sans-serif' }}>
+                                {player.totalDeals}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="text-sm font-semibold text-emerald-500">
+                                ${player.totalRake.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className="text-sm text-gray-300">
+                                {new Date(player.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                player.status === 'Active'
+                                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                  : 'bg-red-500/10 text-red-500 border-red-500/20'
+                              }`}>
+                                {player.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <button 
+                                onClick={() => handleViewPlayer({
+                                  name: player.name,
+                                  email: player.email,
+                                  flag: player.country,
+                                  country: player.country,
+                                  totalDeals: player.totalDeals,
+                                  totalRake: `$${player.totalRake.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                                  ytdRake: `$${player.ytdRake.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                                  joined: new Date(player.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                                  lastPayment: player.lastPayment ? new Date(player.lastPayment).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never',
+                                  status: player.status,
+                                  telegram: player.telegram,
+                                  whatsapp: player.whatsapp,
+                                  discord: player.discord,
+                                  deals: player.deals.map((deal: any) => ({
+                                    name: deal.name,
+                                    username: deal.username,
+                                    status: deal.status.charAt(0).toUpperCase() + deal.status.slice(1),
+                                    logo: deal.logo
+                                  }))
+                                })}
+                                className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
 
                 {/* View Player Modal */}
                 {isViewModalOpen && selectedPlayer && (
-                  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-[#0a0e13] border border-gray-800 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+                  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#0a0e13] border border-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
                       {/* Header */}
                       <div className="sticky top-0 bg-[#0a0e13] border-b border-gray-800 p-6 flex items-center justify-between">
                         <h2 className="text-xl font-bold text-white">Player Profile</h2>
@@ -1080,52 +1039,146 @@ export default function AdminDashboard() {
                         </div>
                       </div>
 
-                      {/* Active Deals Section */}
-                      <div className="p-6 border-b border-gray-800">
-                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                          Active Deals ({selectedPlayer.activeDeals})
-                        </h4>
-                        <div className="space-y-3">
-                          {selectedPlayer.deals.map((deal, index: number) => (
-                            <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center">
-                                  <span className="text-xs text-gray-400">{deal.name.slice(0, 2)}</span>
+                      {/* Two Column Layout */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+                        {/* Left Column */}
+                        <div className="space-y-6">
+                          {/* Contact Details Section */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                              Contact Details
+                            </h4>
+                            <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 space-y-3">
+                              {/* Telegram */}
+                              {selectedPlayer.telegram && (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.654-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                                    </svg>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-500 mb-0.5">Telegram</p>
+                                    <p className="text-sm text-white font-medium truncate">{selectedPlayer.telegram}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => navigator.clipboard.writeText(selectedPlayer.telegram!)}
+                                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                                  >
+                                    Copy
+                                  </button>
                                 </div>
-                                <div>
-                                  <p className="font-medium text-white">{deal.name}</p>
-                                  <p className="text-sm text-gray-400">Username: {deal.username}</p>
-                                </div>
-                              </div>
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                deal.status === 'Active' 
-                                  ? 'bg-emerald-500/10 text-emerald-500'
-                                  : 'bg-lime-500/10 text-lime-500'
-                              }`}>
-                                {deal.status}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                              )}
 
-                      {/* Performance Section */}
-                      <div className="p-6">
-                        <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                          Performance
-                        </h4>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-                            <p className="text-xs text-gray-500 mb-1">Total Rake</p>
-                            <p className="text-xl font-bold text-emerald-500">{selectedPlayer.totalRake}</p>
+                              {/* WhatsApp */}
+                              {selectedPlayer.whatsapp && (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                                    </svg>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-500 mb-0.5">WhatsApp</p>
+                                    <p className="text-sm text-white font-medium truncate">{selectedPlayer.whatsapp}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => navigator.clipboard.writeText(selectedPlayer.whatsapp!)}
+                                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Discord */}
+                              {selectedPlayer.discord && (
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 24 24">
+                                      <path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                                    </svg>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-500 mb-0.5">Discord</p>
+                                    <p className="text-sm text-white font-medium truncate">{selectedPlayer.discord}</p>
+                                  </div>
+                                  <button 
+                                    onClick={() => navigator.clipboard.writeText(selectedPlayer.discord!)}
+                                    className="px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                                  >
+                                    Copy
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Empty State */}
+                              {!selectedPlayer.telegram && !selectedPlayer.whatsapp && !selectedPlayer.discord && (
+                                <div className="text-center py-6">
+                                  <p className="text-sm text-gray-500">No contact information available</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-                            <p className="text-xs text-gray-500 mb-1">YTD Rake</p>
-                            <p className="text-xl font-bold text-emerald-500">{selectedPlayer.ytdRake}</p>
+
+                          {/* Performance Section */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                              Performance
+                            </h4>
+                            <div className="grid grid-cols-1 gap-3">
+                              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                                <p className="text-xs text-gray-500 mb-1">Total Rake</p>
+                                <p className="text-xl font-bold text-emerald-500">{selectedPlayer.totalRake}</p>
+                              </div>
+                              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                                <p className="text-xs text-gray-500 mb-1">YTD Rake</p>
+                                <p className="text-xl font-bold text-emerald-500">{selectedPlayer.ytdRake}</p>
+                              </div>
+                              <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
+                                <p className="text-xs text-gray-500 mb-1">Last Payment</p>
+                                <p className="text-sm font-medium text-gray-300">{selectedPlayer.lastPayment}</p>
+                              </div>
+                            </div>
                           </div>
-                          <div className="bg-gray-900/50 border border-gray-800 rounded-lg p-4">
-                            <p className="text-xs text-gray-500 mb-1">Last Payment</p>
-                            <p className="text-sm font-medium text-gray-300">{selectedPlayer.lastPayment}</p>
+                        </div>
+
+                        {/* Right Column - Deals */}
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+                            Deals ({selectedPlayer.totalDeals})
+                          </h4>
+                          <div className="space-y-3">
+                            {selectedPlayer.deals.map((deal, index: number) => (
+                              <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden">
+                                    {deal.logo ? (
+                                      <img src={deal.logo} alt={deal.name} className="w-full h-full object-contain p-1" />
+                                    ) : (
+                                      <span className="text-xs text-gray-400">{deal.name.slice(0, 2)}</span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-white">{deal.name}</p>
+                                    <p className="text-sm text-gray-400">Username: {deal.username}</p>
+                                  </div>
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                                  deal.status.toLowerCase() === 'active' 
+                                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                    : deal.status.toLowerCase() === 'approved'
+                                    ? 'bg-lime-500/10 text-lime-500 border-lime-500/20'
+                                    : deal.status.toLowerCase() === 'pending'
+                                    ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+                                    : deal.status.toLowerCase() === 'rejected'
+                                    ? 'bg-red-500/10 text-red-500 border-red-500/20'
+                                    : 'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                                }`}>
+                                  {deal.status}
+                                </span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
