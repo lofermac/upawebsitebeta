@@ -48,6 +48,63 @@ interface PlayerProfile {
   }>;
 }
 
+// Database types
+interface PlayerEarning {
+  rakeback_amount: number | string;
+  payment_date: string | null;
+  period_year: number;
+  player_deals?: {
+    user_id: string;
+  };
+}
+
+interface PlayerDeal {
+  id: string;
+  deal_id: string;
+  status: string;
+  platform_username: string;
+  platform_email: string;
+  updated_at: string;
+  deals?: {
+    name: string;
+    logo_url: string;
+    slug: string;
+  } | null;
+}
+
+interface PlayerProfile_DB {
+  id: string;
+  email: string;
+  full_name: string | null;
+  country: string | null;
+  created_at: string;
+  discord_id: string | null;
+  whatsapp: string | null;
+  telegram: string | null;
+}
+
+interface PlayerData {
+  id: string;
+  name: string;
+  email: string;
+  country: string;
+  discord: string | null;
+  whatsapp: string | null;
+  telegram: string | null;
+  totalDeals: number;
+  totalRake: number;
+  ytdRake: number;
+  joined: string;
+  lastPayment: string | null;
+  status: string;
+  deals: Array<{
+    name: string;
+    username: string;
+    status: string;
+    logo: string;
+  }>;
+}
+
 // Network platforms data
 const platformsData = [
   {
@@ -194,7 +251,7 @@ export default function AdminDashboard() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Players Tab - Real Data States
-  const [playersData, setPlayersData] = useState<any[]>([]);
+  const [playersData, setPlayersData] = useState<PlayerData[]>([]);
   const [playersStats, setPlayersStats] = useState({
     totalPlayers: 0,
     activePlayers: 0,
@@ -262,7 +319,7 @@ export default function AdminDashboard() {
           .gte('payment_date', ninetyDaysAgo);
 
         const activePlayerIds = new Set(
-          recentEarnings?.map((e: any) => e.player_deals?.user_id).filter(Boolean) || []
+          (recentEarnings as PlayerEarning[] | null)?.map((e) => e.player_deals?.user_id).filter(Boolean) || []
         );
 
         setPlayersStats({
@@ -274,7 +331,7 @@ export default function AdminDashboard() {
 
         // Para cada player, buscar deals e earnings
         const playersWithData = await Promise.all(
-          (profiles || []).map(async (player: any) => {
+          (profiles || []).map(async (player: PlayerProfile_DB) => {
             // Buscar deals do player
             const { data: playerDeals } = await supabase
               .from('player_deals')
@@ -297,7 +354,7 @@ export default function AdminDashboard() {
             const totalDeals = playerDeals?.length || 0;
 
             // Buscar earnings
-            const dealIds = playerDeals?.map((d: any) => d.id) || [];
+            const dealIds = (playerDeals as PlayerDeal[] | null)?.map((d) => d.id) || [];
             let totalRake = 0;
             let ytdRake = 0;
             let lastPayment = null;
@@ -310,16 +367,16 @@ export default function AdminDashboard() {
                 .eq('payment_status', 'paid');
 
               if (earnings) {
-                totalRake = earnings.reduce((sum: number, e: any) => sum + (Number(e.rakeback_amount) || 0), 0);
+                totalRake = earnings.reduce((sum: number, e: PlayerEarning) => sum + (Number(e.rakeback_amount) || 0), 0);
                 const currentYear = new Date().getFullYear();
                 ytdRake = earnings
-                  .filter((e: any) => e.period_year === currentYear)
-                  .reduce((sum: number, e: any) => sum + (Number(e.rakeback_amount) || 0), 0);
+                  .filter((e: PlayerEarning) => e.period_year === currentYear)
+                  .reduce((sum: number, e: PlayerEarning) => sum + (Number(e.rakeback_amount) || 0), 0);
 
                 // Último pagamento
                 const payments = earnings
-                  .filter((e: any) => e.payment_date)
-                  .map((e: any) => new Date(e.payment_date))
+                  .filter((e: PlayerEarning) => e.payment_date)
+                  .map((e: PlayerEarning) => new Date(e.payment_date as string))
                   .sort((a: Date, b: Date) => b.getTime() - a.getTime());
 
                 lastPayment = payments[0] || null;
@@ -343,7 +400,7 @@ export default function AdminDashboard() {
               joined: player.created_at,
               lastPayment: lastPayment ? lastPayment.toISOString() : null,
               status: isActive ? 'Active' : 'Inactive',
-              deals: playerDeals?.map((d: any) => ({
+              deals: (playerDeals as PlayerDeal[] | null)?.map((d) => ({
                 name: d.deals?.name || 'Unknown',
                 username: d.platform_username,
                 status: d.status,
@@ -911,7 +968,7 @@ export default function AdminDashboard() {
                           </td>
                         </tr>
                       ) : (
-                        playersData.map((player: any) => (
+                        playersData.map((player: PlayerData) => (
                           <tr key={player.id} className="hover:bg-gray-900/30 transition-colors">
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
@@ -969,10 +1026,10 @@ export default function AdminDashboard() {
                                   joined: new Date(player.joined).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                                   lastPayment: player.lastPayment ? new Date(player.lastPayment).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Never',
                                   status: player.status,
-                                  telegram: player.telegram,
-                                  whatsapp: player.whatsapp,
-                                  discord: player.discord,
-                                  deals: player.deals.map((deal: any) => ({
+                                  telegram: player.telegram ?? undefined,
+                                  whatsapp: player.whatsapp ?? undefined,
+                                  discord: player.discord ?? undefined,
+                                  deals: player.deals.map((deal) => ({
                                     name: deal.name,
                                     username: deal.username,
                                     status: deal.status.charAt(0).toUpperCase() + deal.status.slice(1),
