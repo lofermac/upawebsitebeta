@@ -14,7 +14,6 @@ import {
   X,
   Building2,
   TrendingUp,
-  TrendingDown,
   Globe,
   LayoutGrid,
   FileCheck,
@@ -106,135 +105,151 @@ interface PlayerData {
   }>;
 }
 
-// Network platforms data
-const platformsData = [
-  {
-    id: 1,
-    name: 'WPT Global',
-    code: 'WPT',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp',
-    totalPlayers: 142,
-    standardPlayers: 124,
-    exclusivePlayers: 18,
-    monthlyRake: '$24,500',
-    commissionDue: '$6,125',
-    avgPerPlayer: '$173',
-    trend: '+8%',
-    trendPositive: true
-  },
-  {
-    id: 2,
-    name: 'GGPoker',
-    code: 'GG',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144333/ggpoker_logo-1_white-1.webp',
-    totalPlayers: 354,
-    standardPlayers: 312,
-    exclusivePlayers: 42,
-    monthlyRake: '$51,200',
-    commissionDue: '$12,800',
-    avgPerPlayer: '$145',
-    trend: '+15%',
-    trendPositive: true
-  },
-  {
-    id: 3,
-    name: 'Unibet',
-    code: 'UNI',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/15110203/Unitbet-Logo.png',
-    totalPlayers: 96,
-    standardPlayers: 87,
-    exclusivePlayers: 9,
-    monthlyRake: '$9,800',
-    commissionDue: '$2,450',
-    avgPerPlayer: '$102',
-    trend: '-3%',
-    trendPositive: false
-  },
-  {
-    id: 4,
-    name: 'Champion Poker',
-    code: 'CHP',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp',
-    totalPlayers: 63,
-    standardPlayers: 56,
-    exclusivePlayers: 7,
-    monthlyRake: '$4,100',
-    commissionDue: '$1,025',
-    avgPerPlayer: '$65',
-    trend: '+5%',
-    trendPositive: true
-  },
-  {
-    id: 5,
-    name: '888poker',
-    code: '888',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183728/888-LOGO-webp-1024x309.webp',
-    totalPlayers: 228,
-    standardPlayers: 203,
-    exclusivePlayers: 25,
-    monthlyRake: '$18,700',
-    commissionDue: '$4,675',
-    avgPerPlayer: '$82',
-    trend: '+11%',
-    trendPositive: true
-  },
-  {
-    id: 6,
-    name: 'PartyPoker',
-    code: 'PP',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/07/07144334/ENT_PartyPoker_Landscape_FullWhite_RGB.png',
-    totalPlayers: 199,
-    standardPlayers: 178,
-    exclusivePlayers: 21,
-    monthlyRake: '$15,300',
-    commissionDue: '$3,825',
-    avgPerPlayer: '$77',
-    trend: '+6%',
-    trendPositive: true
-  },
-  {
-    id: 7,
-    name: 'Optibet',
-    code: 'OPT',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17100841/Optibet-Poker-logo-2D-horizontal-red-bg-1024x298.png',
-    totalPlayers: 49,
-    standardPlayers: 44,
-    exclusivePlayers: 5,
-    monthlyRake: '$3,200',
-    commissionDue: '$800',
-    avgPerPlayer: '$65',
-    trend: '-1%',
-    trendPositive: false
-  },
-  {
-    id: 8,
-    name: 'Betfair',
-    code: 'BF',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp',
-    totalPlayers: 103,
-    standardPlayers: 92,
-    exclusivePlayers: 11,
-    monthlyRake: '$7,200',
-    commissionDue: '$1,800',
-    avgPerPlayer: '$70',
-    trend: '+4%',
-    trendPositive: true
-  },
-  {
-    id: 9,
-    name: 'WSOP.ca',
-    code: 'WSOP',
-    logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/12/11192441/wsop-ontario-logo-1024x376.webp',
-    totalPlayers: 69,
-    standardPlayers: 61,
-    exclusivePlayers: 8,
-    monthlyRake: '$5,400',
-    commissionDue: '$1,350',
-    avgPerPlayer: '$78',
-    trend: '+9%',
-    trendPositive: true
-  },
-];
+// Interface for Deal Metrics (Dashboard)
+interface DealMetrics {
+  id: number;
+  name: string;
+  logo: string | null;
+  slug: string;
+  totalPlayers: number;
+  activePlayers: number;
+  inactivePlayers: number;
+  monthlyGrossRake: number;
+  monthlyNetRake: number;
+  avgPerPlayer: number;
+  growthPercentage: number;
+  isMocked: boolean;
+}
+
+// Network platforms data (commented out as not currently used)
+// const platformsData = [
+//   {
+//     id: 1,
+//     name: 'WPT Global',
+//     code: 'WPT',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/01/07105909/WPT-LOGO-WebP-1920x350-1-1024x168.webp',
+//     totalPlayers: 142,
+//     standardPlayers: 124,
+//     exclusivePlayers: 18,
+//     monthlyRake: '$24,500',
+//     commissionDue: '$6,125',
+//     avgPerPlayer: '$173',
+//     trend: '+8%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 2,
+//     name: 'GGPoker',
+//     code: 'GG',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/07144333/ggpoker_logo-1_white-1.webp',
+//     totalPlayers: 354,
+//     standardPlayers: 312,
+//     exclusivePlayers: 42,
+//     monthlyRake: '$51,200',
+//     commissionDue: '$12,800',
+//     avgPerPlayer: '$145',
+//     trend: '+15%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 3,
+//     name: 'Unibet',
+//     code: 'UNI',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2025/08/15110203/Unitbet-Logo.png',
+//     totalPlayers: 96,
+//     standardPlayers: 87,
+//     exclusivePlayers: 9,
+//     monthlyRake: '$9,800',
+//     commissionDue: '$2,450',
+//     avgPerPlayer: '$102',
+//     trend: '-3%',
+//     trendPositive: false
+//   },
+//   {
+//     id: 4,
+//     name: 'Champion Poker',
+//     code: 'CHP',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2024/05/17184626/CHAMPIONPOKER-logo-1024x160.webp',
+//     totalPlayers: 63,
+//     standardPlayers: 56,
+//     exclusivePlayers: 7,
+//     monthlyRake: '$4,100',
+//     commissionDue: '$1,025',
+//     avgPerPlayer: '$65',
+//     trend: '+5%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 5,
+//     name: '888poker',
+//     code: '888',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17183728/888-LOGO-webp-1024x309.webp',
+//     totalPlayers: 228,
+//     standardPlayers: 203,
+//     exclusivePlayers: 25,
+//     monthlyRake: '$18,700',
+//     commissionDue: '$4,675',
+//     avgPerPlayer: '$82',
+//     trend: '+11%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 6,
+//     name: 'PartyPoker',
+//     code: 'PP',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/07/07144334/ENT_PartyPoker_Landscape_FullWhite_RGB.png',
+//     totalPlayers: 199,
+//     standardPlayers: 178,
+//     exclusivePlayers: 21,
+//     monthlyRake: '$15,300',
+//     commissionDue: '$3,825',
+//     avgPerPlayer: '$77',
+//     trend: '+6%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 7,
+//     name: 'Optibet',
+//     code: 'OPT',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17100841/Optibet-Poker-logo-2D-horizontal-red-bg-1024x298.png',
+//     totalPlayers: 49,
+//     standardPlayers: 44,
+//     exclusivePlayers: 5,
+//     monthlyRake: '$3,200',
+//     commissionDue: '$800',
+//     avgPerPlayer: '$65',
+//     trend: '-1%',
+//     trendPositive: false
+//   },
+//   {
+//     id: 8,
+//     name: 'Betfair',
+//     code: 'BF',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/09/17185334/Betfair-Website-Logo-1-1-1-1024x185.webp',
+//     totalPlayers: 103,
+//     standardPlayers: 92,
+//     exclusivePlayers: 11,
+//     monthlyRake: '$7,200',
+//     commissionDue: '$1,800',
+//     avgPerPlayer: '$70',
+//     trend: '+4%',
+//     trendPositive: true
+//   },
+//   {
+//     id: 9,
+//     name: 'WSOP.ca',
+//     code: 'WSOP',
+//     logo: 'https://upa-cdn.s3.eu-west-2.amazonaws.com/wp-content/uploads/2023/12/11192441/wsop-ontario-logo-1024x376.webp',
+//     totalPlayers: 69,
+//     standardPlayers: 61,
+//     exclusivePlayers: 8,
+//     monthlyRake: '$5,400',
+//     commissionDue: '$1,350',
+//     avgPerPlayer: '$78',
+//     trend: '+9%',
+//     trendPositive: true
+//   },
+// ];
 
 export default function AdminDashboard() {
   const { logout } = useAuth();
@@ -268,7 +283,7 @@ export default function AdminDashboard() {
     monthlySignUps: 0,
     monthlyDealsApplications: 0
   });
-  const [dealsData, setDealsData] = useState<any[]>([]);
+  const [dealsData, setDealsData] = useState<DealMetrics[]>([]);
   const [loadingDashboard, setLoadingDashboard] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -971,7 +986,7 @@ export default function AdminDashboard() {
                     <div className="relative flex items-center justify-center h-20 mb-4">
                       {/* Logo centralizada */}
                       <img 
-                        src={deal.logo} 
+                        src={deal.logo || ''} 
                         alt={`${deal.name} Logo`} 
                         className="max-h-14 max-w-[80%] object-contain drop-shadow-lg filter brightness-110"
                         onError={(e) => {
