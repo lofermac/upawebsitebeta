@@ -121,6 +121,33 @@ interface DealMetrics {
   isMocked: boolean;
 }
 
+// CSV Upload error type
+interface CsvUploadError {
+  row: number;
+  error: string;
+  line?: string;
+  player?: string;
+}
+
+// Upload history type
+interface UploadHistory {
+  id: string;
+  deal_id: number;
+  uploaded_by: string;
+  period_month: number;
+  period_year: number;
+  rows_processed: number;
+  rows_failed: number;
+  status: string;
+  created_at: string;
+  deals?: {
+    name: string;
+  };
+  profiles?: {
+    full_name: string;
+  };
+}
+
 // Network platforms data (commented out as not currently used)
 // const platformsData = [
 //   {
@@ -271,13 +298,13 @@ export default function AdminDashboard() {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [csvFile, setCsvFile] = useState<File | null>(null);
-  const [csvPreview, setCsvPreview] = useState<any[]>([]);
+  const [csvPreview, setCsvPreview] = useState<Record<string, string>[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadHistory, setUploadHistory] = useState<any[]>([]);
+  const [uploadHistory, setUploadHistory] = useState<UploadHistory[]>([]);
   const [uploadResult, setUploadResult] = useState<{
     success: boolean;
     message: string;
-    errors?: any[];
+    errors?: CsvUploadError[];
   } | null>(null);
 
   // Players Tab - Real Data States
@@ -834,7 +861,7 @@ export default function AdminDashboard() {
       const headers = lines[0].toLowerCase().split(';').map(h => h.trim());
       const rows = lines.slice(1).map(line => {
         const values = line.split(';');
-        const row: any = {};
+        const row: Record<string, string> = {};
         headers.forEach((header, index) => {
           row[header] = values[index]?.trim() || '';
         });
@@ -873,10 +900,9 @@ export default function AdminDashboard() {
       reader.onload = async (e) => {
         const text = e.target?.result as string;
         const lines = text.split('\n').filter(line => line.trim());
-        const headers = lines[0].toLowerCase().split(';').map((h: string) => h.trim());
         const rows = lines.slice(1);
         
-        const errors: any[] = [];
+        const errors: CsvUploadError[] = [];
         let processed = 0;
         let failed = 0;
         
@@ -899,7 +925,9 @@ export default function AdminDashboard() {
         if (recordError) throw recordError;
         
         // Process each row
-        for (const line of rows) {
+        for (let i = 0; i < rows.length; i++) {
+          const line = rows[i];
+          const rowNumber = i + 2; // +2 because: +1 for array index, +1 for header row
           const values = line.split(';');
           const player = values[0]?.trim();
           const grossRake = parseFloat(values[1]?.replace(',', '.') || '0');
@@ -907,7 +935,7 @@ export default function AdminDashboard() {
           const payment = parseFloat(values[3]?.replace(',', '.') || '0');
           
           if (!player) {
-            errors.push({ line, error: 'Player name is empty' });
+            errors.push({ row: rowNumber, error: 'Player name is empty', line });
             failed++;
             continue;
           }
@@ -923,6 +951,7 @@ export default function AdminDashboard() {
           
           if (dealError || !playerDeal) {
             errors.push({ 
+              row: rowNumber,
               player, 
               error: 'Player not found or deal not approved' 
             });
@@ -946,7 +975,7 @@ export default function AdminDashboard() {
             });
           
           if (earningsError) {
-            errors.push({ player, error: earningsError.message });
+            errors.push({ row: rowNumber, player, error: earningsError.message });
             failed++;
           } else {
             processed++;
@@ -990,10 +1019,11 @@ export default function AdminDashboard() {
       
       reader.readAsText(csvFile);
       
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setUploadResult({
         success: false,
-        message: `Error: ${error.message}`
+        message: `Error: ${errorMessage}`
       });
     } finally {
       setIsProcessing(false);
