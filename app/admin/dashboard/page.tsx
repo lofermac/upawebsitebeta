@@ -266,6 +266,20 @@ export default function AdminDashboard() {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
+  // CSV Upload Tab States
+  const [selectedDeal, setSelectedDeal] = useState<number | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [csvPreview, setCsvPreview] = useState<any[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [uploadHistory, setUploadHistory] = useState<any[]>([]);
+  const [uploadResult, setUploadResult] = useState<{
+    success: boolean;
+    message: string;
+    errors?: any[];
+  } | null>(null);
+
   // Players Tab - Real Data States
   const [playersData, setPlayersData] = useState<PlayerData[]>([]);
   const [playersStats, setPlayersStats] = useState({
@@ -587,6 +601,34 @@ export default function AdminDashboard() {
     }
   }, [activeTab]);
 
+  // Load CSV Upload History
+  useEffect(() => {
+    async function loadUploadHistory() {
+      if (activeTab !== 'csv-upload') return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('csv_uploads')
+          .select(`
+            *,
+            deals(name),
+            profiles:uploaded_by(full_name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        if (error) throw error;
+        setUploadHistory(data || []);
+      } catch (error) {
+        console.error('Error loading upload history:', error);
+      }
+    }
+
+    if (activeTab === 'csv-upload') {
+      loadUploadHistory();
+    }
+  }, [activeTab]);
+
   // Function to manually refresh Dashboard data
   const handleRefreshDashboard = async () => {
     if (activeTab !== 'dashboard' || isRefreshing) return;
@@ -720,6 +762,7 @@ export default function AdminDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'dealrequests', label: 'Deal Requests', icon: FileCheck },
     { id: 'players', label: 'Players', icon: Users },
+    { id: 'csv-upload', label: 'CSV Upload', icon: FileText },
     { id: 'subaffiliates', label: 'Sub-Affiliates', icon: Building2 },
     { id: 'website', label: 'Website', icon: Globe },
     { id: 'reports', label: 'Reports', icon: FileText },
@@ -765,6 +808,197 @@ export default function AdminDashboard() {
       textColor: 'text-purple-500'
     },
   ];
+
+  // CSV Upload Functions
+  const handleFileChange = async (file: File) => {
+    if (!file) return;
+    
+    setCsvFile(file);
+    setUploadResult(null);
+    
+    // Read and preview CSV
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        setUploadResult({
+          success: false,
+          message: 'CSV file is empty or invalid'
+        });
+        return;
+      }
+      
+      // Parse CSV (assuming ; delimiter)
+      const headers = lines[0].toLowerCase().split(';').map(h => h.trim());
+      const rows = lines.slice(1).map(line => {
+        const values = line.split(';');
+        const row: any = {};
+        headers.forEach((header, index) => {
+          row[header] = values[index]?.trim() || '';
+        });
+        return row;
+      });
+      
+      setCsvPreview(rows.slice(0, 10)); // Show only first 10 rows
+    };
+    
+    reader.readAsText(file);
+  };
+
+  const handleUploadCSV = async () => {
+    if (!csvFile || !selectedDeal) {
+      setUploadResult({
+        success: false,
+        message: 'Please select a deal and a CSV file'
+      });
+      return;
+    }
+    
+    setIsProcessing(true);
+    setUploadResult(null);
+    
+    try {
+      // 1. Upload file to Storage
+      const fileName = `${selectedDeal}_${selectedYear}-${selectedMonth}_${Date.now()}.csv`;
+      const { error: uploadError } = await supabase.storage
+        .from('csv-uploads')
+        .upload(fileName, csvFile);
+      
+      if (uploadError) throw uploadError;
+      
+      // 2. Process CSV
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].toLowerCase().split(';').map((h: string) => h.trim());
+        const rows = lines.slice(1);
+        
+        const errors: any[] = [];
+        let processed = 0;
+        let failed = 0;
+        
+        // Create upload record
+        const { data: uploadRecord, error: recordError } = await supabase
+          .from('csv_uploads')
+          .insert({
+            deal_id: selectedDeal,
+            uploaded_by: (await supabase.auth.getUser()).data.user?.id,
+            period_month: selectedMonth,
+            period_year: selectedYear,
+            file_name: csvFile.name,
+            file_path: fileName,
+            rows_total: rows.length,
+            status: 'processing'
+          })
+          .select()
+          .single();
+        
+        if (recordError) throw recordError;
+        
+        // Process each row
+        for (const line of rows) {
+          const values = line.split(';');
+          const player = values[0]?.trim();
+          const grossRake = parseFloat(values[1]?.replace(',', '.') || '0');
+          const netRake = parseFloat(values[2]?.replace(',', '.') || '0');
+          const payment = parseFloat(values[3]?.replace(',', '.') || '0');
+          
+          if (!player) {
+            errors.push({ line, error: 'Player name is empty' });
+            failed++;
+            continue;
+          }
+          
+          // Find player_deal
+          const { data: playerDeal, error: dealError } = await supabase
+            .from('player_deals')
+            .select('id')
+            .eq('deal_id', selectedDeal)
+            .eq('platform_username', player)
+            .eq('status', 'approved')
+            .single();
+          
+          if (dealError || !playerDeal) {
+            errors.push({ 
+              player, 
+              error: 'Player not found or deal not approved' 
+            });
+            failed++;
+            continue;
+          }
+          
+          // UPSERT earnings (overwrite if exists)
+          const { error: earningsError } = await supabase
+            .from('player_earnings')
+            .upsert({
+              player_deal_id: playerDeal.id,
+              period_month: selectedMonth,
+              period_year: selectedYear,
+              gross_rake: grossRake,
+              net_rake: netRake,
+              payment_made: payment,
+              data_updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'player_deal_id,period_month,period_year'
+            });
+          
+          if (earningsError) {
+            errors.push({ player, error: earningsError.message });
+            failed++;
+          } else {
+            processed++;
+          }
+        }
+        
+        // Update upload record
+        await supabase
+          .from('csv_uploads')
+          .update({
+            rows_processed: processed,
+            rows_failed: failed,
+            errors_log: errors,
+            status: failed === 0 ? 'completed' : 'failed'
+          })
+          .eq('id', uploadRecord.id);
+        
+        setUploadResult({
+          success: failed === 0,
+          message: `Upload completed! ${processed} rows processed, ${failed} failed.`,
+          errors: errors.length > 0 ? errors : undefined
+        });
+        
+        // Reload history
+        const { data: history } = await supabase
+          .from('csv_uploads')
+          .select(`
+            *,
+            deals(name),
+            profiles:uploaded_by(full_name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        setUploadHistory(history || []);
+        
+        // Clear form
+        setCsvFile(null);
+        setCsvPreview([]);
+      };
+      
+      reader.readAsText(csvFile);
+      
+    } catch (error: any) {
+      setUploadResult({
+        success: false,
+        message: `Error: ${error.message}`
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <ProtectedRoute allowedUserType="admin">
@@ -1547,6 +1781,307 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 )}
+              </>
+            )}
+
+            {/* CSV UPLOAD TAB */}
+            {activeTab === 'csv-upload' && (
+              <>
+                {/* Page Title */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+                    <h1 className="text-3xl font-bold text-white">CSV Upload</h1>
+                  </div>
+                  <p className="text-base text-gray-400 ml-6 mt-3">Upload earnings data from poker rooms</p>
+                </div>
+
+                {/* Upload Form Card */}
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-xl p-8 mb-6">
+                  <div className="space-y-6">
+                    {/* Form Fields - All in One Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      {/* Poker Room */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold shadow-lg shadow-emerald-500/10">1</span>
+                          <span className="text-sm font-semibold text-white">Select Poker Room & Period</span>
+                        </div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">Poker Room</label>
+                        <select
+                          value={selectedDeal || ''}
+                          onChange={(e) => setSelectedDeal(Number(e.target.value))}
+                          className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer hover:border-emerald-500/50 hover:bg-gray-900 [&>option]:bg-[#1a2332] [&>option]:text-white [&>option:checked]:bg-blue-600 [&>option:hover]:bg-blue-600"
+                        >
+                          <option value="">Choose a poker room...</option>
+                          {dealsData.map((deal) => (
+                            <option key={deal.id} value={deal.id}>
+                              {deal.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Month */}
+                      <div>
+                        <div className="h-[40px]"></div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">Month</label>
+                        <select
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                          className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer hover:border-emerald-500/50 hover:bg-gray-900 [&>option]:bg-[#1a2332] [&>option]:text-white [&>option:checked]:bg-blue-600 [&>option:hover]:bg-blue-600"
+                        >
+                          {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map((month, index) => (
+                            <option key={index} value={index + 1}>{month}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Year */}
+                      <div>
+                        <div className="h-[40px]"></div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">Year</label>
+                        <select
+                          value={selectedYear}
+                          onChange={(e) => setSelectedYear(Number(e.target.value))}
+                          className="w-full px-4 py-3 bg-gray-900/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer hover:border-emerald-500/50 hover:bg-gray-900 [&>option]:bg-[#1a2332] [&>option]:text-white [&>option:checked]:bg-blue-600 [&>option:hover]:bg-blue-600"
+                        >
+                          {[2024, 2025, 2026].map((year) => (
+                            <option key={year} value={year}>{year}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Upload CSV - Compact */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold shadow-lg shadow-emerald-500/10">2</span>
+                          <span className="text-sm font-semibold text-white">Upload CSV File</span>
+                        </div>
+                        <label className="block text-xs font-medium text-gray-400 mb-2">CSV File</label>
+                        <div className="relative h-[52px]">
+                          <input
+                            type="file"
+                            accept=".csv"
+                            onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
+                            className="hidden"
+                            id="csv-upload"
+                          />
+                          <label 
+                            htmlFor="csv-upload" 
+                            className="flex items-center justify-center gap-2 w-full h-full px-4 py-3 border-2 border-dashed border-gray-700 rounded-lg cursor-pointer hover:border-emerald-500 hover:bg-emerald-500/5 transition-all duration-200 group"
+                          >
+                            <svg className="w-5 h-5 text-gray-500 group-hover:text-emerald-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <span className="text-sm text-gray-400 group-hover:text-emerald-400 transition-colors duration-200 truncate font-medium">
+                              {csvFile ? csvFile.name : 'Choose file...'}
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Format Info - Below CSV File */}
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                      <div className="lg:col-span-3"></div>
+                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/30 rounded-lg border border-gray-800/50">
+                        <svg className="w-4 h-4 flex-shrink-0 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="font-mono text-[10px] text-gray-500">player;gross_rake;net_rake;payment</span>
+                      </div>
+                    </div>
+
+                    {/* Preview Table */}
+                    {csvPreview.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold shadow-lg shadow-emerald-500/10">3</span>
+                          <span className="text-sm font-semibold text-white">Preview</span>
+                          <span className="text-xs text-gray-500 font-normal ml-1">(First 10 rows)</span>
+                        </div>
+                        <div className="overflow-hidden rounded-lg border border-gray-800">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="bg-gray-900/50">
+                                  <th className="text-left py-3 px-4 text-gray-400 font-semibold">Player</th>
+                                  <th className="text-right py-3 px-4 text-gray-400 font-semibold">Gross Rake</th>
+                                  <th className="text-right py-3 px-4 text-gray-400 font-semibold">Net Rake</th>
+                                  <th className="text-right py-3 px-4 text-gray-400 font-semibold">Payment</th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-[#0a0e13]">
+                                {csvPreview.map((row, index) => (
+                                  <tr key={index} className="border-t border-gray-800 hover:bg-gray-900/30 transition-colors">
+                                    <td className="py-3 px-4 text-white font-medium">{row.player}</td>
+                                    <td className="py-3 px-4 text-right text-emerald-400 font-semibold">${row['gross rake']}</td>
+                                    <td className="py-3 px-4 text-right text-blue-400 font-semibold">${row['net rake']}</td>
+                                    <td className="py-3 px-4 text-right text-gray-300 font-semibold">${row.payment}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                      <button
+                        onClick={handleUploadCSV}
+                        disabled={!csvFile || !selectedDeal || isProcessing}
+                        className={`flex-1 px-6 py-3.5 font-semibold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                          !csvFile || !selectedDeal
+                            ? 'bg-gray-800 text-gray-500 border border-gray-700 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40'
+                        } ${isProcessing ? 'opacity-75 cursor-wait' : ''}`}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <RefreshCw className="w-5 h-5 animate-spin" />
+                            <span>Processing...</span>
+                          </>
+                        ) : !csvFile || !selectedDeal ? (
+                          <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span>
+                              {!selectedDeal && !csvFile 
+                                ? 'Select Poker Room, Period and CSV File'
+                                : !selectedDeal 
+                                  ? 'Select Poker Room'
+                                  : 'Select a CSV File'
+                              }
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="truncate">
+                              Process: {dealsData.find(d => d.id === selectedDeal)?.name} • {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][selectedMonth - 1]} {selectedYear} • {csvFile.name}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDeal(null);
+                          setCsvFile(null);
+                          setCsvPreview([]);
+                          setUploadResult(null);
+                        }}
+                        className="px-6 py-3.5 bg-gray-800 text-gray-300 font-semibold rounded-lg hover:bg-gray-700 transition-all border border-gray-700 hover:border-gray-600 flex items-center justify-center gap-2"
+                      >
+                        <X className="w-5 h-5" />
+                        <span>Clear</span>
+                      </button>
+                    </div>
+
+                    {/* Result Alert */}
+                    {uploadResult && (
+                      <div className={`rounded-lg p-4 border-l-4 ${uploadResult.success ? 'bg-emerald-500/10 border-emerald-500' : 'bg-red-500/10 border-red-500'}`}>
+                        <div className="flex items-start gap-3">
+                          {uploadResult.success ? (
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <p className={`font-semibold ${uploadResult.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                              {uploadResult.message}
+                            </p>
+                            {uploadResult.errors && uploadResult.errors.length > 0 && (
+                              <div className="mt-3 space-y-1.5">
+                                <p className="text-sm text-gray-400 font-medium">Error Details:</p>
+                                <div className="space-y-1">
+                                  {uploadResult.errors.slice(0, 5).map((err, index) => (
+                                    <p key={index} className="text-xs text-red-400 font-mono bg-red-500/5 px-2 py-1 rounded">
+                                      • {err.player || 'Unknown'}: {err.error}
+                                    </p>
+                                  ))}
+                                  {uploadResult.errors.length > 5 && (
+                                    <p className="text-xs text-gray-500 italic mt-2">
+                                      ... and {uploadResult.errors.length - 5} more errors
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upload History Card */}
+                <div className="bg-[#0a0e13] border border-gray-800 rounded-xl overflow-hidden">
+                  <div className="px-8 py-6 border-b border-gray-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-purple-500" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">Upload History</h3>
+                        <p className="text-sm text-gray-500">Recent CSV upload records</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-6">
+                    {uploadHistory.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 rounded-full bg-gray-800 mx-auto mb-4 flex items-center justify-center">
+                          <FileText className="w-8 h-8 text-gray-600" />
+                        </div>
+                        <p className="text-gray-500 font-medium">No uploads yet</p>
+                        <p className="text-sm text-gray-600 mt-1">Upload your first CSV file to see history</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {uploadHistory.map((upload) => (
+                          <div key={upload.id} className="flex items-center justify-between p-4 bg-gray-900/30 rounded-lg border border-gray-800 hover:border-gray-700 hover:bg-gray-900/50 transition-all">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-3 h-3 rounded-full ${upload.status === 'completed' ? 'bg-emerald-500' : upload.status === 'failed' ? 'bg-red-500' : 'bg-yellow-500'} shadow-lg ${upload.status === 'completed' ? 'shadow-emerald-500/50' : upload.status === 'failed' ? 'shadow-red-500/50' : 'shadow-yellow-500/50'}`} />
+                              <div>
+                                <p className="text-white font-semibold">
+                                  {upload.deals?.name}
+                                  <span className="text-gray-500 font-normal mx-2">•</span>
+                                  <span className="text-gray-400 font-normal">
+                                    {new Date(0, upload.period_month - 1).toLocaleString('en', { month: 'short' })} {upload.period_year}
+                                  </span>
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Uploaded by {upload.profiles?.full_name} • {new Date(upload.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-emerald-400">{upload.rows_processed} processed</p>
+                              {upload.rows_failed > 0 && (
+                                <p className="text-xs text-red-400 mt-1">{upload.rows_failed} failed</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </>
             )}
 
