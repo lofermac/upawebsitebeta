@@ -71,7 +71,13 @@ export default function PlayerDashboard() {
   const [currentUserId, setCurrentUserId] = useState<string>('');
 
   // NOVOS STATES para Sub-Affiliate Dashboard
-  const [subAffiliateData, setSubAffiliateData] = useState<any>(null);
+  interface SubAffiliateData {
+    id: string;
+    player_id: string;
+    referral_code: string;
+    created_at: string;
+  }
+  const [subAffiliateData, setSubAffiliateData] = useState<SubAffiliateData | null>(null);
 
   // Fetch deals e earnings ao carregar
   useEffect(() => {
@@ -306,7 +312,7 @@ export default function PlayerDashboard() {
                           Application Under Review
                         </h3>
                         <p className="text-gray-400 text-sm leading-snug">
-                          Your application is being reviewed. We'll notify you soon.
+                          Your application is being reviewed. We&apos;ll notify you soon.
                         </p>
                       </div>
                     </div>

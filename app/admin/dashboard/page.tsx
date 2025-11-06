@@ -2391,13 +2391,28 @@ function generateReferralCode(playerName: string): string {
   // Exemplo: "LEONARDO" + "X7K" = "LEONARDX7K"
 }
 
+// Types for Sub-Affiliates
+interface SubAffiliateRequest {
+  id: string;
+  player_id: string;
+  status: string;
+  created_at: string;
+  reason?: string;
+  experience?: string;
+  profiles?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  message?: string;
+}
+
 // Sub-Affiliates Management Component
 function SubAffiliatesContent() {
   // States para Pending Requests
-  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
-  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
+  const [pendingRequests, setPendingRequests] = useState<SubAffiliateRequest[]>([]);
   const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
-  const [rejectingRequest, setRejectingRequest] = useState<any | null>(null);
+  const [rejectingRequest, setRejectingRequest] = useState<SubAffiliateRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
 
@@ -2423,8 +2438,6 @@ function SubAffiliatesContent() {
         setPendingRequests(data || []);
       } catch (error) {
         console.error('Error loading pending requests:', error);
-      } finally {
-        setIsLoadingRequests(false);
       }
     }
 
@@ -2432,7 +2445,7 @@ function SubAffiliatesContent() {
   }, []);
 
   // Aprovar request
-  const handleApproveRequest = async (request: any) => {
+  const handleApproveRequest = async (request: SubAffiliateRequest) => {
     if (!request.profiles) return;
     
     setApprovingRequestId(request.id);

@@ -5,10 +5,39 @@ import { supabase } from '@/lib/supabase/client';
 import { Users, Copy, Check, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+// Types
+interface SubAffiliateData {
+  id: string;
+  player_id: string;
+  referral_code: string;
+  created_at: string;
+}
+
+interface Referral {
+  id: string;
+  sub_affiliate_id: string;
+  referred_player_id: string;
+  player_deal_id: string | null;
+  status: string;
+  created_at: string;
+  referred_player?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  player_deal?: {
+    id: string;
+    status: string;
+    deal?: {
+      name: string;
+    };
+  };
+}
+
 export default function AffiliatePanel() {
   const router = useRouter();
-  const [subAffiliateData, setSubAffiliateData] = useState<any>(null);
-  const [myReferrals, setMyReferrals] = useState<any[]>([]);
+  const [subAffiliateData, setSubAffiliateData] = useState<SubAffiliateData | null>(null);
+  const [myReferrals, setMyReferrals] = useState<Referral[]>([]);
   const [isLoadingReferrals, setIsLoadingReferrals] = useState(true);
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -165,7 +194,7 @@ export default function AffiliatePanel() {
             </p>
             <div className="flex items-center gap-3">
               <code className="flex-1 text-3xl font-bold text-purple-400 tracking-wider bg-black/30 rounded-lg px-6 py-4">
-                {subAffiliateData.referral_code}
+                {subAffiliateData?.referral_code}
               </code>
               <button
                 onClick={handleCopyCode}
@@ -193,7 +222,7 @@ export default function AffiliatePanel() {
             </p>
             <div className="flex items-center gap-3">
               <code className="flex-1 text-base text-gray-300 bg-black/30 rounded-lg px-6 py-4 truncate">
-                {`${typeof window !== 'undefined' ? window.location.origin : ''}/deals/ref=${subAffiliateData.referral_code}`}
+                {`${typeof window !== 'undefined' ? window.location.origin : ''}/deals/ref=${subAffiliateData?.referral_code}`}
               </code>
               <button
                 onClick={handleCopyLink}
@@ -218,7 +247,7 @@ export default function AffiliatePanel() {
         {/* My Referrals Section */}
         <div>
           <h2 className="text-2xl font-bold mb-4">My Referrals</h2>
-          <p className="text-gray-400 mb-6">Players you've referred and their performance</p>
+              <p className="text-gray-400 mb-6">Players you&apos;ve referred and their performance</p>
 
           {isLoadingReferrals ? (
             <div className="bg-[#0a0e13] border border-gray-800 rounded-xl p-12 text-center">
