@@ -6,11 +6,14 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import HeaderWithAuth from '@/app/components/HeaderWithAuth';
 import Footer from '@/app/components/Footer';
 import DealDetailsModal from '@/components/DealDetailsModal';
+import SubAffiliateRequestModal from '@/components/SubAffiliateRequestModal';
 import { getPlayerDeals, getPlayerEarnings, type PlayerDeal, type PlayerEarning } from '@/lib/api/playerApi';
+import { supabase } from '@/lib/supabase/client';
 import { 
   ChevronRight,
   HelpCircle,
-  Info
+  Info,
+  Sparkles
 } from 'lucide-react';
 
 // Helper functions
@@ -60,6 +63,15 @@ export default function PlayerDashboard() {
   const [selectedDeal, setSelectedDeal] = useState<DealDetailsType | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+
+  // Sub-Affiliate States
+  const [isSubAffiliateModalOpen, setIsSubAffiliateModalOpen] = useState(false);
+  const [subAffiliateStatus, setSubAffiliateStatus] = useState<'none' | 'pending' | 'approved' | 'rejected'>('none');
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
+
+  // NOVOS STATES para Sub-Affiliate Dashboard
+  const [subAffiliateData, setSubAffiliateData] = useState<any>(null);
 
   // Fetch deals e earnings ao carregar
   useEffect(() => {
@@ -113,6 +125,58 @@ export default function PlayerDashboard() {
     fetchData();
     console.log('🔍 [PlayerDashboard] fetchData() chamado (async)');
   }, []);
+
+  // Check sub-affiliate status
+  useEffect(() => {
+    async function checkSubAffiliateStatus() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsCheckingStatus(false);
+          return;
+        }
+
+        setCurrentUserId(user.id);
+
+        // Verificar se já é sub-affiliate
+        const { data: subAffiliate } = await supabase
+          .from('sub_affiliates')
+          .select('*')
+          .eq('player_id', user.id)
+          .single();
+
+        if (subAffiliate) {
+          setSubAffiliateStatus('approved');
+          setSubAffiliateData(subAffiliate);
+          setIsCheckingStatus(false);
+          return;
+        }
+
+        // Verificar se tem request pendente
+        const { data: request } = await supabase
+          .from('sub_affiliate_requests')
+          .select('status')
+          .eq('player_id', user.id)
+          .eq('status', 'pending')
+          .single();
+
+        if (request) {
+          setSubAffiliateStatus('pending');
+        }
+
+        setIsCheckingStatus(false);
+      } catch (error) {
+        console.error('Error checking sub-affiliate status:', error);
+        setIsCheckingStatus(false);
+      }
+    }
+
+    checkSubAffiliateStatus();
+  }, []);
+
+  const handleRequestSuccess = () => {
+    setSubAffiliateStatus('pending');
+  };
 
   const handleViewDetails = (deal: PlayerDeal) => {
     console.log('🔍 [handleViewDetails] Deal clicado:', deal);
@@ -195,15 +259,102 @@ export default function PlayerDashboard() {
               </p>
             </div>
 
+            {/* ========================================== */}
+            {/* SUB-AFFILIATE CARDS */}
+            {/* ========================================== */}
+
+            {/* Card 1: Become a Sub-Affiliate (quando não é sub) */}
+            {!isCheckingStatus && subAffiliateStatus === 'none' && (
+              <div className="relative">
+                <div className="absolute -top-32 right-0 z-10">
+                  <div className="w-80 bg-gradient-to-br from-emerald-900/20 via-gray-900 to-gray-900 rounded-xl border border-emerald-500/30 p-5 shadow-lg shadow-emerald-500/5">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-emerald-500/10 rounded-lg flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          Become a Sub-Affiliate
+                        </h3>
+                        <p className="text-gray-400 text-sm mb-3 leading-snug">
+                          Refer players and earn rewards!
+                        </p>
+                        <button
+                          onClick={() => setIsSubAffiliateModalOpen(true)}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm rounded-lg transition-all font-semibold"
+                        >
+                          Apply Now →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Card 2: Application Under Review */}
+            {!isCheckingStatus && subAffiliateStatus === 'pending' && (
+              <div className="relative">
+                <div className="absolute -top-32 right-0 z-10">
+                  <div className="w-80 bg-gradient-to-br from-yellow-900/20 via-gray-900 to-gray-900 rounded-xl border border-yellow-500/30 p-5 shadow-lg shadow-yellow-500/5">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-yellow-500/10 rounded-lg flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-yellow-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          Application Under Review
+                        </h3>
+                        <p className="text-gray-400 text-sm leading-snug">
+                          Your application is being reviewed. We'll notify you soon.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Card 3: Sub-Affiliate - Compacto */}
+            {!isCheckingStatus && subAffiliateStatus === 'approved' && subAffiliateData && (
+              <div className="relative">
+                <div className="absolute -top-32 right-0 z-10">
+                  <div className="w-80 bg-gradient-to-br from-purple-900/20 via-gray-900 to-gray-900 rounded-xl border border-purple-500/30 p-5 shadow-lg shadow-purple-500/5">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-purple-500/10 rounded-lg flex-shrink-0">
+                        <Sparkles className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold text-white mb-1">
+                          Sub-Affiliate
+                        </h3>
+                        <p className="text-sm text-gray-400 mb-2">
+                          Code: <code className="text-purple-400 font-semibold">{subAffiliateData.referral_code}</code>
+                        </p>
+                        <button
+                          onClick={() => window.location.href = '/player/dashboard/affiliate'}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm rounded-lg transition-all font-semibold"
+                        >
+                          Access Affiliate Panel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Your Connected Deals Section */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Your Connected Deals</h2>
-                <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></div>
-                  <span className="text-sm font-semibold text-gray-300">
-                    {connectedDeals.length} <span className="text-gray-500">Active Deals</span>
-                  </span>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-2xl font-bold text-white">Your Connected Deals</h2>
+                  <div className="flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></div>
+                    <span className="text-sm font-semibold text-gray-300">
+                      {connectedDeals.length} <span className="text-gray-500">Active</span>
+                    </span>
+                  </div>
                 </div>
               </div>
               {isLoadingDeals ? (
@@ -472,6 +623,14 @@ export default function PlayerDashboard() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         deal={selectedDeal}
+      />
+
+      {/* Sub-Affiliate Request Modal */}
+      <SubAffiliateRequestModal
+        isOpen={isSubAffiliateModalOpen}
+        onClose={() => setIsSubAffiliateModalOpen(false)}
+        onSuccess={handleRequestSuccess}
+        userId={currentUserId}
       />
     </ProtectedRoute>
   );

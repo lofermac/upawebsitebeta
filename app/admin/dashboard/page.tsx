@@ -2116,215 +2116,7 @@ export default function AdminDashboard() {
             )}
 
             {/* Sub-Affiliates Tab */}
-            {activeTab === 'subaffiliates' && (
-              <>
-                {/* Page Title */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                      <h1 className="text-3xl font-bold text-white">Sub-Affiliate Management</h1>
-                    </div>
-                    <button className="px-4 py-2 bg-[#10b981] hover:bg-emerald-600 text-white font-semibold rounded-lg transition-colors duration-200">
-                      + Approve New Sub-Affiliate
-                    </button>
-                  </div>
-                  <p className="text-base text-gray-400 ml-6">Manage partners promoting your deals and track their performance</p>
-                </div>
-
-                {/* Sub-Affiliate Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  {/* Card 1: Active Sub-Affiliates */}
-                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-white">12</p>
-                        <p className="text-sm text-gray-400">Active Sub-Affiliates</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 2: Total Players Referred */}
-                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-purple-500">247</p>
-                        <p className="text-sm text-gray-400">Total Players Referred</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 3: Total Rake Generated */}
-                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-emerald-500">$42,850</p>
-                        <p className="text-sm text-gray-400">Total Rake Generated</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card 4: Commission Paid */}
-                  <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                        <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-2xl font-bold text-orange-500">$8,570</p>
-                        <p className="text-sm text-gray-400">Commission Paid</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Filters & Search */}
-                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-4 mb-6">
-                  <div className="flex flex-col lg:flex-row gap-4 items-center">
-                    {/* Search Input */}
-                    <div className="flex-1 w-full lg:w-auto">
-                      <div className="relative">
-                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        <input 
-                          type="text" 
-                          placeholder="Search sub-affiliates..." 
-                          className="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Tier Filter */}
-                    <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[180px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
-                      <option>All Tiers</option>
-                      <option>Bronze (0-50 players)</option>
-                      <option>Silver (51-100 players)</option>
-                      <option>Gold (101+ players)</option>
-                    </select>
-
-                    {/* Status Filter */}
-                    <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[140px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
-                      <option>All Status</option>
-                      <option>Active</option>
-                      <option>Pending</option>
-                      <option>Suspended</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Sub-Affiliates Table */}
-                <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-900/50 border-b border-gray-800">
-                        <tr>
-                          <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Sub-Affiliate</th>
-                          <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Players</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Total Rake</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Commission</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Tier</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
-                          <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {[
-                          { id: 1, name: 'Michael Rodriguez', email: 'm.rodriguez@email.com', players: 64, rake: '$12,450', commission: '$2,490', tier: 'Silver', status: 'Active' },
-                          { id: 2, name: 'James Wilson', email: 'j.wilson@email.com', players: 52, rake: '$8,750', commission: '$1,750', tier: 'Silver', status: 'Active' },
-                          { id: 3, name: 'Alexandra Turner', email: 'alex.turner@email.com', players: 28, rake: '$4,230', commission: '$846', tier: 'Bronze', status: 'Active' },
-                          { id: 4, name: 'Thomas Martinez', email: 't.martinez@email.com', players: 45, rake: '$6,890', commission: '$1,378', tier: 'Bronze', status: 'Active' },
-                          { id: 5, name: 'Sophie Anderson', email: 'sophie.a@email.com', players: 18, rake: '$2,450', commission: '$490', tier: 'Bronze', status: 'Active' },
-                          { id: 6, name: 'Daniel Cooper', email: 'd.cooper@email.com', players: 31, rake: '$5,120', commission: '$1,024', tier: 'Bronze', status: 'Active' },
-                          { id: 7, name: 'Emma Williams', email: 'emma.w@email.com', players: 9, rake: '$1,960', commission: '$392', tier: 'Bronze', status: 'Pending' },
-                        ].map((affiliate) => (
-                          <tr key={affiliate.id} className="hover:bg-gray-900/30 transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                                  {affiliate.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <span className="text-sm font-medium text-white">{affiliate.name}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-400">{affiliate.email}</td>
-                            <td className="px-6 py-4 text-center text-sm font-semibold text-blue-400">{affiliate.players}</td>
-                            <td className="px-6 py-4 text-center text-sm font-semibold text-emerald-500">{affiliate.rake}</td>
-                            <td className="px-6 py-4 text-center text-sm font-semibold text-orange-400">{affiliate.commission}</td>
-                            <td className="px-6 py-4 text-center">
-                              <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${
-                                affiliate.tier === 'Gold' 
-                                  ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' 
-                                  : affiliate.tier === 'Silver'
-                                  ? 'bg-gray-400/10 text-gray-300 border-gray-400/20'
-                                  : 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                              }`}>
-                                {affiliate.tier}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                                affiliate.status === 'Active' 
-                                  ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-                                  : affiliate.status === 'Pending'
-                                  ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-                                  : 'bg-red-500/10 text-red-500 border-red-500/20'
-                              }`}>
-                                {affiliate.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors">
-                                View
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Pagination */}
-                  <div className="px-6 py-4 border-t border-gray-800 flex items-center justify-between">
-                    <div className="text-sm text-gray-400">
-                      Showing 1 to 7 of 12 sub-affiliates
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
-                        Previous
-                      </button>
-                      <button className="px-4 py-2 bg-emerald-500 text-white text-sm rounded-lg font-semibold">
-                        1
-                      </button>
-                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
-                        2
-                      </button>
-                      <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-sm rounded-lg transition-colors">
-                        Next
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+            {activeTab === 'subaffiliates' && <SubAffiliatesContent />}
 
             {/* Website Tab */}
             {activeTab === 'website' && (
@@ -2580,6 +2372,467 @@ interface DealData {
   requested_at: string;
   rejection_reason?: string | null;
   admin_notes?: string | null;
+}
+
+// Função para gerar código de referral único
+function generateReferralCode(playerName: string): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const randomPart = Array.from({ length: 3 }, () => 
+    chars.charAt(Math.floor(Math.random() * chars.length))
+  ).join('');
+  
+  // Pegar primeiras letras do nome (máx 6 caracteres)
+  const namePart = playerName
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '')
+    .substring(0, 6);
+  
+  return `${namePart}${randomPart}`;
+  // Exemplo: "LEONARDO" + "X7K" = "LEONARDX7K"
+}
+
+// Sub-Affiliates Management Component
+function SubAffiliatesContent() {
+  // States para Pending Requests
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [isLoadingRequests, setIsLoadingRequests] = useState(true);
+  const [approvingRequestId, setApprovingRequestId] = useState<string | null>(null);
+  const [rejectingRequest, setRejectingRequest] = useState<any | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [isSubmittingAction, setIsSubmittingAction] = useState(false);
+
+  // Carregar pending requests
+  useEffect(() => {
+    async function loadPendingRequests() {
+      try {
+        const { data, error } = await supabase
+          .from('sub_affiliate_requests')
+          .select(`
+            *,
+            profiles!sub_affiliate_requests_player_id_fkey(
+              id,
+              full_name,
+              email
+            )
+          `)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        setPendingRequests(data || []);
+      } catch (error) {
+        console.error('Error loading pending requests:', error);
+      } finally {
+        setIsLoadingRequests(false);
+      }
+    }
+
+    loadPendingRequests();
+  }, []);
+
+  // Aprovar request
+  const handleApproveRequest = async (request: any) => {
+    if (!request.profiles) return;
+    
+    setApprovingRequestId(request.id);
+    setIsSubmittingAction(true);
+
+    try {
+      // 1. Gerar código de referral
+      const referralCode = generateReferralCode(request.profiles.full_name);
+
+      // 2. Criar sub-affiliate
+      const { error: createError } = await supabase
+        .from('sub_affiliates')
+        .insert({
+          player_id: request.player_id,
+          referral_code: referralCode,
+          status: 'active',
+          approved_deals: [],
+          total_referrals: 0,
+          total_rake_generated: 0,
+        });
+
+      if (createError) throw createError;
+
+      // 3. Atualizar request para approved
+      const { error: updateError } = await supabase
+        .from('sub_affiliate_requests')
+        .update({
+          status: 'approved',
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', request.id);
+
+      if (updateError) throw updateError;
+
+      // 4. Remover da lista
+      setPendingRequests(prev => prev.filter(r => r.id !== request.id));
+      
+      alert(`✅ Sub-affiliate approved! Referral code: ${referralCode}`);
+    } catch (error: unknown) {
+      console.error('Error approving request:', error);
+      alert('❌ Error approving request: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setApprovingRequestId(null);
+      setIsSubmittingAction(false);
+    }
+  };
+
+  // Rejeitar request
+  const handleRejectRequest = async () => {
+    if (!rejectingRequest || !rejectionReason.trim()) return;
+
+    setIsSubmittingAction(true);
+
+    try {
+      const { error } = await supabase
+        .from('sub_affiliate_requests')
+        .update({
+          status: 'rejected',
+          admin_notes: rejectionReason.trim(),
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', rejectingRequest.id);
+
+      if (error) throw error;
+
+      // Remover da lista
+      setPendingRequests(prev => prev.filter(r => r.id !== rejectingRequest.id));
+      
+      setRejectingRequest(null);
+      setRejectionReason('');
+      alert('✅ Request rejected successfully');
+    } catch (error: unknown) {
+      console.error('Error rejecting request:', error);
+      alert('❌ Error rejecting request: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsSubmittingAction(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Page Title */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+            <h1 className="text-3xl font-bold text-white">Sub-Affiliate Management</h1>
+          </div>
+        </div>
+        <p className="text-base text-gray-400 ml-6">Manage partners promoting your deals and track their performance</p>
+      </div>
+
+      {/* Sub-Affiliate Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Card 1: Active Sub-Affiliates */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">12</p>
+              <p className="text-sm text-gray-400">Active Sub-Affiliates</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: Total Players Referred */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-purple-500">247</p>
+              <p className="text-sm text-gray-400">Total Players Referred</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Total Rake Generated */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-emerald-500">$42,850</p>
+              <p className="text-sm text-gray-400">Total Rake Generated</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Commission Paid */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-orange-500">$8,570</p>
+              <p className="text-sm text-gray-400">Commission Paid</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PENDING REQUESTS SECTION */}
+      {pendingRequests.length > 0 && (
+        <div className="bg-gradient-to-br from-yellow-900/20 via-[#0a0e13] to-[#0a0e13] border border-yellow-500/30 rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-white mb-1">
+                Pending Requests
+              </h3>
+              <p className="text-sm text-gray-400">
+                {pendingRequests.length} application{pendingRequests.length !== 1 ? 's' : ''} waiting for review
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {pendingRequests.map((request) => (
+              <div
+                key={request.id}
+                className="bg-[#0a0e13] border border-gray-800 rounded-lg p-5 hover:border-gray-700 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  {/* Info do player */}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center text-white font-bold text-sm">
+                        {request.profiles?.full_name?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold">
+                          {request.profiles?.full_name || 'Unknown'}
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          {request.profiles?.email || 'No email'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Reason */}
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-500 uppercase font-medium mb-1">
+                        Reason
+                      </p>
+                      <p className="text-sm text-gray-300 leading-relaxed">
+                        {request.reason}
+                      </p>
+                    </div>
+
+                    {/* Experience (se tiver) */}
+                    {request.experience && (
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase font-medium mb-1">
+                          Experience
+                        </p>
+                        <p className="text-sm text-gray-300 leading-relaxed">
+                          {request.experience}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Data */}
+                    <p className="text-xs text-gray-500 mt-3">
+                      Applied {new Date(request.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+
+                  {/* Botões de ação */}
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleApproveRequest(request)}
+                      disabled={approvingRequestId === request.id || isSubmittingAction}
+                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      {approvingRequestId === request.id ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      onClick={() => setRejectingRequest(request)}
+                      disabled={isSubmittingAction}
+                      className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-500 hover:text-red-400 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filters & Search */}
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-4 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4 items-center">
+          {/* Search Input */}
+          <div className="flex-1 w-full lg:w-auto">
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input 
+                type="text" 
+                placeholder="Search sub-affiliates..." 
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Tier Filter */}
+          <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[180px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
+            <option>All Tiers</option>
+            <option>Bronze (0-50 players)</option>
+            <option>Silver (51-100 players)</option>
+            <option>Gold (101+ players)</option>
+          </select>
+
+          {/* Status Filter */}
+          <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[140px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
+            <option>All Status</option>
+            <option>Active</option>
+            <option>Pending</option>
+            <option>Suspended</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Sub-Affiliates Table - mockada */}
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-900/50 border-b border-gray-800">
+              <tr>
+                <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Sub-Affiliate</th>
+                <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Players</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Total Rake</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Commission</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Tier</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-800">
+              {/* Dados mockados - tabela existente */}
+              <tr className="hover:bg-gray-900/30 transition-colors">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                      MR
+                    </div>
+                    <span className="text-sm font-medium text-white">Michael Rodriguez</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-400">m.rodriguez@email.com</td>
+                <td className="px-6 py-4 text-center text-sm font-semibold text-blue-400">64</td>
+                <td className="px-6 py-4 text-center text-sm font-semibold text-emerald-500">$12,450</td>
+                <td className="px-6 py-4 text-center text-sm font-semibold text-orange-400">$2,490</td>
+                <td className="px-6 py-4 text-center">
+                  <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium border bg-gray-400/10 text-gray-300 border-gray-400/20">
+                    Silver
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                    Active
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-center">
+                  <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors">
+                    View
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal de Rejeição */}
+      {rejectingRequest && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => !isSubmittingAction && setRejectingRequest(null)}
+        >
+          <div
+            className="bg-gradient-to-br from-[#0a0e13] via-[#0f1419] to-[#0a0e13] rounded-2xl max-w-lg w-full border border-gray-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-800">
+              <h2 className="text-xl font-bold text-white">
+                Reject Sub-Affiliate Request
+              </h2>
+              <button
+                onClick={() => setRejectingRequest(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+                disabled={isSubmittingAction}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <p className="text-gray-300 mb-4">
+                Rejecting request from <strong>{rejectingRequest.profiles?.full_name}</strong>
+              </p>
+
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Reason for rejection *
+              </label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+                className="w-full bg-[#0f1419] border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder="Explain why this request is being rejected..."
+                disabled={isSubmittingAction}
+              />
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-3 p-6 border-t border-gray-800">
+              <button
+                onClick={() => setRejectingRequest(null)}
+                className="px-6 py-2.5 bg-[#0f1419] hover:bg-gray-800 text-white rounded-lg transition-colors"
+                disabled={isSubmittingAction}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectRequest}
+                disabled={!rejectionReason.trim() || isSubmittingAction}
+                className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingAction ? 'Rejecting...' : 'Reject Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 // Deal Requests Component
