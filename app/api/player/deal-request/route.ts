@@ -4,13 +4,13 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    // Criar cookieStore uma única vez (Next.js 15)
-    const cookieStore = await cookies();
-    
-    // Criar cliente Supabase com cookieStore resolvido
+    // Criar cliente Supabase (Next.js 15)
     const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore 
+      cookies
     });
+    
+    // Obter cookieStore para uso posterior
+    const cookieStore = await cookies();
     
     // DEBUG: Log de cookies
     console.log('🔍 DEBUG - Cookies disponíveis:', {
