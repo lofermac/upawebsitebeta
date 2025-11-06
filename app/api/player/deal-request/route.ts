@@ -4,10 +4,48 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    // Criar cookieStore uma única vez (Next.js 15)
+    const cookieStore = await cookies();
     
+    // Criar cliente Supabase com cookieStore resolvido
+    const supabase = createRouteHandlerClient({ 
+      cookies: () => cookieStore 
+    });
+    
+    // DEBUG: Log de cookies
+    console.log('🔍 DEBUG - Cookies disponíveis:', {
+      hasCookieStore: !!cookieStore,
+      allCookies: cookieStore.getAll().map(c => c.name)
+    });
+
     // 1. Verificar autenticação
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Primeiro, tentar pegar do header Authorization (prioridade)
+    const authHeader = request.headers.get('authorization');
+    let user = null;
+    let authError = null;
+
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      console.log('🔍 DEBUG - Token encontrado no header');
+      
+      const { data, error } = await supabase.auth.getUser(token);
+      user = data.user;
+      authError = error;
+    } else {
+      // Fallback: tentar pegar dos cookies
+      console.log('🔍 DEBUG - Tentando autenticação via cookies');
+      const { data, error } = await supabase.auth.getUser();
+      user = data.user;
+      authError = error;
+    }
+
+    // DEBUG: Log de autenticação
+    console.log('🔍 DEBUG - Auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      hasError: !!authError,
+      errorMessage: authError?.message
+    });
     
     if (authError || !user) {
       return NextResponse.json(
@@ -69,7 +107,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 7. Inserir deal request
+    // ============================================
+    // 1. INSERIR PLAYER_DEAL
+    // ============================================
+
     const { data: newDeal, error: insertError } = await supabase
       .from('player_deals')
       .insert({
@@ -83,13 +124,88 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (insertError) {
-      console.error('Insert error:', insertError);
+    if (insertError || !newDeal) {
+      console.error('Error inserting deal:', insertError);
       return NextResponse.json(
-        { success: false, error: 'Failed to submit deal request' },
+        { success: false, error: insertError?.message || 'Failed to create deal request' },
         { status: 500 }
       );
     }
+
+    // ============================================
+    // 2. VERIFICAR E PROCESSAR REFERRAL
+    // ============================================
+
+    try {
+      // Buscar cookie de referral (reutilizando cookieStore do início)
+      const referralCookie = cookieStore.get('referrer_code');
+      
+      if (referralCookie?.value) {
+        console.log('🎯 Referral code encontrado no cookie:', referralCookie.value);
+        
+        // Buscar sub-affiliate pelo código
+        const { data: subAffiliate, error: subAffError } = await supabase
+          .from('sub_affiliates')
+          .select('id, referral_code, total_referrals')
+          .eq('referral_code', referralCookie.value)
+          .eq('status', 'active')
+          .single();
+        
+        if (subAffError || !subAffiliate) {
+          console.log('⚠️ Sub-affiliate não encontrado ou inativo:', referralCookie.value);
+        } else {
+          console.log('✅ Sub-affiliate encontrado:', subAffiliate.id);
+          
+          // Verificar se player JÁ foi referido por alguém (evitar duplicatas)
+          const { data: existingReferral } = await supabase
+            .from('referrals')
+            .select('id')
+            .eq('referred_player_id', user.id)
+            .single();
+          
+          if (existingReferral) {
+            console.log('ℹ️ Player já tem referral existente - mantendo original');
+          } else {
+            // Criar registro de referral
+            const { error: referralError } = await supabase
+              .from('referrals')
+              .insert({
+                sub_affiliate_id: subAffiliate.id,
+                referred_player_id: user.id,
+                referral_code_used: referralCookie.value,
+                player_deal_id: newDeal.id,
+                status: 'pending', // Mesmo status do deal
+                created_at: new Date().toISOString()
+              });
+            
+            if (referralError) {
+              console.error('❌ Erro ao criar referral:', referralError);
+            } else {
+              console.log('🎉 Referral criado com sucesso!');
+              
+              // Incrementar contador no sub-affiliate
+              await supabase
+                .from('sub_affiliates')
+                .update({
+                  total_referrals: subAffiliate.total_referrals ? subAffiliate.total_referrals + 1 : 1
+                })
+                .eq('id', subAffiliate.id);
+              
+              console.log('📊 Contador de referrals atualizado');
+            }
+          }
+        }
+      } else {
+        console.log('ℹ️ Nenhum cookie de referral encontrado');
+      }
+    } catch (referralError) {
+      console.error('⚠️ Erro ao processar referral (não crítico):', referralError);
+      // Não retornar erro - deal request já foi criado com sucesso
+    }
+
+    // ============================================
+    // 3. RETORNAR SUCESSO
+    // ============================================
 
     return NextResponse.json({
       success: true,

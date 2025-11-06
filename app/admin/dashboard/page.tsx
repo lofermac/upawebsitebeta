@@ -2920,7 +2920,9 @@ function DealRequestsContent() {
   async function handleApprove(dealId: string) {
     try {
       const { supabase } = await import('@/lib/supabase/client');
-      const { error } = await supabase
+      
+      // 1. Aprovar o deal
+      const { error: dealError } = await supabase
         .from('player_deals')
         .update({
           status: 'approved',
@@ -2928,7 +2930,21 @@ function DealRequestsContent() {
         })
         .eq('id', dealId);
 
-      if (error) throw error;
+      if (dealError) throw dealError;
+
+      // 2. Atualizar referral relacionado (se existir)
+      const { error: referralError } = await supabase
+        .from('referrals')
+        .update({
+          status: 'active',
+        })
+        .eq('player_deal_id', dealId);
+
+      // Não lançar erro se referral não existir (nem todo deal tem referral)
+      if (referralError) {
+        console.warn('Referral update warning:', referralError);
+      }
+
       fetchDeals();
     } catch (error) {
       console.error('Error approving deal:', error);

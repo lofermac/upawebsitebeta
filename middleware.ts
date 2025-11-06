@@ -1,33 +1,60 @@
-import { createClient } from '@supabase/supabase-js'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  // LOG DE TODOS OS COOKIES
-  console.log('🍪 TODOS OS COOKIES:', request.cookies.getAll().map(c => c.name))
+  const { pathname, searchParams } = request.nextUrl;
 
-  // Rotas protegidas
-  const isPlayerRoute = request.nextUrl.pathname.startsWith('/player')
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
-
-  // Se não é rota protegida, deixa passar
-  if (!isPlayerRoute && !isAdminRoute) {
-    return NextResponse.next()
+  // ============================================
+  // TRACKING DE REFERRAL
+  // ============================================
+  
+  // Verificar se tem query param ref=CODIGO
+  const referralCode = searchParams.get('ref');
+  
+  if (referralCode && pathname === '/deals') {
+    // Verificar se JÁ tem cookie (first click wins)
+    const existingReferral = request.cookies.get('referrer_code');
+    
+    const response = NextResponse.redirect(new URL('/deals', request.url));
+    
+    // Só salvar cookie se NÃO existir (first click wins)
+    if (!existingReferral) {
+      response.cookies.set('referrer_code', referralCode, {
+        maxAge: 60 * 60 * 24 * 7, // 7 dias em segundos
+        path: '/',
+        httpOnly: false, // Precisa ser acessível no client-side também
+        sameSite: 'lax',
+      });
+      
+      console.log('🎯 Referral code saved:', referralCode);
+    } else {
+      console.log('🔒 Referral já existe (first click wins):', existingReferral.value);
+    }
+    
+    return response;
   }
 
-  console.log('🛡️ Middleware: Rota protegida acessada:', request.nextUrl.pathname)
+  // ============================================
+  // PROTEÇÃO DE ROTAS (código existente)
+  // ============================================
+  
+  const isPlayerRoute = pathname.startsWith('/player');
+  const isAdminRoute = pathname.startsWith('/admin');
 
-  // Para rotas protegidas, deixar o cliente verificar a sessão
-  // O middleware apenas passa adiante, e os componentes ProtectedRoute farão a verificação real
-  const response = NextResponse.next()
+  if (!isPlayerRoute && !isAdminRoute) {
+    return NextResponse.next();
+  }
+
+  const response = NextResponse.next();
+  response.headers.set('x-middleware-verified', 'true');
   
-  // Adicionar header para informar que passou pelo middleware
-  response.headers.set('x-middleware-verified', 'true')
-  
-  console.log('🛡️ Middleware: Permitindo acesso (verificação será feita no cliente)')
-  
-  return response
+  return response;
 }
 
 export const config = {
-  matcher: ['/player/:path*', '/admin/:path*'],
-}
+  matcher: [
+    '/deals',           // Adicionar /deals ao matcher
+    '/player/:path*',
+    '/admin/:path*',
+  ],
+};

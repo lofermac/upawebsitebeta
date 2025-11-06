@@ -74,45 +74,48 @@ export async function requestDeal(data: DealRequest): Promise<{
   error?: string;
 }> {
   try {
-    // 1. Verificar se está autenticado
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // 1. Verificar autenticação e pegar token (client-side)
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    if (authError || !user) {
-      return { success: false, error: 'Not authenticated' };
+    if (sessionError || !session) {
+      return { success: false, error: 'Not authenticated. Please login first.' };
     }
 
-    // 2. Inserir deal request
-    const { data: newDeal, error: insertError } = await supabase
-      .from('player_deals')
-      .insert({
-        user_id: user.id,
-        deal_id: data.dealId,
-        platform_username: data.platformUsername,
-        platform_email: data.platformEmail,
-        status: 'pending',
-      })
-      .select()
-      .single();
+    // 2. Fazer request para API Route COM token no header
+    const response = await fetch('/api/player/deal-request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`, // ← TOKEN EXPLÍCITO
+      },
+      body: JSON.stringify({
+        dealId: data.dealId,
+        platformUsername: data.platformUsername,
+        platformEmail: data.platformEmail,
+      }),
+      credentials: 'include', // Mantém para enviar outros cookies (referral_code)
+    });
 
-    if (insertError) {
-      console.error('Insert error:', insertError);
-      
-      // Checar se é duplicata
-      if (insertError.code === '23505') {
-        return { success: false, error: 'You already have a request for this deal' };
-      }
-      
-      return { success: false, error: insertError.message };
+    const result = await response.json();
+
+    if (!response.ok) {
+      return { 
+        success: false, 
+        error: result.error || `Request failed with status ${response.status}` 
+      };
     }
 
     return {
       success: true,
-      dealRequestId: newDeal.id,
-      message: 'Deal request submitted successfully. Our team will review it shortly.'
+      dealRequestId: result.dealRequestId,
+      message: result.message || 'Deal request submitted successfully. Our team will review it shortly.'
     };
   } catch (error: unknown) {
     console.error('Request deal error:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Network error' };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Network error' 
+    };
   }
 }
 

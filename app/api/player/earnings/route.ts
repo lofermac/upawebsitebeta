@@ -4,7 +4,11 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    // Criar cookieStore (Next.js 15)
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({ 
+      cookies: () => cookieStore 
+    });
     
     // 1. Verificar autenticação
     const { data: { user }, error: authError } = await supabase.auth.getUser();
