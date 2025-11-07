@@ -10,7 +10,8 @@ import {
   Save,
   AlertCircle,
   CheckCircle,
-  Loader
+  Loader,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,16 +29,55 @@ export default function EditArticlePage() {
   const [author, setAuthor] = useState('');
   const [category, setCategory] = useState('');
   const [excerpt, setExcerpt] = useState('');
+  const [featuredImage, setFeaturedImage] = useState('');
   const [content, setContent] = useState<string>('');
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [showFloatingSave, setShowFloatingSave] = useState(false);
   
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+
+  // Show floating button when Article Content section is in view
+  useEffect(() => {
+    // Wait for DOM to be ready
+    const timer = setTimeout(() => {
+      // Find the Article Content section (the one with TipTap editor)
+      const contentSection = document.querySelector('h2');
+      
+      if (!contentSection) {
+        console.log('Content section not found');
+        return;
+      }
+
+      // Create Intersection Observer to detect when Article Content is visible
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          // Show button when Article Content section is OUT of viewport (scrolled past it)
+          const shouldShow = !entry.isIntersecting;
+          console.log('Article Content visible:', entry.isIntersecting, 'Show button:', shouldShow);
+          setShowFloatingSave(shouldShow);
+        },
+        {
+          threshold: 0.1, // Trigger when at least 10% is visible
+          rootMargin: '0px'
+        }
+      );
+
+      observer.observe(contentSection);
+
+      // Cleanup
+      return () => {
+        observer.unobserve(contentSection);
+      };
+    }, 500); // Small delay to ensure DOM is loaded
+
+    return () => clearTimeout(timer);
+  }, [loading]); // Re-run when loading changes (article loaded)
 
   useEffect(() => {
     if (id) {
@@ -62,6 +102,7 @@ export default function EditArticlePage() {
         setAuthor(data.author || '');
         setCategory(data.category || '');
         setExcerpt(data.excerpt || '');
+        setFeaturedImage(data.featured_image || '');
         setContent(data.content || '');
         setStatus(data.status || 'draft');
       }
@@ -95,6 +136,7 @@ export default function EditArticlePage() {
         author,
         category,
         excerpt,
+        featured_image: featuredImage || null,
         content,
         status,
         published_at: status === 'published' ? new Date().toISOString() : null,
@@ -119,6 +161,24 @@ export default function EditArticlePage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePreview = () => {
+    // Store current article data in sessionStorage for preview
+    const previewData = {
+      title,
+      author,
+      category,
+      excerpt,
+      featured_image: featuredImage,
+      content,
+      created_at: new Date().toISOString()
+    };
+    
+    sessionStorage.setItem('newsPreview', JSON.stringify(previewData));
+    
+    // Open preview in new tab
+    window.open('/admin/website/news/preview', '_blank');
   };
 
   const validateField = (field: string, value: string): boolean => {
@@ -147,30 +207,32 @@ export default function EditArticlePage() {
     <ProtectedRoute allowedUserType="admin">
       <div className="min-h-screen bg-black text-white">
         {/* Header */}
-        <div className="border-b border-white/10 bg-gradient-to-b from-zinc-900/50 to-black/50 backdrop-blur-xl sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+        <header className="bg-gradient-to-r from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] border-b border-gray-800/50">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              {/* Left Section - Navigation & Title */}
+              <div className="flex items-center gap-6">
                 <Link 
                   href="/admin/website/news"
-                  className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+                  className="p-2.5 rounded-lg hover:bg-white/[0.05] border border-transparent hover:border-gray-800 transition-all duration-300"
                 >
-                  <ArrowLeft className="w-5 h-5" />
+                  <ArrowLeft className="w-5 h-5 text-gray-400" />
                 </Link>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                    Edit Article
-                  </h1>
-                  <p className="text-sm text-gray-400 mt-1">
-                    Update your article
-                  </p>
+                
+                <div className="hidden sm:block w-px h-8 bg-gradient-to-b from-transparent via-gray-700 to-transparent"></div>
+                
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-widest text-gray-500 font-semibold">News Management</span>
+                  <span className="text-base font-semibold text-white">Edit Article</span>
                 </div>
               </div>
+
+              {/* Right Section - Actions */}
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleSave}
                   disabled={!title.trim() || saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#077124] hover:bg-[#0a9b30] rounded-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                 >
                   {saving ? (
                     <>
@@ -187,15 +249,15 @@ export default function EditArticlePage() {
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Main Content */}
+        {/* Main Content - Single Column */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           
           {/* Success Message */}
           {saveSuccess && (
             <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <CheckCircle className="w-5 h-5 text-green-400" />
               <p className="text-green-400 text-sm">{saveSuccess}</p>
             </div>
           )}
@@ -210,7 +272,10 @@ export default function EditArticlePage() {
 
           {/* Article Info Section */}
           <div className="mb-6 p-6 bg-zinc-900/50 border border-white/10 rounded-2xl">
-            <h2 className="text-lg font-semibold mb-6">Article Information</h2>
+            <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <span className="text-2xl">📰</span>
+              Article Information
+            </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column */}
@@ -261,19 +326,49 @@ export default function EditArticlePage() {
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Category
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
-                    placeholder="e.g. Tournaments, News, Strategy"
-                  />
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124] text-white"
+                  >
+                    <option value="" className="bg-zinc-800">Select a category...</option>
+                    <option value="Universal Poker Promotions" className="bg-zinc-800">Universal Poker Promotions</option>
+                    <option value="General News" className="bg-zinc-800">General News</option>
+                    <option value="Poker Site Promotions" className="bg-zinc-800">Poker Site Promotions</option>
+                  </select>
                   <p className="text-xs text-gray-500 mt-1">💡 Article category for organization</p>
                 </div>
               </div>
 
               {/* Right Column */}
               <div className="space-y-4">
+                {/* Featured Image */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Featured Image URL
+                  </label>
+                  <input
+                    type="url"
+                    value={featuredImage}
+                    onChange={(e) => setFeaturedImage(e.target.value)}
+                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">💡 Main image displayed at the top of the article</p>
+                  {featuredImage && (
+                    <div className="mt-3 relative rounded-lg overflow-hidden border border-white/10">
+                      <img 
+                        src={featuredImage} 
+                        alt="Featured preview" 
+                        className="w-full h-32 object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 {/* Excerpt */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -310,14 +405,52 @@ export default function EditArticlePage() {
 
           {/* Content Section */}
           <div className="p-6 bg-zinc-900/50 border border-white/10 rounded-2xl">
-            <h2 className="text-lg font-semibold mb-2">Article Content</h2>
-            <p className="text-sm text-gray-400 mb-4">Use the rich text editor to format your article</p>
+            <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+              <span className="text-2xl">✍️</span>
+              Article Content
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">Use the rich text editor and premium blocks to create your article</p>
             
             <TiptapEditor
               content={content}
               onChange={(newContent) => setContent(newContent)}
             />
           </div>
+        </div>
+
+        {/* Floating Action Buttons - Appear when scrolled past Article Content */}
+        <div className={`fixed bottom-8 right-8 z-[9999] flex flex-col gap-3 transition-all duration-500 ease-out ${
+          showFloatingSave 
+            ? 'translate-y-0 opacity-100 scale-100 pointer-events-auto' 
+            : 'translate-y-20 opacity-0 scale-90 pointer-events-none'
+        }`}>
+          {/* Preview Button */}
+          <button
+            onClick={handlePreview}
+            className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl text-sm font-semibold shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300"
+          >
+            <Eye className="w-5 h-5" />
+            <span>Preview</span>
+          </button>
+
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            disabled={!title.trim() || saving}
+            className="group relative flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-xl text-sm font-semibold shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+          >
+            {saving ? (
+              <>
+                <Loader className="w-5 h-5 animate-spin" />
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                <span>Save Changes</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </ProtectedRoute>

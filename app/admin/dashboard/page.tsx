@@ -2407,6 +2407,49 @@ interface SubAffiliateRequest {
   message?: string;
 }
 
+interface SubAffiliate {
+  id: string;
+  player_id: string;
+  referral_code: string;
+  status: string;
+  approved_deals: string[];
+  total_referrals: number;
+  total_rake_generated: number;
+  created_at: string;
+  updated_at?: string;
+  profiles?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  calculated_rake?: number;
+}
+
+interface Referral {
+  id: string;
+  sub_affiliate_id: string;
+  referred_player_id: string;
+  player_deal_id: string | null;
+  status?: string;
+  created_at: string;
+  referred_player?: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
+  player_deal?: {
+    id: string;
+    platform_username: string;
+    platform_email: string;
+    status: string;
+    deal?: {
+      name: string;
+    };
+  };
+  total_earnings?: number;
+  earnings_count?: number;
+}
+
 // Sub-Affiliates Management Component
 function SubAffiliatesContent() {
   // States para Pending Requests
@@ -2415,6 +2458,24 @@ function SubAffiliatesContent() {
   const [rejectingRequest, setRejectingRequest] = useState<SubAffiliateRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
+
+  // States para Sub-Affiliates e Estatísticas
+  const [subAffiliates, setSubAffiliates] = useState<SubAffiliate[]>([]);
+  const [stats, setStats] = useState({
+    activeCount: 0,
+    totalPlayers: 0,
+    totalRake: 0
+  });
+
+  // States para Filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'inactive'
+
+  // States para Modal de Detalhes
+  const [selectedSubAffiliate, setSelectedSubAffiliate] = useState<SubAffiliate | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalReferrals, setModalReferrals] = useState<Referral[]>([]);
+  const [isLoadingReferrals, setIsLoadingReferrals] = useState(false);
 
   // Carregar pending requests
   useEffect(() => {
@@ -2443,6 +2504,163 @@ function SubAffiliatesContent() {
 
     loadPendingRequests();
   }, []);
+
+  // Carregar sub-affiliates aprovados e estatísticas
+  useEffect(() => {
+    async function loadSubAffiliates() {
+      try {
+        // Buscar todos sub-affiliates com dados do profile E rake dos referrals
+        const { data: subAffiliates, error } = await supabase
+          .from('sub_affiliates')
+          .select(`
+            *,
+            profiles!sub_affiliates_player_id_fkey(
+              id,
+              full_name,
+              email
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        // Para cada sub-affiliate, calcular o rake total dos seus referrals
+        const subAffiliatesWithRake = await Promise.all(
+          (subAffiliates || []).map(async (subAffiliate) => {
+            // Buscar todos os referrals deste sub-affiliate
+            const { data: referrals, error: refError } = await supabase
+              .from('referrals')
+              .select('player_deal_id')
+              .eq('sub_affiliate_id', subAffiliate.id);
+            
+            if (refError || !referrals || referrals.length === 0) {
+              return { ...subAffiliate, calculated_rake: 0 };
+            }
+            
+            // Extrair player_deal_ids
+            const playerDealIds = referrals
+              .map(r => r.player_deal_id)
+              .filter(id => id !== null);
+            
+            if (playerDealIds.length === 0) {
+              return { ...subAffiliate, calculated_rake: 0 };
+            }
+            
+            // Buscar earnings desses player_deals
+            const { data: earnings, error: earnError } = await supabase
+              .from('player_earnings')
+              .select('net_rake')
+              .in('player_deal_id', playerDealIds);
+            
+            if (earnError || !earnings) {
+              return { ...subAffiliate, calculated_rake: 0 };
+            }
+            
+            // Somar net_rake
+            const totalRake = earnings.reduce((sum, e) => sum + (parseFloat(e.net_rake) || 0), 0);
+            
+            return { ...subAffiliate, calculated_rake: totalRake };
+          })
+        );
+        
+        // Calcular estatísticas
+        const activeCount = subAffiliatesWithRake.filter(sa => sa.status === 'active').length;
+        const totalPlayers = subAffiliatesWithRake.reduce((sum, sa) => sum + (sa.total_referrals || 0), 0);
+        const totalRake = subAffiliatesWithRake.reduce((sum, sa) => sum + (sa.calculated_rake || 0), 0);
+        
+        setSubAffiliates(subAffiliatesWithRake);
+        setStats({
+          activeCount,
+          totalPlayers,
+          totalRake
+        });
+      } catch (error) {
+        console.error('Error loading sub-affiliates:', error);
+      }
+    }
+
+    loadSubAffiliates();
+  }, []);
+
+  // Filtrar sub-affiliates baseado em search e status
+  const filteredSubAffiliates = subAffiliates.filter(subAffiliate => {
+    // Filtro de search (nome ou email)
+    const matchesSearch = searchTerm === '' || 
+      subAffiliate.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subAffiliate.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      subAffiliate.referral_code?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtro de status
+    const matchesStatus = statusFilter === 'all' || 
+      subAffiliate.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Abrir modal e carregar referrals detalhados
+  const handleViewDetails = async (subAffiliate: SubAffiliate) => {
+    setSelectedSubAffiliate(subAffiliate);
+    setIsModalOpen(true);
+    setIsLoadingReferrals(true);
+    
+    try {
+      // Buscar referrals com dados completos
+      const { data: referrals, error } = await supabase
+        .from('referrals')
+        .select(`
+          *,
+          referred_player:profiles!referrals_referred_player_id_fkey(
+            id,
+            full_name,
+            email
+          ),
+          player_deal:player_deals!referrals_player_deal_id_fkey(
+            id,
+            platform_username,
+            platform_email,
+            status,
+            deal:deals(
+              name
+            )
+          )
+        `)
+        .eq('sub_affiliate_id', subAffiliate.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Para cada referral, buscar earnings
+      const referralsWithEarnings = await Promise.all(
+        (referrals || []).map(async (referral) => {
+          if (!referral.player_deal_id) {
+            return { ...referral, total_earnings: 0, earnings_count: 0 };
+          }
+          
+          const { data: earnings } = await supabase
+            .from('player_earnings')
+            .select('net_rake')
+            .eq('player_deal_id', referral.player_deal_id);
+          
+          const totalEarnings = (earnings || []).reduce(
+            (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+            0
+          );
+          
+          return {
+            ...referral,
+            total_earnings: totalEarnings,
+            earnings_count: earnings?.length || 0
+          };
+        })
+      );
+      
+      setModalReferrals(referralsWithEarnings);
+    } catch (error) {
+      console.error('Error loading referral details:', error);
+    } finally {
+      setIsLoadingReferrals(false);
+    }
+  };
 
   // Aprovar request
   const handleApproveRequest = async (request: SubAffiliateRequest) => {
@@ -2534,12 +2752,18 @@ function SubAffiliatesContent() {
             <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
             <h1 className="text-3xl font-bold text-white">Sub-Affiliate Management</h1>
           </div>
+          {/* Contador de resultados filtrados */}
+          {(searchTerm || statusFilter !== 'all') && (
+            <div className="text-sm text-gray-400">
+              Showing <span className="text-white font-semibold">{filteredSubAffiliates.length}</span> of <span className="text-white font-semibold">{subAffiliates.length}</span> sub-affiliates
+            </div>
+          )}
         </div>
         <p className="text-base text-gray-400 ml-6">Manage partners promoting your deals and track their performance</p>
       </div>
 
-      {/* Sub-Affiliate Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* Sub-Affiliate Stats - DADOS REAIS */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Card 1: Active Sub-Affiliates */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
           <div className="flex items-center gap-4">
@@ -2549,7 +2773,7 @@ function SubAffiliatesContent() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">12</p>
+              <p className="text-2xl font-bold text-white">{stats.activeCount}</p>
               <p className="text-sm text-gray-400">Active Sub-Affiliates</p>
             </div>
           </div>
@@ -2564,7 +2788,7 @@ function SubAffiliatesContent() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-purple-500">247</p>
+              <p className="text-2xl font-bold text-purple-500">{stats.totalPlayers}</p>
               <p className="text-sm text-gray-400">Total Players Referred</p>
             </div>
           </div>
@@ -2579,23 +2803,10 @@ function SubAffiliatesContent() {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-emerald-500">$42,850</p>
+              <p className="text-2xl font-bold text-emerald-500">
+                ${stats.totalRake.toFixed(2)}
+              </p>
               <p className="text-sm text-gray-400">Total Rake Generated</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: Commission Paid */}
-        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
-              <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-500">$8,570</p>
-              <p className="text-sm text-gray-400">Commission Paid</p>
             </div>
           </div>
         </div>
@@ -2700,36 +2911,51 @@ function SubAffiliatesContent() {
           {/* Search Input */}
           <div className="flex-1 w-full lg:w-auto">
             <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search sub-affiliates..."
+                className="w-full bg-[#0a0e13] border border-gray-800 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all"
+              />
+              <svg 
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              <input 
-                type="text" 
-                placeholder="Search sub-affiliates..." 
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-900/50 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors"
-              />
             </div>
           </div>
 
-          {/* Tier Filter */}
-          <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[180px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
-            <option>All Tiers</option>
-            <option>Bronze (0-50 players)</option>
-            <option>Silver (51-100 players)</option>
-            <option>Gold (101+ players)</option>
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full lg:w-auto bg-[#0a0e13] border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all cursor-pointer"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
 
-          {/* Status Filter */}
-          <select className="w-full lg:w-auto px-4 py-2.5 bg-[#0a0e13] border border-gray-700 rounded-lg text-gray-300 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all min-w-[140px] cursor-pointer hover:border-gray-600 [&>option]:bg-[#1a1f2e] [&>option]:text-gray-200 [&>option]:py-2">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Pending</option>
-            <option>Suspended</option>
-          </select>
+          {/* Clear Filters Button */}
+          {(searchTerm || statusFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+              }}
+              className="w-full lg:w-auto px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors text-sm font-medium"
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Sub-Affiliates Table - mockada */}
+      {/* Sub-Affiliates Table - DADOS REAIS */}
       <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -2739,43 +2965,82 @@ function SubAffiliatesContent() {
                 <th className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Email</th>
                 <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Players</th>
                 <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Total Rake</th>
-                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Commission</th>
-                <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Tier</th>
                 <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
                 <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {/* Dados mockados - tabela existente */}
-              <tr className="hover:bg-gray-900/30 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                      MR
-                    </div>
-                    <span className="text-sm font-medium text-white">Michael Rodriguez</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-400">m.rodriguez@email.com</td>
-                <td className="px-6 py-4 text-center text-sm font-semibold text-blue-400">64</td>
-                <td className="px-6 py-4 text-center text-sm font-semibold text-emerald-500">$12,450</td>
-                <td className="px-6 py-4 text-center text-sm font-semibold text-orange-400">$2,490</td>
-                <td className="px-6 py-4 text-center">
-                  <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium border bg-gray-400/10 text-gray-300 border-gray-400/20">
-                    Silver
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <span className="px-3 py-1 rounded-full text-xs font-medium border bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
-                    Active
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <button className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors">
-                    View
-                  </button>
-                </td>
-              </tr>
+              {filteredSubAffiliates.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                    {subAffiliates.length === 0 
+                      ? 'No sub-affiliates found'
+                      : 'No results match your filters'
+                    }
+                  </td>
+                </tr>
+              ) : (
+                filteredSubAffiliates.map((subAffiliate) => {
+                  const initials = subAffiliate.profiles?.full_name
+                    ?.split(' ')
+                    .map((n: string) => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2) || '??';
+
+                  return (
+                    <tr key={subAffiliate.id} className="hover:bg-gray-900/30 transition-colors">
+                      {/* Sub-Affiliate */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                            {initials}
+                          </div>
+                          <span className="text-sm font-medium text-white">
+                            {subAffiliate.profiles?.full_name || 'Unknown'}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Email */}
+                      <td className="px-6 py-4 text-sm text-gray-400">
+                        {subAffiliate.profiles?.email || 'N/A'}
+                      </td>
+
+                      {/* Players */}
+                      <td className="px-6 py-4 text-center text-sm font-semibold text-blue-400">
+                        {subAffiliate.total_referrals || 0}
+                      </td>
+
+                      {/* Total Rake */}
+                      <td className="px-6 py-4 text-center text-sm font-semibold text-emerald-500">
+                        ${(subAffiliate.calculated_rake || 0).toFixed(2)}
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                          subAffiliate.status === 'active'
+                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                            : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                        }`}>
+                          {subAffiliate.status}
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="px-6 py-4 text-center">
+                        <button 
+                          onClick={() => handleViewDetails(subAffiliate)}
+                          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white text-sm rounded-lg transition-colors"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -2839,6 +3104,166 @@ function SubAffiliatesContent() {
                 className="px-6 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmittingAction ? 'Rejecting...' : 'Reject Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Detalhes */}
+      {isModalOpen && selectedSubAffiliate && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0a0e13] border border-gray-800 rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
+            {/* Header do Modal */}
+            <div className="border-b border-gray-800 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                    {selectedSubAffiliate.profiles?.full_name
+                      ?.split(' ')
+                      .map((n: string) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2) || '??'}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">
+                      {selectedSubAffiliate.profiles?.full_name || 'Unknown'}
+                    </h3>
+                    <p className="text-gray-400">
+                      {selectedSubAffiliate.profiles?.email || 'No email'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Stats do Sub-Affiliate */}
+            <div className="grid grid-cols-4 gap-4 p-6 border-b border-gray-800">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-400">
+                  {selectedSubAffiliate.referral_code}
+                </p>
+                <p className="text-sm text-gray-400 mt-1">Referral Code</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-400">
+                  {selectedSubAffiliate.total_referrals || 0}
+                </p>
+                <p className="text-sm text-gray-400 mt-1">Total Referrals</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-emerald-500">
+                  ${(selectedSubAffiliate.calculated_rake || 0).toFixed(2)}
+                </p>
+                <p className="text-sm text-gray-400 mt-1">Total Rake</p>
+              </div>
+              <div className="text-center">
+                <span className={`inline-flex px-4 py-2 rounded-full text-sm font-medium border ${
+                  selectedSubAffiliate.status === 'active'
+                    ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                    : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                }`}>
+                  {selectedSubAffiliate.status}
+                </span>
+                <p className="text-sm text-gray-400 mt-1">Status</p>
+              </div>
+            </div>
+
+            {/* Lista de Referrals */}
+            <div className="p-6 overflow-y-auto max-h-[50vh]">
+              <h4 className="text-lg font-bold text-white mb-4">Referrals ({modalReferrals.length})</h4>
+              
+              {isLoadingReferrals ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mb-4"></div>
+                  <p className="text-gray-400">Loading referrals...</p>
+                </div>
+              ) : modalReferrals.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-400">No referrals yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {modalReferrals.map((referral) => (
+                    <div
+                      key={referral.id}
+                      className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 hover:bg-gray-900/70 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                              {referral.referred_player?.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || '??'}
+                            </div>
+                            <div>
+                              <p className="text-white font-medium">
+                                {referral.referred_player?.full_name || 'Unknown Player'}
+                              </p>
+                              <p className="text-sm text-gray-400">
+                                {referral.referred_player?.email || 'No email'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-4 mt-3">
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Deal</p>
+                              <p className="text-sm text-white">
+                                {referral.player_deal?.deal?.name || 'No deal yet'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Platform Username</p>
+                              <p className="text-sm text-white">
+                                {referral.player_deal?.platform_username || 'N/A'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Earnings</p>
+                              <p className="text-sm font-semibold text-emerald-500">
+                                ${(referral.total_earnings ?? 0).toFixed(2)}
+                                {(referral.earnings_count ?? 0) > 0 && (
+                                  <span className="text-xs text-gray-400 ml-1">
+                                    ({referral.earnings_count} periods)
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                            referral.status === 'active'
+                              ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30'
+                              : referral.status === 'pending'
+                              ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
+                              : 'bg-gray-500/10 text-gray-400 border-gray-500/30'
+                          }`}>
+                            {referral.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-gray-800 p-6">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="w-full px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium"
+              >
+                Close
               </button>
             </div>
           </div>

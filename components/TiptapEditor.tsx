@@ -12,7 +12,28 @@ import { TextAlign } from '@tiptap/extension-text-align';
 import { Underline } from '@tiptap/extension-underline';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  DividerNode,
+  SectionHeadingNode,
+  CTAButtonNode,
+  BannerImageNode,
+  GalleryNode,
+  AccordionNode,
+  BannerCTANode,
+  SignUpCardNode,
+  PremiumTableNode,
+} from '@/lib/tiptap/nodes';
+import {
+  SectionHeadingModal,
+  CTAButtonModal,
+  BannerImageModal,
+  GalleryModal,
+  AccordionModal,
+  BannerCTAModal,
+  SignUpCardModal,
+  PremiumTableModal,
+} from './BlockConfigModals';
 import {
   Bold,
   Italic,
@@ -34,7 +55,15 @@ import {
   Table as TableIcon,
   Plus,
   Trash2,
-  CodeSquare
+  CodeSquare,
+  Megaphone,
+  Image as ImagePlus,
+  Grid3x3,
+  ChevronDown,
+  MousePointerClick,
+  UserPlus,
+  Type,
+  Table2,
 } from 'lucide-react';
 
 interface TiptapEditorProps {
@@ -43,6 +72,9 @@ interface TiptapEditorProps {
 }
 
 export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
+  // Modal states
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -70,6 +102,16 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       Underline,
       TextStyle,
       Color,
+      // Custom Block Nodes
+      DividerNode,
+      SectionHeadingNode,
+      CTAButtonNode,
+      BannerImageNode,
+      GalleryNode,
+      AccordionNode,
+      BannerCTANode,
+      SignUpCardNode,
+      PremiumTableNode,
     ],
     content: content || '<p></p>',
     onUpdate: ({ editor }) => {
@@ -88,6 +130,54 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
       editor.commands.setContent(content);
     }
   }, [content, editor]);
+
+  // Setup accordion click handlers in the editor
+  const setupAccordionHandlers = useCallback(() => {
+    // First, inject content from data-content attribute
+    const accordionBlocks = document.querySelectorAll('.prose-editor .accordion-block[data-content]');
+    accordionBlocks.forEach((accordionBlock) => {
+      const dataContent = accordionBlock.getAttribute('data-content');
+      if (dataContent) {
+        const contentDiv = accordionBlock.querySelector('.accordion-content');
+        if (contentDiv && contentDiv.innerHTML.trim() === '') {
+          contentDiv.innerHTML = dataContent;
+        }
+      }
+    });
+
+    // Then setup click handlers
+    const accordionButtons = document.querySelectorAll('.prose-editor .accordion-toggle');
+    accordionButtons.forEach((button) => {
+      // Check if already has listener
+      if (button.hasAttribute('data-accordion-initialized')) {
+        return;
+      }
+      
+      button.setAttribute('data-accordion-initialized', 'true');
+      
+      // Add click listener
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const accordionWrapper = button.closest('.accordion-block > div');
+        if (accordionWrapper) {
+          accordionWrapper.classList.toggle('open');
+        }
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    // Setup handlers initially and on every update
+    setupAccordionHandlers();
+    editor.on('update', setupAccordionHandlers);
+
+    return () => {
+      editor.off('update', setupAccordionHandlers);
+    };
+  }, [editor, setupAccordionHandlers]);
 
   if (!editor) {
     return (
@@ -120,10 +210,62 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
     editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   };
 
+  // Block insert functions
+  const insertDivider = () => {
+    editor?.chain().focus().setDivider().run();
+  };
+
+  const insertSectionHeading = (text: string) => {
+    editor?.chain().focus().setSectionHeading({ text }).run();
+  };
+
+  const insertCTAButton = (text: string, url: string) => {
+    editor?.chain().focus().setCTAButton({ text, url }).run();
+  };
+
+  const insertBannerImage = (src: string, alt: string, size: 'small' | 'medium' | 'large') => {
+    editor?.chain().focus().setBannerImage({ src, alt, size }).run();
+  };
+
+  const insertGallery = (images: { src: string; alt: string }[], layout: 2 | 3 | 4 | 5 | 6) => {
+    editor?.chain().focus().setGallery({ images, layout }).run();
+  };
+
+  const insertAccordion = (title: string, content: string) => {
+    editor?.chain().focus().setAccordion({ title, content }).run();
+  };
+
+  const insertBannerCTA = (
+    title: string,
+    description: string,
+    buttonText: string,
+    buttonUrl: string
+  ) => {
+    editor?.chain().focus().setBannerCTA({ title, description, buttonText, buttonUrl }).run();
+  };
+
+  const insertSignUpCard = (
+    logoSrc: string,
+    title: string,
+    description: string,
+    buttonText: string,
+    buttonUrl: string
+  ) => {
+    editor
+      ?.chain()
+      .focus()
+      .setSignUpCard({ logoSrc, title, description, buttonText, buttonUrl })
+      .run();
+  };
+
+  const insertPremiumTable = (headers: string[], rows: string[][]) => {
+    editor?.chain().focus().setPremiumTable({ data: { headers, rows } }).run();
+  };
+
   return (
-    <div className="bg-zinc-900 border border-white/10 rounded-lg overflow-hidden">
-      {/* Toolbar */}
-      <div className="bg-zinc-800/50 border-b border-white/10 p-3">
+    <div className="bg-zinc-900 border border-white/10 rounded-lg">
+      {/* Toolbar - Sticky */}
+      <div className="sticky top-0 z-[100] bg-zinc-800 border-b border-white/10 p-3 backdrop-blur-md shadow-lg">
         <div className="flex flex-wrap gap-1">
           {/* Text Formatting */}
           <div className="flex gap-1 pr-2 border-r border-white/10">
@@ -395,6 +537,92 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
             </div>
           )}
         </div>
+
+        {/* Custom Blocks Row */}
+        <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-white/10">
+          <span className="text-xs text-gray-400 px-2 py-2 font-semibold">BLOCKS:</span>
+          
+          <button
+            onClick={() => setActiveModal('sectionHeading')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Section Heading (H2)"
+            type="button"
+          >
+            <Type className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={insertDivider}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Insert Divider"
+            type="button"
+          >
+            <Minus className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('ctaButton')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="CTA Button"
+            type="button"
+          >
+            <MousePointerClick className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('bannerImage')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Banner Image"
+            type="button"
+          >
+            <ImagePlus className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('gallery')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Image Gallery"
+            type="button"
+          >
+            <Grid3x3 className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('accordion')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Accordion / Expandable"
+            type="button"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('bannerCTA')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Full Width CTA Banner"
+            type="button"
+          >
+            <Megaphone className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('signUpCard')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Sign Up Card"
+            type="button"
+          >
+            <UserPlus className="w-4 h-4" />
+          </button>
+
+          <button
+            onClick={() => setActiveModal('premiumTable')}
+            className="p-2 rounded transition-all text-gray-400 hover:bg-[#077124]/20 hover:text-[#077124] border border-white/5"
+            title="Premium Table"
+            type="button"
+          >
+            <Table2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Editor Area */}
@@ -404,6 +632,79 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           className="prose-editor"
         />
       </div>
+
+      {/* Modals */}
+      <SectionHeadingModal
+        isOpen={activeModal === 'sectionHeading'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(text) => {
+          insertSectionHeading(text);
+          setActiveModal(null);
+        }}
+      />
+
+      <CTAButtonModal
+        isOpen={activeModal === 'ctaButton'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(text, url) => {
+          insertCTAButton(text, url);
+          setActiveModal(null);
+        }}
+      />
+
+      <BannerImageModal
+        isOpen={activeModal === 'bannerImage'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(src, alt, size) => {
+          insertBannerImage(src, alt, size);
+          setActiveModal(null);
+        }}
+      />
+
+      <GalleryModal
+        isOpen={activeModal === 'gallery'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(images, layout) => {
+          insertGallery(images, layout);
+          setActiveModal(null);
+        }}
+      />
+
+      <AccordionModal
+        isOpen={activeModal === 'accordion'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(title, content) => {
+          insertAccordion(title, content);
+          setActiveModal(null);
+        }}
+      />
+
+      <BannerCTAModal
+        isOpen={activeModal === 'bannerCTA'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(title, description, buttonText, buttonUrl) => {
+          insertBannerCTA(title, description, buttonText, buttonUrl);
+          setActiveModal(null);
+        }}
+      />
+
+      <SignUpCardModal
+        isOpen={activeModal === 'signUpCard'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(logoSrc, title, description, buttonText, buttonUrl) => {
+          insertSignUpCard(logoSrc, title, description, buttonText, buttonUrl);
+          setActiveModal(null);
+        }}
+      />
+
+      <PremiumTableModal
+        isOpen={activeModal === 'premiumTable'}
+        onClose={() => setActiveModal(null)}
+        onInsert={(headers, rows) => {
+          insertPremiumTable(headers, rows);
+          setActiveModal(null);
+        }}
+      />
 
       {/* Custom Styles for Editor Content */}
       <style jsx global>{`
@@ -580,6 +881,105 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
           float: left;
           height: 0;
           pointer-events: none;
+        }
+
+        /* Custom Block Styles */
+        .prose-editor .tiptap .divider-block {
+          margin: 2rem 0;
+        }
+
+        .prose-editor .tiptap .section-heading {
+          margin: 2rem 0 1rem 0;
+        }
+
+        .prose-editor .tiptap .cta-button-block {
+          margin: 2rem 0;
+        }
+
+        .prose-editor .tiptap .banner-image-block {
+          margin: 2rem 0;
+        }
+
+        .prose-editor .tiptap .gallery-block {
+          margin: 2rem 0;
+        }
+
+        .prose-editor .tiptap .accordion-block {
+          margin: 2rem 0;
+        }
+
+        .prose-editor .tiptap .accordion-block .accordion-content {
+          display: none;
+        }
+
+        .prose-editor .tiptap .accordion-block .open .accordion-content {
+          display: block;
+        }
+
+        .prose-editor .tiptap .accordion-block .open svg {
+          transform: rotate(180deg);
+        }
+
+        /* Accordion Content Styling - Force white text with maximum specificity */
+        .prose-editor .tiptap .accordion-content * {
+          color: #d1d5db !important;
+          background-color: transparent !important;
+        }
+
+        .prose-editor .tiptap .accordion-content h4,
+        .prose-editor .tiptap .accordion-content h4 *,
+        .prose-editor .tiptap .accordion-content strong,
+        .prose-editor .tiptap .accordion-content strong * {
+          font-size: 1rem;
+          font-weight: 700 !important;
+          color: #ffffff !important;
+          margin: 1rem 0 0.5rem 0;
+          background-color: transparent !important;
+        }
+
+        .prose-editor .tiptap .accordion-content h4:first-child {
+          margin-top: 0;
+        }
+
+        .prose-editor .tiptap .accordion-content p,
+        .prose-editor .tiptap .accordion-content p *,
+        .prose-editor .tiptap .accordion-content li,
+        .prose-editor .tiptap .accordion-content li *,
+        .prose-editor .tiptap .accordion-content span {
+          font-size: 0.9375rem;
+          color: #d1d5db !important;
+          line-height: 1.6;
+          margin: 0.5rem 0;
+          background-color: transparent !important;
+        }
+
+        .prose-editor .tiptap .accordion-content ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin: 0.5rem 0 1rem 0;
+        }
+
+        .prose-editor .tiptap .accordion-content li {
+          margin: 0.25rem 0;
+        }
+
+        .prose-editor .tiptap .banner-cta-block {
+          margin: 3rem 0;
+        }
+
+        .prose-editor .tiptap .signup-card-block {
+          margin: 3rem 0;
+          width: 100% !important;
+          max-width: none !important;
+        }
+
+        .prose-editor .tiptap .signup-card-block > div {
+          width: 100% !important;
+          max-width: none !important;
+        }
+
+        .prose-editor .tiptap .premium-table-block {
+          margin: 2rem 0;
         }
       `}</style>
     </div>
