@@ -24,6 +24,82 @@ import RejectDealModal from '@/components/admin/RejectDealModal';
 import ViewNotesModal from '@/components/admin/ViewNotesModal';
 import ReactCountryFlag from 'react-country-flag';
 import { supabase } from '@/lib/supabase/client';
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
+
+// Chart data types
+interface RevenueData {
+  date: string;
+  revenue: number;
+}
+
+interface PlatformChartData {
+  name: string;
+  revenue: number;
+}
+
+interface PlatformPerformance {
+  name: string;
+  revenue: number;
+  activePlayers: number;
+  avgPerPlayer: number;
+  growth: number;
+  marketShare: number;
+}
+
+interface SubAffiliateData {
+  id: string;
+  referral_code: string;
+  name: string;
+  referrals: number;
+  revenue: number;
+}
+
+interface TopPlayer {
+  id: string;
+  name: string;
+  platform: string;
+  earnings: number;
+}
+
+interface DealWithEarnings {
+  user_id: string;
+  deal?: Array<{
+    name: string;
+  }>;
+  player_earnings?: Array<{
+    net_rake: string | number;
+  }>;
+}
+
+type SubAffiliateQuery = {
+  id: string;
+  referral_code: string;
+  profiles: Array<{
+    full_name: string;
+  }>;
+}
+
+interface PlayerDealQuery {
+  id: string;
+  user_id: string;
+  platform_username: string;
+  deal_id: string;
+}
+
+interface UserProfile {
+  id: string;
+  full_name: string;
+}
 
 // Interface for Player Profile Modal
 interface PlayerProfile {
@@ -789,10 +865,10 @@ export default function AdminDashboard() {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'dealrequests', label: 'Deal Requests', icon: FileCheck },
     { id: 'players', label: 'Players', icon: Users },
-    { id: 'csv-upload', label: 'CSV Upload', icon: FileText },
+    { id: 'csv-upload', label: 'Data Upload', icon: FileText },
     { id: 'subaffiliates', label: 'Sub-Affiliates', icon: Building2 },
     { id: 'website', label: 'Website', icon: Globe },
-    { id: 'reports', label: 'Reports', icon: FileText },
+    { id: 'reports', label: 'Intelligence', icon: FileText },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -1821,7 +1897,7 @@ export default function AdminDashboard() {
                 <div className="mb-8">
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
-                    <h1 className="text-3xl font-bold text-white">CSV Upload</h1>
+                    <h1 className="text-3xl font-bold text-white">Data Upload</h1>
                   </div>
                   <p className="text-base text-gray-400 ml-6 mt-3">Upload earnings data from poker rooms</p>
                 </div>
@@ -2342,6 +2418,9 @@ export default function AdminDashboard() {
                 </div>
               </>
             )}
+
+            {/* Intelligence Tab */}
+            {activeTab === 'reports' && <IntelligenceContent />}
           </main>
         </div>
 
@@ -3270,6 +3349,919 @@ function SubAffiliatesContent() {
         </div>
       )}
     </>
+  );
+}
+
+// Intelligence Dashboard Component - Enterprise Level
+function IntelligenceContent() {
+  // Period state
+  const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // KPIs state
+  const [kpis, setKpis] = useState({
+    totalRevenue: 0,
+    revenueGrowth: 0,
+    activePlayers: 0,
+    totalPlayers: 0,
+    avgRevenuePerPlayer: 0,
+    conversionRate: 0,
+    approvedDeals: 0,
+    totalDeals: 0,
+    activeSubAffiliates: 0,
+    totalReferrals: 0,
+    topPlatform: { name: 'N/A', revenue: 0 }
+  });
+  
+  // Charts data
+  const [revenueOverTime, setRevenueOverTime] = useState<RevenueData[]>([]);
+  const [topPlatforms, setTopPlatforms] = useState<PlatformChartData[]>([]);
+  const [platformData, setPlatformData] = useState<PlatformPerformance[]>([]);
+  const [topSubAffiliates, setTopSubAffiliates] = useState<SubAffiliateData[]>([]);
+  const [topPlayers, setTopPlayers] = useState<TopPlayer[]>([]);
+  
+  // Table sorting
+  const [sortConfig, setSortConfig] = useState({ key: 'revenue', direction: 'desc' as 'asc' | 'desc' });
+
+  // Sort handler
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'desc';
+    if (sortConfig.key === key && sortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Sorted platform data
+  const sortedPlatformData = [...platformData].sort((a, b) => {
+    const aVal = a[sortConfig.key as keyof typeof a];
+    const bVal = b[sortConfig.key as keyof typeof b];
+    if (sortConfig.direction === 'asc') {
+      return aVal > bVal ? 1 : -1;
+    }
+    return aVal < bVal ? 1 : -1;
+  });
+
+  useEffect(() => {
+    // Calculate date range based on period
+    const getDateRange = () => {
+      const now = new Date();
+      const start = new Date();
+      
+      switch (period) {
+        case '7d':
+          start.setDate(now.getDate() - 7);
+          break;
+        case '30d':
+          start.setDate(now.getDate() - 30);
+          break;
+        case '90d':
+          start.setDate(now.getDate() - 90);
+          break;
+        case 'all':
+          start.setFullYear(2000); // Far past date
+          break;
+      }
+      
+      return { start, end: now };
+    };
+
+    async function loadIntelligenceData() {
+      setIsLoading(true);
+      try {
+        const { start, end } = getDateRange();
+        
+        // Get all earnings with date filtering
+        const { data: allEarnings } = await supabase
+          .from('player_earnings')
+          .select('*, player_deals!inner(created_at)')
+          .gte('player_deals.created_at', start.toISOString())
+          .lte('player_deals.created_at', end.toISOString());
+        
+        const totalRevenue = (allEarnings || []).reduce(
+          (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+          0
+        );
+
+        // Get previous period for growth calculation
+        const prevStart = new Date(start);
+        const prevEnd = new Date(start);
+        const daysDiff = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        prevStart.setDate(prevStart.getDate() - daysDiff);
+        
+        const { data: prevEarnings } = await supabase
+          .from('player_earnings')
+          .select('*, player_deals!inner(created_at)')
+          .gte('player_deals.created_at', prevStart.toISOString())
+          .lte('player_deals.created_at', prevEnd.toISOString());
+        
+        const prevRevenue = (prevEarnings || []).reduce(
+          (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+          0
+        );
+        
+        const revenueGrowth = prevRevenue === 0 ? 0 : ((totalRevenue - prevRevenue) / prevRevenue) * 100;
+
+        // Get player stats
+        const { data: activeDeals } = await supabase
+          .from('player_deals')
+          .select('user_id')
+          .eq('status', 'approved')
+          .gte('created_at', start.toISOString());
+        
+        const uniqueActivePlayers = new Set((activeDeals || []).map(d => d.user_id)).size;
+        
+        const { count: totalDealsCount } = await supabase
+          .from('player_deals')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', start.toISOString());
+        
+        const { count: totalPlayersCount } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true });
+
+        // Conversion rate
+        const { count: approvedCount } = await supabase
+          .from('player_deals')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'approved')
+          .gte('created_at', start.toISOString());
+        
+        const conversionRate = (totalDealsCount || 0) === 0 ? 0 : ((approvedCount || 0) / (totalDealsCount || 1)) * 100;
+
+        // Sub-affiliates stats
+        const { count: subAffiliatesCount } = await supabase
+          .from('sub_affiliates')
+          .select('*', { count: 'exact', head: true });
+        
+        const { count: referralsCount } = await supabase
+          .from('referrals')
+          .select('*', { count: 'exact', head: true });
+
+        // Revenue over time
+        const { data: earningsByMonth } = await supabase
+          .from('player_earnings')
+          .select('period_month, period_year, net_rake, player_deals!inner(created_at)')
+          .gte('player_deals.created_at', start.toISOString())
+          .order('period_year', { ascending: true })
+          .order('period_month', { ascending: true });
+        
+        const revenueByMonth: Record<string, number> = {};
+        (earningsByMonth || []).forEach(e => {
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const key = `${monthNames[e.period_month - 1]} ${e.period_year}`;
+          revenueByMonth[key] = (revenueByMonth[key] || 0) + parseFloat(e.net_rake);
+        });
+        
+        const revenueChartData = Object.entries(revenueByMonth)
+          .map(([month, revenue]) => ({
+            date: month,
+            revenue: parseFloat(revenue.toFixed(2))
+          }))
+          .slice(-12); // Last 12 months
+
+        // Platform performance
+        const { data: dealsWithEarnings } = await supabase
+          .from('player_deals')
+          .select(`
+            id,
+            user_id,
+            created_at,
+            deal:deals(id, name),
+            player_earnings(net_rake, created_at)
+          `)
+          .gte('created_at', start.toISOString());
+        
+        const platformStats: Record<string, { 
+          revenue: number; 
+          players: Set<string>; 
+          prevRevenue: number;
+        }> = {};
+        
+        let totalPlatformRevenue = 0;
+        
+        (dealsWithEarnings || []).forEach((deal: DealWithEarnings) => {
+          const platformName = deal.deal?.[0]?.name || 'Unknown';
+          if (!platformStats[platformName]) {
+            platformStats[platformName] = { 
+              revenue: 0, 
+              players: new Set(), 
+              prevRevenue: 0 
+            };
+          }
+          
+          (deal.player_earnings || []).forEach((e) => {
+            const earning = parseFloat(String(e.net_rake)) || 0;
+            platformStats[platformName].revenue += earning;
+            totalPlatformRevenue += earning;
+            platformStats[platformName].players.add(deal.user_id);
+          });
+        });
+        
+        const platformsArray = Object.entries(platformStats)
+          .map(([name, stats]) => ({
+            name,
+            revenue: stats.revenue,
+            activePlayers: stats.players.size,
+            avgPerPlayer: stats.players.size > 0 ? stats.revenue / stats.players.size : 0,
+            growth: 0, // Would need historical data
+            marketShare: totalPlatformRevenue > 0 ? (stats.revenue / totalPlatformRevenue) * 100 : 0
+          }))
+          .sort((a, b) => b.revenue - a.revenue);
+        
+        const topPlatform = platformsArray[0] || { name: 'N/A', revenue: 0 };
+
+        // Top Sub-Affiliates
+        const { data: subAffiliates } = await supabase
+          .from('sub_affiliates')
+          .select(`
+            id,
+            referral_code,
+            profiles!sub_affiliates_player_id_fkey(full_name)
+          `);
+        
+        const subAffiliatesWithData = await Promise.all(
+          (subAffiliates || []).slice(0, 10).map(async (sa: SubAffiliateQuery) => {
+            const { data: referrals } = await supabase
+              .from('referrals')
+              .select('player_deal_id')
+              .eq('sub_affiliate_id', sa.id);
+            
+            const referralCount = referrals?.length || 0;
+            
+            if (referralCount === 0) {
+              return { ...sa, revenue: 0, referrals: 0 };
+            }
+            
+            const playerDealIds = (referrals || [])
+              .map(r => r.player_deal_id)
+              .filter(id => id !== null);
+            
+            if (playerDealIds.length === 0) {
+              return { 
+                id: sa.id,
+                name: sa.profiles?.[0]?.full_name || sa.referral_code,
+                revenue: 0, 
+                referrals: referralCount,
+                referral_code: sa.referral_code
+              };
+            }
+            
+            const { data: earnings } = await supabase
+              .from('player_earnings')
+              .select('net_rake')
+              .in('player_deal_id', playerDealIds);
+            
+            const revenue = (earnings || []).reduce(
+              (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+              0
+            );
+            
+            return { 
+              id: sa.id,
+              name: sa.profiles?.[0]?.full_name || sa.referral_code,
+              revenue,
+              referrals: referralCount,
+              referral_code: sa.referral_code
+            };
+          })
+        );
+        
+        const topSubAffiliatesData: SubAffiliateData[] = subAffiliatesWithData
+          .sort((a, b) => b.revenue - a.revenue)
+          .slice(0, 5)
+          .map(sa => ({
+            id: sa.id,
+            referral_code: sa.referral_code,
+            name: sa.name || sa.referral_code,
+            referrals: sa.referrals,
+            revenue: sa.revenue
+          }));
+
+        // Top Earning Players - SOLUÇÃO DEFINITIVA (queries separadas)
+        let topPlayersData: TopPlayer[] = [];
+        try {
+          console.log('🔍 [TOP PLAYERS] Iniciando busca...');
+          
+          // PASSO 1: Buscar todos os earnings
+          const { data: allEarnings, error: earningsError } = await supabase
+            .from('player_earnings')
+            .select('net_rake, player_deal_id');
+          
+          console.log('📊 [TOP PLAYERS] Total earnings encontrados:', allEarnings?.length || 0);
+          
+          if (earningsError || !allEarnings || allEarnings.length === 0) {
+            console.warn('⚠️ [TOP PLAYERS] Sem earnings');
+            setTopPlayers([]);
+          } else {
+            // PASSO 2: Extrair player_deal_ids únicos
+            const playerDealIds = [...new Set(
+              allEarnings
+                .map(e => e.player_deal_id)
+                .filter(id => id !== null && id !== undefined)
+            )];
+            
+            console.log('🎯 [TOP PLAYERS] Player deal IDs únicos:', playerDealIds.length);
+            
+            if (playerDealIds.length === 0) {
+              console.warn('⚠️ [TOP PLAYERS] Sem player_deal_ids válidos');
+              setTopPlayers([]);
+            } else {
+              // PASSO 3: Buscar player_deals (SEM join com profiles)
+              const { data: playerDeals, error: dealsError } = await supabase
+                .from('player_deals')
+                .select('id, user_id, platform_username, deal_id')
+                .in('id', playerDealIds);
+              
+              console.log('👥 [TOP PLAYERS] Player deals encontrados:', playerDeals?.length || 0);
+              
+              if (dealsError || !playerDeals || playerDeals.length === 0) {
+                console.warn('⚠️ [TOP PLAYERS] Sem player_deals');
+                setTopPlayers([]);
+              } else {
+                // PASSO 4: Extrair user_ids únicos dos deals
+                const userIds = [...new Set(
+                  playerDeals
+                    .map(pd => pd.user_id)
+                    .filter(id => id !== null && id !== undefined)
+                )];
+                
+                console.log('👤 [TOP PLAYERS] User IDs únicos:', userIds.length);
+                
+                // PASSO 5: Buscar profiles SEPARADAMENTE
+                const { data: profiles } = await supabase
+                  .from('profiles')
+                  .select('id, full_name')
+                  .in('id', userIds);
+                
+                console.log('📝 [TOP PLAYERS] Profiles encontrados:', profiles?.length || 0);
+                
+                // PASSO 6: Extrair deal_ids únicos
+                const dealIds = [...new Set(
+                  playerDeals
+                    .map(pd => pd.deal_id)
+                    .filter(id => id !== null && id !== undefined)
+                )];
+                
+                // PASSO 7: Buscar deals (plataformas) SEPARADAMENTE
+                const { data: deals } = await supabase
+                  .from('deals')
+                  .select('id, name')
+                  .in('id', dealIds);
+                
+                console.log('🎮 [TOP PLAYERS] Deals info encontrados:', deals?.length || 0);
+                
+                // PASSO 8: Criar mapas
+                const profileMap: Record<string, UserProfile> = {};
+                (profiles || []).forEach(p => {
+                  profileMap[p.id] = p;
+                });
+                
+                const dealInfoMap: Record<string, string> = {};
+                (deals || []).forEach(d => {
+                  dealInfoMap[d.id] = d.name;
+                });
+                
+                const dealMap: Record<string, PlayerDealQuery> = {};
+                (playerDeals || []).forEach(pd => {
+                  dealMap[pd.id] = pd;
+                });
+                
+                // PASSO 9: Agrupar earnings por user_id
+                const playerEarningsMap: Record<string, TopPlayer> = {};
+                
+                allEarnings.forEach(earning => {
+                  const dealData = dealMap[earning.player_deal_id];
+                  if (!dealData || !dealData.user_id) return;
+                  
+                  const userId = dealData.user_id;
+                  const profile = profileMap[userId];
+                  const platformName = dealInfoMap[dealData.deal_id] || 'Unknown';
+                  
+                  if (!playerEarningsMap[userId]) {
+                    playerEarningsMap[userId] = {
+                      id: userId,
+                      name: profile?.full_name || 'Unknown Player',
+                      platform: platformName,
+                      earnings: 0
+                    };
+                  }
+                  
+                  playerEarningsMap[userId].earnings += parseFloat(earning.net_rake || 0);
+                });
+                
+                console.log('💰 [TOP PLAYERS] Players com earnings:', Object.keys(playerEarningsMap).length);
+                
+                // PASSO 10: Ordenar e pegar top 5
+                topPlayersData = Object.values(playerEarningsMap)
+                  .sort((a, b) => b.earnings - a.earnings)
+                  .slice(0, 5);
+                
+                console.log('🏆 [TOP PLAYERS] Top 5 final:', topPlayersData);
+                
+                setTopPlayers(topPlayersData);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('💥 [TOP PLAYERS] Erro fatal:', error);
+          setTopPlayers([]);
+        }
+
+        // Update all states
+        setKpis({
+          totalRevenue,
+          revenueGrowth: parseFloat(revenueGrowth.toFixed(1)),
+          activePlayers: uniqueActivePlayers,
+          totalPlayers: totalPlayersCount || 0,
+          avgRevenuePerPlayer: uniqueActivePlayers > 0 ? totalRevenue / uniqueActivePlayers : 0,
+          conversionRate: parseFloat(conversionRate.toFixed(1)),
+          approvedDeals: approvedCount || 0,
+          totalDeals: totalDealsCount || 0,
+          activeSubAffiliates: subAffiliatesCount || 0,
+          totalReferrals: referralsCount || 0,
+          topPlatform: { name: topPlatform.name, revenue: topPlatform.revenue }
+        });
+        
+        setRevenueOverTime(revenueChartData);
+        setTopPlatforms(platformsArray.slice(0, 5));
+        setPlatformData(platformsArray);
+        setTopSubAffiliates(topSubAffiliatesData);
+        setTopPlayers(topPlayersData);
+        
+      } catch (error) {
+        console.error('Error loading intelligence data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadIntelligenceData();
+  }, [period]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+          <p className="text-gray-400">Loading intelligence data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header with Period Selector */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-gradient-to-b from-[#10b981] to-emerald-600 rounded-full"></div>
+            <h1 className="text-3xl font-bold text-white">Business Intelligence</h1>
+          </div>
+          <p className="text-base text-gray-400 ml-6 mt-2">
+            Track performance metrics and insights
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPeriod('7d')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              period === '7d'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Last 7 Days
+          </button>
+          <button
+            onClick={() => setPeriod('30d')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              period === '30d'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Last 30 Days
+          </button>
+          <button
+            onClick={() => setPeriod('90d')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              period === '90d'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Last 90 Days
+          </button>
+          <button
+            onClick={() => setPeriod('all')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              period === 'all'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            All Time
+          </button>
+        </div>
+      </div>
+
+      {/* Executive Summary - 6 KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* KPI 1: Total Revenue */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Total Revenue</p>
+                <p className="text-2xl font-bold text-white">
+                  ${kpis.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            {kpis.revenueGrowth >= 0 ? (
+              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+              </svg>
+            )}
+            <span className={`text-sm font-medium ${kpis.revenueGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              {kpis.revenueGrowth >= 0 ? '+' : ''}{kpis.revenueGrowth.toFixed(1)}%
+            </span>
+            <span className="text-sm text-gray-500">vs previous period</span>
+          </div>
+        </div>
+
+        {/* KPI 2: Active Players */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Active Players</p>
+                <p className="text-2xl font-bold text-white">{kpis.activePlayers}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-gray-500">{kpis.totalPlayers} total players</span>
+          </div>
+        </div>
+
+        {/* KPI 3: Avg Revenue per Player */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Avg Rev per Player</p>
+                <p className="text-2xl font-bold text-white">
+                  ${kpis.avgRevenuePerPlayer.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* KPI 4: Conversion Rate */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Conversion Rate</p>
+                <p className="text-2xl font-bold text-white">{kpis.conversionRate.toFixed(1)}%</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-gray-500">{kpis.approvedDeals}/{kpis.totalDeals} approved</span>
+          </div>
+        </div>
+
+        {/* KPI 5: Active Sub-Affiliates */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Sub-Affiliates</p>
+                <p className="text-2xl font-bold text-white">{kpis.activeSubAffiliates}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-gray-500">{kpis.totalReferrals} total referrals</span>
+          </div>
+        </div>
+
+        {/* KPI 6: Top Platform */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-400">Top Platform</p>
+                <p className="text-xl font-bold text-white truncate">{kpis.topPlatform.name}</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <span className="text-sm text-emerald-500 font-medium">
+              ${kpis.topPlatform.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            <span className="text-sm text-gray-500">revenue</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Revenue Analytics - 2 Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Trend - Line Chart */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Revenue Trend</h3>
+          {revenueOverTime.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueOverTime}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="#9CA3AF"
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis 
+                  stroke="#9CA3AF"
+                  style={{ fontSize: '12px' }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1F2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }}
+                  labelStyle={{ color: '#F3F4F6' }}
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#10b981" 
+                  strokeWidth={3}
+                  dot={{ fill: '#10b981', r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              No revenue data available
+            </div>
+          )}
+        </div>
+
+        {/* Top Platforms - Horizontal Bar Chart */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Top Platforms</h3>
+          {topPlatforms.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart 
+                data={topPlatforms} 
+                layout="vertical"
+                margin={{ left: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis 
+                  type="number" 
+                  stroke="#9CA3AF"
+                  style={{ fontSize: '12px' }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                />
+                <YAxis 
+                  type="category" 
+                  dataKey="name" 
+                  stroke="#9CA3AF"
+                  width={100}
+                  style={{ fontSize: '12px' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1F2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px'
+                  }}
+                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                />
+                <Bar dataKey="revenue" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              No platform data available
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Platform Performance Matrix Table */}
+      {platformData.length > 0 && (
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
+          <div className="p-6 border-b border-gray-800">
+            <h3 className="text-lg font-bold text-white">Platform Performance Matrix</h3>
+            <p className="text-sm text-gray-400 mt-1">Detailed breakdown by poker room</p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-900/50 border-b border-gray-800">
+                <tr>
+                  <th 
+                    className="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('name')}
+                  >
+                    Platform
+                    {sortConfig.key === 'name' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('activePlayers')}
+                  >
+                    Active Players
+                    {sortConfig.key === 'activePlayers' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('revenue')}
+                  >
+                    Total Revenue
+                    {sortConfig.key === 'revenue' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('avgPerPlayer')}
+                  >
+                    Avg per Player
+                    {sortConfig.key === 'avgPerPlayer' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Market Share
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {sortedPlatformData.map((platform, index) => (
+                  <tr key={platform.name} className="hover:bg-gray-900/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-emerald-500' : 'bg-gray-600'}`}></div>
+                        <span className="text-sm font-medium text-white">{platform.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-semibold text-blue-400">{platform.activePlayers}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-semibold text-emerald-500">
+                        ${platform.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="text-sm text-gray-300">
+                        ${platform.avgPerPlayer.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-gray-800 rounded-full h-2">
+                          <div 
+                            className="bg-purple-500 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${Math.min(platform.marketShare, 100)}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm text-gray-400 w-12 text-right">
+                          {platform.marketShare.toFixed(1)}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Top Performers - 2 Lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Sub-Affiliates */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Top Sub-Affiliates</h3>
+          {topSubAffiliates.length > 0 ? (
+            <div className="space-y-3">
+              {topSubAffiliates.map((affiliate, index) => (
+                <div key={affiliate.id} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      index === 0 ? 'bg-yellow-500 text-gray-900' :
+                      index === 1 ? 'bg-gray-400 text-gray-900' :
+                      index === 2 ? 'bg-orange-600 text-white' :
+                      'bg-gray-700 text-gray-300'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{affiliate.name}</p>
+                      <p className="text-xs text-gray-400">{affiliate.referrals} referrals</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-500">
+                    ${affiliate.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-gray-500">
+              No sub-affiliate data available
+            </div>
+          )}
+        </div>
+
+        {/* Top Earning Players */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-bold text-white mb-4">Top Earning Players</h3>
+          {topPlayers.length > 0 ? (
+            <div className="space-y-3">
+              {topPlayers.map((player, index) => (
+                <div key={player.id} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg hover:bg-gray-900/70 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      index === 0 ? 'bg-yellow-500 text-gray-900' :
+                      index === 1 ? 'bg-gray-400 text-gray-900' :
+                      index === 2 ? 'bg-orange-600 text-white' :
+                      'bg-gray-700 text-gray-300'
+                    }`}>
+                      {index + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-white">{player.name}</p>
+                      <p className="text-xs text-gray-400">{player.platform}</p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-blue-400">
+                    ${player.earnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-40 text-gray-500">
+              No player data available
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
