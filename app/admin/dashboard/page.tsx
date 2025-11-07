@@ -38,7 +38,7 @@ import {
 
 // Chart data types
 interface RevenueData {
-  date: string;
+  month: string;
   revenue: number;
 }
 
@@ -73,9 +73,9 @@ interface TopPlayer {
 
 interface DealWithEarnings {
   user_id: string;
-  deal?: Array<{
+  deal?: {
     name: string;
-  }>;
+  } | null;
   player_earnings?: Array<{
     net_rake: string | number;
   }>;
@@ -84,9 +84,9 @@ interface DealWithEarnings {
 type SubAffiliateQuery = {
   id: string;
   referral_code: string;
-  profiles: Array<{
+  profiles: {
     full_name: string;
-  }>;
+  } | null;
 }
 
 interface PlayerDealQuery {
@@ -3515,7 +3515,7 @@ function IntelligenceContent() {
         
         const revenueChartData = Object.entries(revenueByMonth)
           .map(([month, revenue]) => ({
-            date: month,
+            month,
             revenue: parseFloat(revenue.toFixed(2))
           }))
           .slice(-12); // Last 12 months
@@ -3530,7 +3530,7 @@ function IntelligenceContent() {
             deal:deals(id, name),
             player_earnings(net_rake, created_at)
           `)
-          .gte('created_at', start.toISOString());
+          .gte('created_at', start.toISOString()) as { data: DealWithEarnings[] | null };
         
         const platformStats: Record<string, { 
           revenue: number; 
@@ -3540,8 +3540,8 @@ function IntelligenceContent() {
         
         let totalPlatformRevenue = 0;
         
-        (dealsWithEarnings || []).forEach((deal: DealWithEarnings) => {
-          const platformName = deal.deal?.[0]?.name || 'Unknown';
+        (dealsWithEarnings || []).forEach((deal) => {
+          const platformName = deal.deal?.name || 'Unknown';
           if (!platformStats[platformName]) {
             platformStats[platformName] = { 
               revenue: 0, 
@@ -3578,7 +3578,7 @@ function IntelligenceContent() {
             id,
             referral_code,
             profiles!sub_affiliates_player_id_fkey(full_name)
-          `);
+          `) as { data: SubAffiliateQuery[] | null };
         
         const subAffiliatesWithData = await Promise.all(
           (subAffiliates || []).slice(0, 10).map(async (sa: SubAffiliateQuery) => {
@@ -3600,7 +3600,7 @@ function IntelligenceContent() {
             if (playerDealIds.length === 0) {
               return { 
                 id: sa.id,
-                name: sa.profiles?.[0]?.full_name || sa.referral_code,
+                name: sa.profiles?.full_name || sa.referral_code,
                 revenue: 0, 
                 referrals: referralCount,
                 referral_code: sa.referral_code
@@ -3619,7 +3619,7 @@ function IntelligenceContent() {
             
             return { 
               id: sa.id,
-              name: sa.profiles?.[0]?.full_name || sa.referral_code,
+              name: sa.profiles?.full_name || sa.referral_code,
               revenue,
               referrals: referralCount,
               referral_code: sa.referral_code
