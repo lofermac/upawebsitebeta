@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from "react";
-import { Eye, EyeOff, User, Mail, Lock, MessageCircle, Send, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, User, Mail, Lock, MessageCircle, Send } from "lucide-react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import CountrySelect from "../components/CountrySelect";
 import WelcomeModal from "@/components/WelcomeModal";
 import { supabase } from '@/lib/supabase/client';
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function RegisterPage() {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -60,6 +62,11 @@ export default function RegisterPage() {
     }
 
     try {
+      console.log('📝 ============================================');
+      console.log('📝 REGISTER - Iniciando registro...');
+      console.log('📝 Email:', formData.email);
+      console.log('📝 ============================================');
+      
       // 1. Criar conta no Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -71,9 +78,16 @@ export default function RegisterPage() {
         }
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error('📝 ❌ Erro no signUp:', authError);
+        throw authError;
+      }
 
       if (authData.user) {
+        console.log('📝 ✅ Usuário criado no Auth');
+        console.log('📝 - User ID:', authData.user.id);
+        console.log('📝 - Session existe:', !!authData.session);
+        
         // 2. Criar perfil completo na tabela profiles
         const { error: profileError } = await supabase
           .from('profiles')
@@ -90,7 +104,7 @@ export default function RegisterPage() {
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          console.error('📝 ⚠️ Profile creation error:', profileError);
           // Se já existe o profile (criado pelo trigger), fazer update
           const { error: updateError } = await supabase
             .from('profiles')
@@ -104,15 +118,32 @@ export default function RegisterPage() {
             .eq('id', authData.user.id);
           
           if (updateError) {
-            console.error('Profile update error:', updateError);
+            console.error('📝 ❌ Profile update error:', updateError);
+          } else {
+            console.log('📝 ✅ Profile atualizado');
           }
+        } else {
+          console.log('📝 ✅ Profile criado');
         }
 
-        // 3. Mostrar modal de boas-vindas
+        console.log('📝 ============================================');
+        console.log('📝 Fazendo login automático...');
+        console.log('📝 ============================================');
+        
+        // 3. Fazer login automático para atualizar o AuthContext
+        await login(formData.email, formData.password, true);
+        
+        console.log('📝 ============================================');
+        console.log('📝 ✅ Login automático concluído');
+        console.log('📝 Cookies atuais:', document.cookie);
+        console.log('📝 Mostrando modal de boas-vindas...');
+        console.log('📝 ============================================');
+        
+        // 4. Mostrar modal de boas-vindas
         setShowWelcomeModal(true);
       }
     } catch (error: unknown) {
-      console.error('Registration error:', error);
+      console.error('📝 ❌❌❌ ERRO NO REGISTRO:', error);
       setError(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
     }
   };
@@ -566,48 +597,17 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {/* Register Button - Same premium style as login */}
+                {/* Register Button - Mesmo estilo dos CTAs da Homepage */}
                 <div className="flex justify-center mt-10">
                   <button
                     type="submit"
-                    className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
-                    style={{
-                      boxShadow: `
-                        0 1px 3px 0 rgba(0,0,0,0.5),
-                        0 4px 12px rgba(7,113,36,0.3),
-                        0 8px 32px rgba(7,113,36,0.25),
-                        0 16px 64px rgba(7,113,36,0.2),
-                        inset 0 1px 1px rgba(255,255,255,0.3),
-                        inset 0 -1px 1px rgba(0,0,0,0.2)
-                      `
-                    }}
+                    className="relative font-semibold px-14 py-5 text-lg md:text-xl rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden"
                   >
-                    {/* Outer glow - Layer 1 (most intense) */}
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
-                    
-                    {/* Outer glow - Layer 2 (medium spread) */}
-                    <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                    
-                    {/* Outer glow - Layer 3 (soft wide spread) */}
-                    <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                    
-                    {/* Glass reflection effect on top */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                    
-                    {/* Animated shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                    
-                    {/* Inner shadow for depth */}
-                    <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                    
-                    {/* Pulsing ambient glow on hover */}
-                    <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
-                    
-                    {/* Button content */}
-                    <span className="relative z-10 tracking-wide drop-shadow-lg">Register</span>
-                    
-                    {/* Animated arrow */}
-                    <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                    <span className="relative z-10">Register</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                   </button>
                 </div>
 

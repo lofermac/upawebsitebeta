@@ -13,6 +13,7 @@ import {
   ChevronRight,
   HelpCircle,
   Info,
+  Users,
   Sparkles
 } from 'lucide-react';
 
@@ -276,7 +277,7 @@ export default function PlayerDashboard() {
                   <div className="w-80 bg-gradient-to-br from-emerald-900/20 via-gray-900 to-gray-900 rounded-xl border border-emerald-500/30 p-5 shadow-lg shadow-emerald-500/5">
                     <div className="flex items-start gap-3">
                       <div className="p-2 bg-emerald-500/10 rounded-lg flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-emerald-400" />
+                        <Users className="w-5 h-5 text-emerald-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold text-white mb-1">
@@ -287,9 +288,11 @@ export default function PlayerDashboard() {
                         </p>
                         <button
                           onClick={() => setIsSubAffiliateModalOpen(true)}
-                          className="w-full px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white text-sm rounded-lg transition-all font-semibold"
+                          className="relative w-full px-4 py-2 rounded-lg bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden text-sm font-semibold"
                         >
-                          Apply Now →
+                          <span className="relative z-10">Apply Now</span>
+                          <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                          <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                         </button>
                       </div>
                     </div>
@@ -611,9 +614,11 @@ export default function PlayerDashboard() {
                 </div>
                 <a
                   href="/contact-us"
-                  className="px-6 py-3 rounded-lg bg-[#10b981] hover:bg-[#0a9b30] text-white font-semibold transition-all duration-300 hover:scale-[1.02] whitespace-nowrap"
+                  className="relative px-6 py-3 rounded-lg bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden whitespace-nowrap font-semibold inline-flex items-center justify-center"
                 >
-                  Contact Country Manager
+                  <span className="relative z-10">Contact Country Manager</span>
+                  <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                 </a>
               </div>
             </div>

@@ -291,39 +291,20 @@ export default function TeamPage() {
                     </div>
                   </div>
 
-                  {/* Submit Button */}
+                  {/* Submit Button - Mesmo estilo dos CTAs da Homepage */}
                   <div className="flex justify-center mt-6">
                     <button
                       type="submit"
-                      className="group relative inline-flex items-center justify-center gap-2 px-10 py-3.5 text-base font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
-                      style={{
-                        boxShadow: `
-                          0 1px 3px 0 rgba(0,0,0,0.5),
-                          0 4px 12px rgba(7,113,36,0.3),
-                          0 8px 32px rgba(7,113,36,0.25),
-                          0 16px 64px rgba(7,113,36,0.2),
-                          inset 0 1px 1px rgba(255,255,255,0.3),
-                          inset 0 -1px 1px rgba(0,0,0,0.2)
-                        `
-                      }}
+                      className="relative font-semibold text-sm px-6 py-3.5 rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden inline-flex items-center gap-2"
                     >
-                      {/* Glow layers */}
-                      <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
-                      <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                      <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                      
-                      {/* Glass reflection */}
-                      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                      
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                      
-                      {/* Inner shadow */}
-                      <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                      
-                      {/* Button content */}
-                      <span className="relative z-10 tracking-wide drop-shadow-lg">Send Enquiry</span>
-                      <Send className="relative z-10 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                      <span className="relative z-10 flex items-center gap-2">
+                        Send Enquiry
+                        <Send className="w-4 h-4 transition-all duration-300" strokeWidth={2.5} />
+                      </span>
+                      {/* Animated shine effect */}
+                      <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                      {/* Subtle inner glow */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                     </button>
                   </div>
                 </form>

@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { X, LayoutDashboard, Sparkles } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { X, LayoutDashboard, CheckCircle } from 'lucide-react';
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -11,7 +10,6 @@ interface WelcomeModalProps {
 }
 
 export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModalProps) {
-  const router = useRouter();
 
   // Bloqueia scroll do body quando modal está aberto
   useEffect(() => {
@@ -35,9 +33,34 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
     };
   }, [isOpen]);
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = async (path: string) => {
+    console.log('🎯 ============================================');
+    console.log('🎯 WelcomeModal - INICIANDO NAVEGAÇÃO');
+    console.log('🎯 Path destino:', path);
+    console.log('🎯 ============================================');
+    
+    // Listar TODOS os cookies antes de navegar
+    console.log('🍪 TODOS os cookies antes de navegar:');
+    document.cookie.split(';').forEach(cookie => {
+      console.log('🍪', cookie.trim());
+    });
+    
     onClose();
-    router.push(path);
+    
+    // Aguardar mais tempo para garantir que os cookies estão salvos
+    console.log('🎯 Aguardando 1000ms para cookies serem salvos...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log('🍪 TODOS os cookies APÓS aguardar:');
+    document.cookie.split(';').forEach(cookie => {
+      console.log('🍪', cookie.trim());
+    });
+    
+    console.log('🎯 Redirecionando via window.location.href para:', path);
+    console.log('🎯 ============================================');
+    
+    // Usar window.location.href para forçar reload completo com cookies
+    window.location.href = path;
   };
 
   if (!isOpen) return null;
@@ -68,9 +91,13 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
           {/* Noise texture */}
           <div className="absolute inset-0 opacity-[0.015] mix-blend-overlay pointer-events-none rounded-[2rem]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")' }}></div>
           
-          {/* Close Button */}
+          {/* Close Button - Redireciona para homepage */}
           <button
-            onClick={onClose}
+            onClick={() => {
+              console.log('🎯 WelcomeModal: Fechando e indo para homepage');
+              onClose();
+              window.location.href = '/';
+            }}
             className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/[0.08] transition-all duration-200"
             aria-label="Close modal"
             type="button"
@@ -80,13 +107,13 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
 
           {/* Modal Content */}
           <div className="relative z-10 p-10 md:p-12">
-            {/* Icon de sucesso */}
+            {/* Icon de sucesso - CheckCircle */}
             <div className="flex justify-center mb-6">
               <div className="relative">
                 {/* Glow effect */}
                 <div className="absolute inset-0 bg-[#077124] rounded-full blur-2xl opacity-40 animate-pulse-slow"></div>
                 <div className="relative p-4 rounded-full bg-gradient-to-b from-[#088929] to-[#055a1c]">
-                  <Sparkles className="w-10 h-10 text-white" strokeWidth={2} />
+                  <CheckCircle className="w-10 h-10 text-white" strokeWidth={2} />
                 </div>
               </div>
             </div>
@@ -103,16 +130,26 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
               >
                 Welcome{userName ? `, ${userName}` : ''}!
               </h1>
-              <p 
-                className="text-base sm:text-lg md:text-xl text-gray-400 font-normal max-w-xl mx-auto"
-                style={{ 
-                  textShadow: '0 1px 8px rgba(0,0,0,0.3)',
-                  letterSpacing: '-0.01em',
-                  fontWeight: '400'
-                }}
-              >
-                Your account has been created successfully. What would you like to do next?
-              </p>
+              <div className="text-base sm:text-lg md:text-xl text-gray-400 font-normal max-w-xl mx-auto space-y-2">
+                <p 
+                  style={{ 
+                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                    letterSpacing: '-0.01em',
+                    fontWeight: '400'
+                  }}
+                >
+                  Your account has been created successfully.
+                </p>
+                <p 
+                  style={{ 
+                    textShadow: '0 1px 8px rgba(0,0,0,0.3)',
+                    letterSpacing: '-0.01em',
+                    fontWeight: '400'
+                  }}
+                >
+                  What would you like to do next?
+                </p>
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -120,7 +157,7 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
               {/* Dashboard Button */}
               <button
                 onClick={() => handleNavigation('/player/dashboard')}
-                className="group relative overflow-hidden rounded-2xl p-8 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-2xl p-8 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 {/* Background */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.08] rounded-2xl transition-all duration-300 group-hover:border-[#077124]/30"></div>
@@ -145,7 +182,7 @@ export default function WelcomeModal({ isOpen, onClose, userName }: WelcomeModal
               {/* View Deals Button */}
               <button
                 onClick={() => handleNavigation('/deals')}
-                className="group relative overflow-hidden rounded-2xl p-8 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98]"
+                className="group relative overflow-hidden rounded-2xl p-8 transition-all duration-500 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 {/* Background */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#0d0d0d] to-[#121212] border border-white/[0.08] rounded-2xl transition-all duration-300 group-hover:border-[#077124]/30"></div>

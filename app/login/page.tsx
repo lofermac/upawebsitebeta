@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 {/* Email Field */}
                 <div className="space-y-3">
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-300 tracking-tight">
-                    Username
+                    Email
                   </label>
                   <div className="relative group/input">
                     {/* Icon with subtle glow on focus */}
@@ -112,7 +112,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="relative w-full pl-14 pr-5 py-4 bg-black/40 border border-white/[0.08] rounded-xl text-white text-base placeholder-gray-500 focus:outline-none focus:border-[#077124]/50 focus:ring-2 focus:ring-[#077124]/20 transition-all duration-300 hover:border-white/[0.12] hover:bg-black/50"
-                      placeholder="admin or player"
+                      placeholder="email@example.com"
                       required
                       style={{
                         boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.3)'
@@ -187,48 +187,17 @@ export default function LoginPage() {
                   </a>
                 </div>
 
-                {/* Login Button - Same as View All Deals */}
+                {/* Login Button - Mesmo estilo dos CTAs da Homepage */}
                 <div className="flex justify-center mt-8">
                   <button
                     type="submit"
-                    className="group relative inline-flex items-center justify-center gap-3 px-14 py-5 text-lg md:text-xl font-bold text-white bg-gradient-to-b from-[#088929] to-[#055a1c] rounded-full overflow-hidden transition-all duration-500 hover:scale-[1.03] active:scale-[0.98]"
-                  style={{
-                    boxShadow: `
-                      0 1px 3px 0 rgba(0,0,0,0.5),
-                      0 4px 12px rgba(7,113,36,0.3),
-                      0 8px 32px rgba(7,113,36,0.25),
-                      0 16px 64px rgba(7,113,36,0.2),
-                      inset 0 1px 1px rgba(255,255,255,0.3),
-                      inset 0 -1px 1px rgba(0,0,0,0.2)
-                    `
-                  }}
-                >
-                  {/* Outer glow - Layer 1 (most intense) */}
-                  <div className="absolute -inset-1 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500"></div>
-                  
-                  {/* Outer glow - Layer 2 (medium spread) */}
-                  <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 via-[#077124] to-emerald-400 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 animate-pulse-slow"></div>
-                  
-                  {/* Outer glow - Layer 3 (soft wide spread) */}
-                  <div className="absolute -inset-4 bg-[#077124] rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity duration-700"></div>
-                  
-                  {/* Glass reflection effect on top */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/25 via-white/5 to-transparent" style={{ height: '50%' }}></div>
-                  
-                  {/* Animated shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000 skew-x-12"></div>
-                  
-                  {/* Inner shadow for depth */}
-                  <div className="absolute inset-0 rounded-full shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)]"></div>
-                  
-                  {/* Pulsing ambient glow on hover */}
-                  <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-r from-[#0a9b30]/40 to-[#077124]/40 blur-2xl scale-110"></div>
-                  
-                  {/* Button content */}
-                  <span className="relative z-10 tracking-wide drop-shadow-lg">Login</span>
-                  
-                  {/* Animated arrow */}
-                  <ArrowRight className="relative z-10 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 drop-shadow-lg" strokeWidth={3} />
+                    className="relative font-semibold px-14 py-5 text-lg md:text-xl rounded-full bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden"
+                  >
+                    <span className="relative z-10">Login</span>
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                    {/* Subtle inner glow */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                   </button>
                 </div>
 
