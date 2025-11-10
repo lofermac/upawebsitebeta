@@ -71,18 +71,24 @@ export const BannerCTANode = Node.create<BannerCTAOptions>({
         ],
         [
           'div',
-          { class: 'relative border border-white/[0.08] rounded-3xl p-12 text-center' },
+          { 
+            class: 'relative border border-white/[0.08] rounded-3xl p-12',
+            style: 'text-align: center;'
+          },
           [
             'h3',
             {
               class: 'text-white text-2xl md:text-3xl font-bold mb-4',
-              style: 'text-shadow: 0 2px 12px rgba(0,0,0,0.4); letter-spacing: -0.015em;',
+              style: 'text-shadow: 0 2px 12px rgba(0,0,0,0.4); letter-spacing: -0.015em; text-align: center;',
             },
             node.attrs.title,
           ],
           [
             'p',
-            { class: 'text-gray-300 text-base md:text-lg mb-8 max-w-2xl mx-auto leading-relaxed' },
+            { 
+              class: 'text-gray-300 text-base md:text-lg mb-8 max-w-2xl leading-relaxed',
+              style: 'text-align: center; margin-left: auto; margin-right: auto;'
+            },
             node.attrs.description,
           ],
           [

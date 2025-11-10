@@ -146,6 +146,22 @@ export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentPr
           margin: 1.25rem 0;
         }
 
+        .dynamic-content-wrapper h4 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #ffffff;
+          line-height: 1.5;
+          margin: 1rem 0;
+        }
+
+        .dynamic-content-wrapper h5 {
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: #ffffff;
+          line-height: 1.5;
+          margin: 1rem 0;
+        }
+
         .dynamic-content-wrapper p {
           line-height: 1.75;
           color: #d1d5db;
@@ -374,6 +390,13 @@ export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentPr
 
         .dynamic-content-wrapper .banner-cta-block {
           margin: 3rem 0;
+        }
+
+        .dynamic-content-wrapper .banner-cta-block h3,
+        .dynamic-content-wrapper .banner-cta-block p {
+          text-align: center !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
         }
 
         .dynamic-content-wrapper .signup-card-block {

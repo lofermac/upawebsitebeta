@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BlockConfigModal from '../BlockConfigModal';
 import { ChevronDown, ChevronUp, Plus, Trash2, GripVertical } from 'lucide-react';
 
@@ -8,6 +8,11 @@ interface AccordionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInsert: (title: string, content: string) => void;
+  initialData?: {
+    title?: string;
+    content?: string;
+  };
+  onDelete?: () => void;
 }
 
 interface ContentSection {
@@ -21,6 +26,8 @@ const AccordionModal: React.FC<AccordionModalProps> = ({
   isOpen,
   onClose,
   onInsert,
+  initialData,
+  onDelete,
 }) => {
   const [title, setTitle] = useState('Terms & Conditions');
   const [sections, setSections] = useState<ContentSection[]>([
@@ -29,6 +36,21 @@ const AccordionModal: React.FC<AccordionModalProps> = ({
     { id: '3', type: 'list', content: '', items: ['Item 1', 'Item 2', 'Item 3'] },
   ]);
   const [previewOpen, setPreviewOpen] = useState(true);
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setTitle(initialData.title || 'Terms & Conditions');
+      // Note: content is HTML, might need parsing for sections
+      // For now just keep default sections
+    } else if (isOpen && !initialData) {
+      setTitle('Terms & Conditions');
+      setSections([
+        { id: '1', type: 'heading', content: 'Important Information' },
+        { id: '2', type: 'paragraph', content: 'Please read these terms carefully before proceeding.' },
+        { id: '3', type: 'list', content: '', items: ['Item 1', 'Item 2', 'Item 3'] },
+      ]);
+    }
+  }, [isOpen, initialData]);
 
   const addSection = (type: 'heading' | 'paragraph' | 'list') => {
     const newSection: ContentSection = {
@@ -116,6 +138,8 @@ const AccordionModal: React.FC<AccordionModalProps> = ({
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Insert Accordion / Expandable"
+      submitText={initialData ? 'Update Block' : 'Insert Block'}
+      onDelete={onDelete}
     >
       <div className="space-y-4">
         {/* Accordion Title */}

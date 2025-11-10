@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { uploadNewsImage, deleteNewsImage } from '@/lib/supabase/news';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import TiptapEditor from '@/components/TiptapEditor';
 import { 
@@ -11,7 +12,8 @@ import {
   AlertCircle,
   CheckCircle,
   Loader,
-  Eye
+  Eye,
+  Upload
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,6 +39,7 @@ export default function EditArticlePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [showFloatingSave, setShowFloatingSave] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   const router = useRouter();
   const params = useParams();
@@ -117,9 +120,87 @@ export default function EditArticlePage() {
     }
   };
 
+  const handleFeaturedImageUpload = async (file: File) => {
+    console.log('📸 [1] Iniciando upload de imagem da notícia...');
+    console.log('📸 [2] Arquivo:', {
+      name: file.name,
+      size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+      type: file.type
+    });
+    console.log('📸 [3] Título do artigo:', title);
+    
+    // Validar se o título foi preenchido
+    if (!title || title.trim() === '') {
+      console.warn('⚠️ [4] Título vazio, impossível fazer upload');
+      setSaveError('Please enter a title before uploading an image');
+      setTimeout(() => setSaveError(null), 3000);
+      return;
+    }
+    
+    setUploadingImage(true);
+    setSaveError(null);
+    
+    try {
+      // Get old image URL to delete after successful upload
+      const oldImageUrl = featuredImage;
+      console.log('📸 [5] Imagem antiga:', oldImageUrl || 'nenhuma');
+      
+      // Upload to Supabase Storage
+      console.log('📸 [6] Chamando uploadNewsImage...');
+      const publicUrl = await uploadNewsImage(file, title);
+      console.log('✅ [7] Upload concluído! URL:', publicUrl);
+      
+      // Update featured image state with new URL
+      setFeaturedImage(publicUrl);
+      console.log('✅ [8] State atualizado com nova URL');
+      
+      // Delete old image if it exists and was from storage
+      if (oldImageUrl && oldImageUrl.includes('news-images')) {
+        console.log('📸 [9] Deletando imagem antiga...');
+        await deleteNewsImage(oldImageUrl).catch(console.error);
+      }
+      
+      setSaveSuccess('Image uploaded successfully!');
+      setTimeout(() => setSaveSuccess(null), 3000);
+      console.log('✅ [10] Upload completo!');
+      
+    } catch (error) {
+      console.error('❌ [11] Erro no upload:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleSave = async () => {
+    // Validação de campos obrigatórios
     if (!title.trim()) {
       setSaveError('Title is required');
+      setTimeout(() => setSaveError(null), 3000);
+      return;
+    }
+
+    if (!author.trim()) {
+      setSaveError('Author is required');
+      setTimeout(() => setSaveError(null), 3000);
+      return;
+    }
+
+    if (!category.trim()) {
+      setSaveError('Category is required');
+      setTimeout(() => setSaveError(null), 3000);
+      return;
+    }
+
+    if (!featuredImage.trim()) {
+      setSaveError('Featured Image is required');
+      setTimeout(() => setSaveError(null), 3000);
+      return;
+    }
+
+    if (!excerpt.trim()) {
+      setSaveError('Excerpt is required');
       setTimeout(() => setSaveError(null), 3000);
       return;
     }
@@ -231,7 +312,7 @@ export default function EditArticlePage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handleSave}
-                  disabled={!title.trim() || saving}
+                  disabled={!title.trim() || !author.trim() || !category.trim() || !featuredImage.trim() || !excerpt.trim() || saving}
                   className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
                 >
                   {saving ? (
@@ -303,13 +384,13 @@ export default function EditArticlePage() {
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">💡 Main headline for your article</p>
+                  <p className="text-xs text-gray-500 mt-1">💡 Main Headline for Article</p>
                 </div>
 
                 {/* Author */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Author
+                    Author <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -318,13 +399,13 @@ export default function EditArticlePage() {
                     className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
                     placeholder="Enter author name"
                   />
-                  <p className="text-xs text-gray-500 mt-1">💡 Author name (optional)</p>
+                  <p className="text-xs text-gray-500 mt-1">💡 Author Name</p>
                 </div>
 
                 {/* Category */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Category
+                    Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={category}
@@ -336,7 +417,7 @@ export default function EditArticlePage() {
                     <option value="General News" className="bg-zinc-800">General News</option>
                     <option value="Poker Site Promotions" className="bg-zinc-800">Poker Site Promotions</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">💡 Article category for organization</p>
+                  <p className="text-xs text-gray-500 mt-1">💡 Article Category</p>
                 </div>
               </div>
 
@@ -345,18 +426,12 @@ export default function EditArticlePage() {
                 {/* Featured Image */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Featured Image URL
+                    Featured Image <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="url"
-                    value={featuredImage}
-                    onChange={(e) => setFeaturedImage(e.target.value)}
-                    className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124]"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">💡 Main image displayed at the top of the article</p>
+                  
+                  {/* Preview da imagem atual (se existir) */}
                   {featuredImage && (
-                    <div className="mt-3 relative rounded-lg overflow-hidden border border-white/10">
+                    <div className="mb-3 relative rounded-lg overflow-hidden border border-white/10">
                       <img 
                         src={featuredImage} 
                         alt="Featured preview" 
@@ -367,12 +442,49 @@ export default function EditArticlePage() {
                       />
                     </div>
                   )}
+                  
+                  {/* Botão de Upload */}
+                  <label className="relative cursor-pointer block">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        console.log('🔍 [onChange] Evento disparado!');
+                        console.log('🔍 [onChange] Files:', e.target.files);
+                        const file = e.target.files?.[0];
+                        console.log('🔍 [onChange] Arquivo selecionado:', file);
+                        if (file) {
+                          console.log('🔍 [onChange] Chamando handleFeaturedImageUpload...');
+                          handleFeaturedImageUpload(file);
+                        } else {
+                          console.warn('⚠️ [onChange] Nenhum arquivo selecionado!');
+                        }
+                      }}
+                      className="hidden"
+                      disabled={uploadingImage}
+                    />
+                    <div className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-gray-300 hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2">
+                      {uploadingImage ? (
+                        <>
+                          <Loader className="w-4 h-4 animate-spin" />
+                          <span>Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          <span>{featuredImage ? 'Change Image' : 'Upload Image'}</span>
+                        </>
+                      )}
+                    </div>
+                  </label>
+                  <p className="text-xs text-gray-500 mt-1">💡 Main Image</p>
+                  <p className="text-xs text-gray-400 mt-1">JPG, PNG or WEBP (max 5MB)</p>
                 </div>
 
                 {/* Excerpt */}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Excerpt
+                    Excerpt <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     value={excerpt}
@@ -381,7 +493,7 @@ export default function EditArticlePage() {
                     className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124] resize-none"
                     placeholder="Brief description of the article..."
                   />
-                  <p className="text-xs text-gray-500 mt-1">💡 Short summary shown in listings (optional)</p>
+                  <p className="text-xs text-gray-500 mt-1">💡 Short Summary</p>
                 </div>
 
                 {/* Status */}
@@ -397,7 +509,7 @@ export default function EditArticlePage() {
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">💡 Draft = Not visible | Published = Live on site</p>
+                  <p className="text-xs text-gray-500 mt-1">💡 <strong>Draft:</strong> Not Visible | <strong>Published:</strong> Live</p>
                 </div>
               </div>
             </div>
@@ -436,7 +548,7 @@ export default function EditArticlePage() {
           {/* Save Button */}
           <button
             onClick={handleSave}
-            disabled={!title.trim() || saving}
+            disabled={!title.trim() || !author.trim() || !category.trim() || !featuredImage.trim() || !excerpt.trim() || saving}
             className="group relative flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-xl text-sm font-semibold shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
             {saving ? (

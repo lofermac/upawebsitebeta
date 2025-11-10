@@ -1,18 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BlockConfigModal from '../BlockConfigModal';
 
 interface PremiumTableModalProps {
   isOpen: boolean;
   onClose: () => void;
   onInsert: (headers: string[], rows: string[][]) => void;
+  initialData?: {
+    data?: {
+      headers: string[];
+      rows: string[][];
+    };
+  };
+  onDelete?: () => void;
 }
 
 const PremiumTableModal: React.FC<PremiumTableModalProps> = ({
   isOpen,
   onClose,
   onInsert,
+  initialData,
+  onDelete,
 }) => {
   const [numRows, setNumRows] = useState(3);
   const [numCols, setNumCols] = useState(3);
@@ -22,6 +31,25 @@ const PremiumTableModal: React.FC<PremiumTableModalProps> = ({
     ['Value 4', 'Value 5', 'Value 6'],
     ['Value 7', 'Value 8', 'Value 9'],
   ]);
+
+  useEffect(() => {
+    if (isOpen && initialData?.data) {
+      const { headers: initHeaders, rows: initRows } = initialData.data;
+      setHeaders(initHeaders);
+      setRows(initRows);
+      setNumCols(initHeaders.length);
+      setNumRows(initRows.length);
+    } else if (isOpen && !initialData) {
+      setHeaders(['Column 1', 'Column 2', 'Column 3']);
+      setRows([
+        ['Value 1', 'Value 2', 'Value 3'],
+        ['Value 4', 'Value 5', 'Value 6'],
+        ['Value 7', 'Value 8', 'Value 9'],
+      ]);
+      setNumCols(3);
+      setNumRows(3);
+    }
+  }, [isOpen, initialData]);
 
   const handleRowsChange = (newNumRows: number) => {
     setNumRows(newNumRows);
@@ -100,6 +128,8 @@ const PremiumTableModal: React.FC<PremiumTableModalProps> = ({
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Insert Premium Table"
+      submitText={initialData ? 'Update Block' : 'Insert Block'}
+      onDelete={onDelete}
     >
       <div className="space-y-4">
         {/* Dimensions */}

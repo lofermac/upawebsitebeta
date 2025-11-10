@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BlockConfigModal from '../BlockConfigModal';
 import Link from 'next/link';
+import { Upload, Loader } from 'lucide-react';
+import { uploadNewsContentImage } from '@/lib/supabase/news';
 
 interface SignUpCardModalProps {
   isOpen: boolean;
@@ -15,12 +17,22 @@ interface SignUpCardModalProps {
     buttonUrl: string,
     bgColor?: string
   ) => void;
+  initialData?: {
+    logoSrc?: string;
+    title?: string;
+    description?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+  };
+  onDelete?: () => void;
 }
 
 const SignUpCardModal: React.FC<SignUpCardModalProps> = ({
   isOpen,
   onClose,
   onInsert,
+  initialData,
+  onDelete,
 }) => {
   const [logoSrc, setLogoSrc] = useState('');
   const [title, setTitle] = useState('Create Your Account Today');
@@ -29,6 +41,45 @@ const SignUpCardModal: React.FC<SignUpCardModalProps> = ({
   );
   const [buttonText, setButtonText] = useState('Sign Up Now');
   const [buttonUrl, setButtonUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Update state when modal opens with data
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setLogoSrc(initialData.logoSrc || '');
+      setTitle(initialData.title || 'Create Your Account Today');
+      setDescription(initialData.description || 'Join thousands of players and start enjoying exclusive benefits.');
+      setButtonText(initialData.buttonText || 'Sign Up Now');
+      setButtonUrl(initialData.buttonUrl || '');
+    } else if (isOpen && !initialData) {
+      setLogoSrc('');
+      setTitle('Create Your Account Today');
+      setDescription('Join thousands of players and start enjoying exclusive benefits.');
+      setButtonText('Sign Up Now');
+      setButtonUrl('');
+    }
+  }, [isOpen, initialData]);
+
+  const handleLogoUpload = async (file: File) => {
+    console.log('🔍 [SignUpCardModal] Arquivo selecionado:', file);
+    
+    setUploadingImage(true);
+    setUploadError(null);
+    
+    try {
+      console.log('📸 [SignUpCardModal] Chamando uploadNewsContentImage...');
+      const publicUrl = await uploadNewsContentImage(file, 'signup-card-logo');
+      console.log('✅ [SignUpCardModal] Upload concluído! URL:', publicUrl);
+      
+      setLogoSrc(publicUrl);
+    } catch (error) {
+      console.error('❌ [SignUpCardModal] Erro no upload:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload logo. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleSubmit = () => {
     if (
@@ -44,6 +95,7 @@ const SignUpCardModal: React.FC<SignUpCardModalProps> = ({
       setDescription('Join thousands of players and start enjoying exclusive benefits.');
       setButtonText('Sign Up Now');
       setButtonUrl('');
+      setUploadError(null);
       onClose();
     }
   };
@@ -54,26 +106,59 @@ const SignUpCardModal: React.FC<SignUpCardModalProps> = ({
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Insert Sign Up Card"
+      submitText={initialData ? 'Update Block' : 'Insert Block'}
+      onDelete={onDelete}
     >
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            Logo URL
+            Upload Logo Image
           </label>
-          <input
-            type="url"
-            value={logoSrc}
-            onChange={(e) => setLogoSrc(e.target.value)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124] text-white"
-            placeholder="https://example.com/logo.png"
-            autoFocus
-          />
+          
+          {/* Preview da imagem (se já houver) */}
           {logoSrc && (
-            <div className="mt-2 p-2 bg-black/40 rounded-lg inline-block">
+            <div className="mb-3 p-2 bg-black/40 rounded-lg inline-block">
               <img src={logoSrc} alt="Logo preview" className="w-20 h-20 object-contain" />
             </div>
           )}
+          
+          {/* Botão de Upload */}
+          <label className="relative cursor-pointer block">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleLogoUpload(file);
+                }
+              }}
+              className="hidden"
+              disabled={uploadingImage}
+            />
+            <div className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:border-white/20 transition-all duration-200 flex items-center justify-center gap-2">
+              {uploadingImage ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  <span>Uploading...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>{logoSrc ? 'Change Logo' : 'Upload Logo'}</span>
+                </>
+              )}
+            </div>
+          </label>
+          <p className="text-xs text-gray-400 mt-2">JPG, PNG, WEBP or GIF (max 10MB)</p>
         </div>
+
+        {/* Error Message */}
+        {uploadError && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-red-400 text-sm">{uploadError}</p>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">

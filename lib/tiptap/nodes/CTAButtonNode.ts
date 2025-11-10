@@ -7,7 +7,7 @@ export interface CTAButtonOptions {
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     ctaButton: {
-      setCTAButton: (attrs: { text: string; url: string }) => ReturnType;
+      setCTAButton: (attrs: { text: string; url: string; align?: 'left' | 'center' | 'right' }) => ReturnType;
     };
   }
 }
@@ -27,6 +27,9 @@ export const CTAButtonNode = Node.create<CTAButtonOptions>({
       url: {
         default: '#',
       },
+      align: {
+        default: 'center',
+      },
     };
   },
 
@@ -39,11 +42,16 @@ export const CTAButtonNode = Node.create<CTAButtonOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
+    const alignClass = 
+      node.attrs.align === 'left' ? 'justify-start' :
+      node.attrs.align === 'right' ? 'justify-end' :
+      'justify-center';
+
     return [
       'div',
       mergeAttributes(HTMLAttributes, {
         'data-type': 'cta-button',
-        class: 'cta-button-block flex justify-center my-8',
+        class: `cta-button-block flex ${alignClass} my-8`,
       }),
       [
         'a',

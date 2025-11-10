@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import BlockConfigModal from '../BlockConfigModal';
 import Link from 'next/link';
 
@@ -14,30 +14,49 @@ interface BannerCTAModalProps {
     buttonUrl: string,
     bgColor?: string
   ) => void;
+  initialData?: {
+    title?: string;
+    description?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+  };
+  onDelete?: () => void;
 }
 
 const BannerCTAModal: React.FC<BannerCTAModalProps> = ({
   isOpen,
   onClose,
   onInsert,
+  initialData,
+  onDelete,
 }) => {
-  const [title, setTitle] = useState('Special Offer Available');
+  const [title, setTitle] = useState(initialData?.title || 'Special Offer Available');
   const [description, setDescription] = useState(
-    'Join us today and get exclusive access to premium features and benefits.'
+    initialData?.description || 'Join us today and get exclusive access to premium features and benefits.'
   );
-  const [buttonText, setButtonText] = useState('Learn More');
-  const [buttonUrl, setButtonUrl] = useState('');
-  const [bgColor, setBgColor] = useState('from-zinc-900/60 via-black/80 to-zinc-900/60');
+  const [buttonText, setButtonText] = useState(initialData?.buttonText || 'Learn More');
+  const [buttonUrl, setButtonUrl] = useState(initialData?.buttonUrl || '');
+  
+  // Always use Dark Gray background
+  const bgColor = 'from-zinc-900/60 via-black/80 to-zinc-900/60';
 
-  // Predefined color options
-  const colorOptions = [
-    { name: 'Dark Gray (Default)', value: 'from-zinc-900/60 via-black/80 to-zinc-900/60' },
-    { name: 'Green', value: 'from-[#077124]/20 via-emerald-900/30 to-[#077124]/20' },
-    { name: 'Blue', value: 'from-blue-900/20 via-blue-950/30 to-blue-900/20' },
-    { name: 'Purple', value: 'from-purple-900/20 via-purple-950/30 to-purple-900/20' },
-    { name: 'Red', value: 'from-red-900/20 via-red-950/30 to-red-900/20' },
-    { name: 'Orange', value: 'from-orange-900/20 via-orange-950/30 to-orange-900/20' },
-  ];
+  // Update state when initialData changes OR when modal opens
+  useEffect(() => {
+    if (isOpen && initialData) {
+      console.log('🔄 [BannerCTAModal] Loading initial data:', initialData);
+      setTitle(initialData.title || 'Special Offer Available');
+      setDescription(initialData.description || 'Join us today and get exclusive access to premium features and benefits.');
+      setButtonText(initialData.buttonText || 'Learn More');
+      setButtonUrl(initialData.buttonUrl || '');
+    } else if (isOpen && !initialData) {
+      // Reset to defaults when opening for new insert
+      console.log('🆕 [BannerCTAModal] Opening for new insert');
+      setTitle('Special Offer Available');
+      setDescription('Join us today and get exclusive access to premium features and benefits.');
+      setButtonText('Learn More');
+      setButtonUrl('');
+    }
+  }, [isOpen, initialData]);
 
   const handleSubmit = () => {
     if (title.trim() && description.trim() && buttonText.trim() && buttonUrl.trim()) {
@@ -46,10 +65,11 @@ const BannerCTAModal: React.FC<BannerCTAModalProps> = ({
       setDescription('Join us today and get exclusive access to premium features and benefits.');
       setButtonText('Learn More');
       setButtonUrl('');
-      setBgColor('from-zinc-900/60 via-black/80 to-zinc-900/60');
       onClose();
     }
   };
+
+  const isValid = title.trim() && description.trim() && buttonText.trim() && buttonUrl.trim();
 
   return (
     <BlockConfigModal
@@ -57,6 +77,9 @@ const BannerCTAModal: React.FC<BannerCTAModalProps> = ({
       onClose={onClose}
       onSubmit={handleSubmit}
       title="Insert Full Width CTA Banner"
+      submitText={initialData ? 'Update Block' : 'Insert Block'}
+      onDelete={onDelete}
+      disabled={!isValid}
     >
       <div className="space-y-4">
         <div>
@@ -112,23 +135,6 @@ const BannerCTAModal: React.FC<BannerCTAModalProps> = ({
               placeholder="https://..."
             />
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">
-            Background Color Theme
-          </label>
-          <select
-            value={bgColor}
-            onChange={(e) => setBgColor(e.target.value)}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#077124] text-white"
-          >
-            {colorOptions.map((option) => (
-              <option key={option.value} value={option.value} className="bg-[#1a1a1a]">
-                {option.name}
-              </option>
-            ))}
-          </select>
         </div>
       </div>
 
