@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { Users, Copy, Check, ArrowLeft, DollarSign, TrendingUp, Calendar, Filter } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import ReactCountryFlag from 'react-country-flag';
 
 // Types
 interface SubAffiliateData {
@@ -24,10 +25,12 @@ interface Referral {
     id: string;
     full_name: string;
     email: string;
+    country: string | null;
   };
   player_deal?: {
     id: string;
     status: string;
+    platform_username: string | null;
     deal?: {
       name: string;
     };
@@ -43,6 +46,7 @@ interface ReferralEarning {
   payment_status: string;
   player_name: string;
   player_email: string;
+  player_country: string | null;
   deal_name: string;
   platform_username: string;
 }
@@ -63,6 +67,10 @@ export default function AffiliatePanel() {
   const [selectedPlayer, setSelectedPlayer] = useState<string>('all');
   const [selectedDeal, setSelectedDeal] = useState<string>('all');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('all');
+
+  // Referrals Filter States
+  const [selectedReferralStatus, setSelectedReferralStatus] = useState<string>('all');
+  const [selectedRoom, setSelectedRoom] = useState<string>('all');
 
   useEffect(() => {
     async function loadAffiliateData() {
@@ -119,11 +127,13 @@ export default function AffiliatePanel() {
           referred_player:profiles!referrals_referred_player_id_fkey(
             id,
             full_name,
-            email
+            email,
+            country
           ),
           player_deal:player_deals!referrals_player_deal_id_fkey(
             id,
             status,
+            platform_username,
             deal:deals(name)
           )
         `)
@@ -144,63 +154,96 @@ export default function AffiliatePanel() {
     setIsLoadingEarnings(true);
     
     try {
-      const { data, error } = await supabase
+      // PASSO 1: Buscar player_deal_ids específicos dos referrals ativos
+      const { data: referralsData, error: referralsError } = await supabase
+        .from('referrals')
+        .select('player_deal_id, referred_player_id')
+        .eq('sub_affiliate_id', subAffiliateId)
+        .eq('status', 'active')
+        .not('player_deal_id', 'is', null);
+
+      if (referralsError) {
+        console.error('Error loading referrals:', referralsError);
+        setEarnings([]);
+        return;
+      }
+
+      if (!referralsData || referralsData.length === 0) {
+        setEarnings([]);
+        return;
+      }
+
+      // Extrair player_deal_ids e player_ids
+      const referredPlayerDealIds = referralsData
+        .map(r => r.player_deal_id)
+        .filter(Boolean);
+      
+      const referredPlayerIds = [...new Set(
+        referralsData
+          .map(r => r.referred_player_id)
+          .filter(Boolean)
+      )];
+
+      if (referredPlayerDealIds.length === 0) {
+        setEarnings([]);
+        return;
+      }
+
+      // PASSO 2: Buscar earnings APENAS dos player_deal_ids específicos
+      const { data: earningsData, error: earningsError } = await supabase
         .from('player_earnings')
         .select(`
           *,
           player_deal:player_deals!player_earnings_player_deal_id_fkey(
+            id,
             user_id,
             platform_username,
             deals(name)
           )
         `)
+        .in('player_deal_id', referredPlayerDealIds)
         .order('period_year', { ascending: false })
         .order('period_month', { ascending: false });
 
-      if (!error && data) {
-        // Filter earnings to only include referrals from this sub-affiliate
-        const { data: referralsData } = await supabase
-          .from('referrals')
-          .select('referred_player_id')
-          .eq('sub_affiliate_id', subAffiliateId)
-          .eq('status', 'active');
-
-        if (referralsData) {
-          const referredPlayerIds = referralsData.map(r => r.referred_player_id);
-          
-          // Get player profiles
-          const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, full_name, email')
-            .in('id', referredPlayerIds);
-
-          // Filter and map earnings
-          const filteredEarnings = data
-            .filter(earning => 
-              earning.player_deal && 
-              referredPlayerIds.includes(earning.player_deal.user_id)
-            )
-            .map(earning => {
-              const profile = profilesData?.find(p => p.id === earning.player_deal.user_id);
-              return {
-                id: earning.id,
-                period_month: earning.period_month,
-                period_year: earning.period_year,
-                gross_rake: parseFloat(earning.gross_rake),
-                net_rake: parseFloat(earning.net_rake),
-                payment_status: earning.payment_status,
-                player_name: profile?.full_name || 'Unknown',
-                player_email: profile?.email || '',
-                deal_name: earning.player_deal?.deals?.name || 'Unknown',
-                platform_username: earning.player_deal?.platform_username || '',
-              };
-            });
-
-          setEarnings(filteredEarnings);
-        }
+      if (earningsError) {
+        console.error('Error loading earnings:', earningsError);
+        setEarnings([]);
+        return;
       }
+
+      // PASSO 3: Buscar profiles dos players referidos
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, country')
+        .in('id', referredPlayerIds);
+
+      if (profilesError) {
+        console.error('Error loading profiles:', profilesError);
+      }
+
+      // PASSO 4: Mapear earnings com dados dos profiles
+      const mappedEarnings = (earningsData || []).map(earning => {
+        const profile = profilesData?.find(p => p.id === earning.player_deal?.user_id);
+        return {
+          id: earning.id,
+          period_month: earning.period_month,
+          period_year: earning.period_year,
+          gross_rake: parseFloat(earning.gross_rake || 0),
+          net_rake: parseFloat(earning.net_rake || 0),
+          payment_status: earning.payment_status,
+          player_name: profile?.full_name || 'Unknown',
+          player_email: profile?.email || '',
+          player_country: profile?.country || null,
+          deal_name: earning.player_deal?.deals?.name || 'Unknown',
+          platform_username: earning.player_deal?.platform_username || '',
+        };
+      });
+
+      setEarnings(mappedEarnings);
+      
     } catch (error) {
-      console.error('Error loading earnings:', error);
+      console.error('Error loading referral earnings:', error);
+      setEarnings([]);
     } finally {
       setIsLoadingEarnings(false);
     }
@@ -217,7 +260,7 @@ export default function AffiliatePanel() {
   const handleCopyLink = () => {
     if (!subAffiliateData?.referral_code) return;
     
-    const link = `${window.location.origin}/deals/ref=${subAffiliateData.referral_code}`;
+    const link = `${window.location.origin}/deals?ref=${subAffiliateData.referral_code}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -273,6 +316,20 @@ export default function AffiliatePanel() {
     `${e.period_year}-${e.period_month.toString().padStart(2, '0')}`
   ))).sort().reverse();
 
+  // Get unique values for referrals filters
+  const uniqueRooms = Array.from(new Set(
+    myReferrals
+      .filter(r => r.player_deal?.deal?.name)
+      .map(r => r.player_deal!.deal!.name)
+  )).sort();
+
+  // Filter referrals
+  const filteredReferrals = myReferrals.filter(referral => {
+    if (selectedReferralStatus !== 'all' && referral.status !== selectedReferralStatus) return false;
+    if (selectedRoom !== 'all' && referral.player_deal?.deal?.name !== selectedRoom) return false;
+    return true;
+  });
+
   // Mostrar loading enquanto verifica autorização
   if (isLoading || !isAuthorized) {
     return (
@@ -326,46 +383,33 @@ export default function AffiliatePanel() {
         <div className="bg-gradient-to-br from-purple-900/20 via-gray-900 to-gray-900 rounded-2xl border border-purple-500/30 p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">Your Referral Information</h2>
           
-          {/* Referral Code */}
-          <div className="mb-6">
-            <p className="text-sm text-gray-400 uppercase font-medium mb-2">
-              Your Referral Code
-            </p>
+          {/* Referral Code & Link - Same Line */}
+          <div className="mb-3">
             <div className="flex items-center gap-3">
-              <code className="flex-1 text-3xl font-bold text-purple-400 tracking-wider bg-black/30 rounded-lg px-6 py-4">
-                {subAffiliateData?.referral_code}
-              </code>
-              <button
-                onClick={handleCopyCode}
-                className="px-6 py-4 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/50 text-purple-400 rounded-lg transition-colors flex items-center gap-2"
-              >
-                {copiedCode ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
-                    Copy Code
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
+              {/* Referral Code */}
+              <div className="flex-shrink-0">
+                <p className="text-xs text-gray-400 uppercase font-medium mb-2">
+                  Referral Code
+                </p>
+                <code className="text-sm font-bold text-purple-400 tracking-wider bg-black/30 rounded-lg px-4 py-3 block">
+                  {subAffiliateData?.referral_code}
+                </code>
+              </div>
 
-          {/* Referral Link */}
-          <div>
-            <p className="text-sm text-gray-400 uppercase font-medium mb-2">
-              Your Referral Link
-            </p>
-            <div className="flex items-center gap-3">
-              <code className="flex-1 text-base text-gray-300 bg-black/30 rounded-lg px-6 py-4 truncate">
-                {`${typeof window !== 'undefined' ? window.location.origin : ''}/deals/ref=${subAffiliateData?.referral_code}`}
-              </code>
+              {/* Referral Link */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 uppercase font-medium mb-2">
+                  Referral Link
+                </p>
+                <code className="text-sm text-gray-300 bg-black/30 rounded-lg px-4 py-3 block truncate">
+                  {`${typeof window !== 'undefined' ? window.location.origin : ''}/deals?ref=${subAffiliateData?.referral_code}`}
+                </code>
+              </div>
+
+              {/* Copy Link Button */}
               <button
                 onClick={handleCopyLink}
-                className="px-6 py-4 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors font-semibold whitespace-nowrap flex items-center gap-2"
+                className="flex-shrink-0 self-end px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors font-semibold whitespace-nowrap flex items-center gap-2"
               >
                 {copiedLink ? (
                   <>
@@ -381,12 +425,57 @@ export default function AffiliatePanel() {
               </button>
             </div>
           </div>
+
+          {/* How it Works Explanation */}
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+            <p className="text-xs text-gray-300 leading-relaxed">
+              <span className="text-blue-400 font-semibold">How It Works:</span> When someone clicks your link, 
+              we automatically save their visit for <span className="font-bold text-white">7 days</span>. 
+              They can browse normally—your referral stays <span className="font-bold text-white">active in the background</span>, 
+              even without the link showing in the URL.
+            </p>
+          </div>
         </div>
 
         {/* My Referrals Section */}
         <div>
-          <h2 className="text-2xl font-bold mb-4">My Referrals</h2>
-              <p className="text-gray-400 mb-6">Players you&apos;ve referred and their performance</p>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">My Referrals</h2>
+              <p className="text-gray-400">Players you&apos;ve referred and their performance</p>
+            </div>
+            
+            {/* Filters */}
+            <div className="flex items-center gap-3">
+              {/* Status Filter */}
+              <div>
+                <select
+                  value={selectedReferralStatus}
+                  onChange={(e) => setSelectedReferralStatus(e.target.value)}
+                  className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              {/* Room Filter */}
+              <div>
+                <select
+                  value={selectedRoom}
+                  onChange={(e) => setSelectedRoom(e.target.value)}
+                  className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                >
+                  <option value="all">All Rooms</option>
+                  {uniqueRooms.map(room => (
+                    <option key={room} value={room}>{room}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
 
           {isLoadingReferrals ? (
             <div className="bg-[#0a0e13] border border-gray-800 rounded-xl p-12 text-center">
@@ -420,7 +509,10 @@ export default function AffiliatePanel() {
                       Player
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                      Deal
+                      Room
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Nickname
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Status
@@ -431,21 +523,51 @@ export default function AffiliatePanel() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
-                  {myReferrals.map((referral) => (
+                  {filteredReferrals.map((referral) => (
                     <tr key={referral.id} className="hover:bg-gray-900/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div>
-                          <p className="text-white font-medium">
-                            {referral.referred_player?.full_name || 'Unknown'}
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {referral.referred_player?.email || 'No email'}
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium leading-none">
+                                {referral.referred_player?.full_name || 'Unknown'}
+                              </p>
+                              {referral.referred_player?.country && (
+                                <div 
+                                  className="relative group cursor-pointer flex items-center overflow-hidden rounded"
+                                  title={new Intl.DisplayNames(['en'], { type: 'region' }).of(referral.referred_player.country)}
+                                >
+                                  <ReactCountryFlag 
+                                    countryCode={referral.referred_player.country} 
+                                    svg 
+                                    style={{
+                                      width: '28px',
+                                      height: '20px',
+                                      objectFit: 'contain',
+                                      display: 'block'
+                                    }}
+                                  />
+                                  {/* Tooltip */}
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                    {new Intl.DisplayNames(['en'], { type: 'region' }).of(referral.referred_player.country)}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">
+                              {referral.referred_player?.email || 'No email'}
+                            </p>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-gray-300">
-                          {referral.player_deal?.deal?.name || 'No deal yet'}
+                        <p className="text-white font-semibold">
+                          {referral.player_deal?.deal?.name || 'No room yet'}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-white font-semibold">
+                          {referral.player_deal?.platform_username || '—'}
                         </p>
                       </td>
                       <td className="px-6 py-4">
@@ -454,9 +576,11 @@ export default function AffiliatePanel() {
                             ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                             : referral.status === 'pending'
                             ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
-                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/30'
+                            : referral.status === 'inactive'
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/30'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/30'
                         }`}>
-                          {referral.status}
+                          {referral.status.charAt(0).toUpperCase() + referral.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-400">
@@ -597,7 +721,10 @@ export default function AffiliatePanel() {
                       Player
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                      Deal
+                      Room
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                      Nickname
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                       Period
@@ -614,13 +741,41 @@ export default function AffiliatePanel() {
                   {filteredEarnings.map((earning) => (
                     <tr key={earning.id} className="hover:bg-gray-900/30 transition-colors">
                       <td className="px-6 py-4">
-                        <div>
-                          <p className="text-white font-medium">{earning.player_name}</p>
-                          <p className="text-sm text-gray-400">{earning.platform_username}</p>
+                        <div className="flex items-center gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium leading-none">{earning.player_name}</p>
+                              {earning.player_country && (
+                                <div 
+                                  className="relative group cursor-pointer flex items-center overflow-hidden rounded"
+                                  title={new Intl.DisplayNames(['en'], { type: 'region' }).of(earning.player_country)}
+                                >
+                                  <ReactCountryFlag 
+                                    countryCode={earning.player_country} 
+                                    svg 
+                                    style={{
+                                      width: '28px',
+                                      height: '20px',
+                                      objectFit: 'contain',
+                                      display: 'block'
+                                    }}
+                                  />
+                                  {/* Tooltip */}
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                    {new Intl.DisplayNames(['en'], { type: 'region' }).of(earning.player_country)}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-400 mt-1">{earning.player_email}</p>
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-gray-300">{earning.deal_name}</p>
+                        <p className="text-white font-semibold">{earning.deal_name}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-white font-semibold">{earning.platform_username || '—'}</p>
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-gray-300">
@@ -642,7 +797,7 @@ export default function AffiliatePanel() {
                 </tbody>
                 <tfoot className="bg-gray-900/50 border-t border-gray-800">
                   <tr>
-                    <td colSpan={3} className="px-6 py-4 text-right font-semibold text-white">
+                    <td colSpan={4} className="px-6 py-4 text-right font-semibold text-white">
                       TOTAL:
                     </td>
                     <td className="px-6 py-4 text-right">

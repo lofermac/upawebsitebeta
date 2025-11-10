@@ -14,7 +14,9 @@ import {
   HelpCircle,
   Info,
   Users,
-  Sparkles
+  Sparkles,
+  Copy,
+  Check
 } from 'lucide-react';
 
 // Helper functions
@@ -79,6 +81,7 @@ export default function PlayerDashboard() {
     created_at: string;
   }
   const [subAffiliateData, setSubAffiliateData] = useState<SubAffiliateData | null>(null);
+  const [copiedReferralLink, setCopiedReferralLink] = useState(false);
 
   // Fetch deals e earnings ao carregar
   useEffect(() => {
@@ -185,6 +188,15 @@ export default function PlayerDashboard() {
     setSubAffiliateStatus('pending');
   };
 
+  const handleCopyReferralLink = () => {
+    if (!subAffiliateData?.referral_code) return;
+    
+    const link = `${window.location.origin}/deals?ref=${subAffiliateData.referral_code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedReferralLink(true);
+    setTimeout(() => setCopiedReferralLink(false), 2000);
+  };
+
   const handleViewDetails = (deal: PlayerDeal) => {
     console.log('🔍 [handleViewDetails] Deal clicado:', deal);
     console.log('🔍 [handleViewDetails] Status original:', deal.status);
@@ -288,7 +300,7 @@ export default function PlayerDashboard() {
                         </p>
                         <button
                           onClick={() => setIsSubAffiliateModalOpen(true)}
-                          className="relative w-full px-4 py-2 rounded-lg bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden text-sm font-semibold"
+                          className="relative w-full px-4 py-2 rounded-lg bg-[#077124] text-white shadow-lg shadow-[#077124]/20 hover:shadow-2xl hover:shadow-[#077124]/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden text-sm font-semibold cursor-pointer"
                         >
                           <span className="relative z-10">Apply Now</span>
                           <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
@@ -308,7 +320,7 @@ export default function PlayerDashboard() {
                   <div className="w-80 bg-gradient-to-br from-yellow-900/20 via-gray-900 to-gray-900 rounded-xl border border-yellow-500/30 p-5 shadow-lg shadow-yellow-500/5">
                     <div className="flex items-start gap-3">
                       <div className="p-2 bg-yellow-500/10 rounded-lg flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-yellow-400" />
+                        <Users className="w-5 h-5 text-yellow-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold text-white mb-1">
@@ -331,20 +343,42 @@ export default function PlayerDashboard() {
                   <div className="w-80 bg-gradient-to-br from-purple-900/20 via-gray-900 to-gray-900 rounded-xl border border-purple-500/30 p-5 shadow-lg shadow-purple-500/5">
                     <div className="flex items-start gap-3">
                       <div className="p-2 bg-purple-500/10 rounded-lg flex-shrink-0">
-                        <Sparkles className="w-5 h-5 text-purple-400" />
+                        <Users className="w-5 h-5 text-purple-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-bold text-white mb-1">
                           Sub-Affiliate
                         </h3>
-                        <p className="text-sm text-gray-400 mb-2">
-                          Code: <code className="text-purple-400 font-semibold">{subAffiliateData.referral_code}</code>
-                        </p>
+                        <div className="mb-3">
+                          <div className="flex items-center gap-2">
+                            <code className="text-sm text-purple-400 font-semibold bg-black/30 px-2 py-1 rounded">
+                              {subAffiliateData.referral_code}
+                            </code>
+                            <button
+                              onClick={handleCopyReferralLink}
+                              className="flex items-center gap-1 px-2 py-1 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded transition-colors text-xs font-medium whitespace-nowrap cursor-pointer"
+                            >
+                              {copiedReferralLink ? (
+                                <>
+                                  <Check className="w-3 h-3" />
+                                  Copied!
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  Copy Link
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
                         <button
                           onClick={() => window.location.href = '/player/dashboard/affiliate'}
-                          className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white text-sm rounded-lg transition-all font-semibold"
+                          className="relative w-full px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/20 hover:shadow-2xl hover:shadow-purple-500/40 hover:scale-[1.03] transition-all duration-300 group/btn overflow-hidden text-sm font-semibold cursor-pointer"
                         >
-                          Access Affiliate Panel
+                          <span className="relative z-10">Access Affiliate Panel</span>
+                          <div className="absolute inset-0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+                          <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
                         </button>
                       </div>
                     </div>
@@ -358,7 +392,7 @@ export default function PlayerDashboard() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <h2 className="text-2xl font-bold text-white">Your Connected Deals</h2>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-0.5">
                     <div className="h-1.5 w-1.5 rounded-full bg-[#10b981] animate-pulse"></div>
                     <span className="text-sm font-semibold text-gray-300">
                       {connectedDeals.length} <span className="text-gray-500">Active</span>
@@ -399,13 +433,13 @@ export default function PlayerDashboard() {
                         </div>
                         <div className="relative group/status">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            deal.status === 'active' 
-                              ? 'bg-gradient-to-br from-green-400/10 to-green-400/5 text-green-400 border border-green-400/20 shadow-lg shadow-green-400/10'
+                            deal.status === 'active' || deal.status === 'approved'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                               : deal.status === 'pending'
-                              ? 'bg-gradient-to-br from-orange-400/10 to-orange-400/5 text-orange-400 border border-orange-400/20 shadow-lg shadow-orange-400/10'
+                              ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30'
                               : deal.status === 'rejected'
-                              ? 'bg-gradient-to-br from-red-500/10 to-red-500/5 text-red-500 border border-red-500/20 shadow-lg shadow-red-500/10'
-                              : 'bg-gradient-to-br from-blue-400/10 to-blue-400/5 text-blue-400 border border-blue-400/20 shadow-lg shadow-blue-400/10'
+                              ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                              : 'bg-blue-400/10 text-blue-400 border border-blue-400/20'
                           }`}>
                             {deal.status === 'rejected' ? 'Try Again' : deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
                           </span>
@@ -603,7 +637,7 @@ export default function PlayerDashboard() {
             </div>
 
             {/* Help Section */}
-            <div className="rounded-2xl bg-gradient-to-br from-gray-800/30 to-gray-900/30 border border-white/[0.06] p-6">
+            <div className="rounded-2xl bg-gradient-to-br from-gray-800/30 to-gray-900/30 border border-white/[0.06] p-6 max-w-3xl mx-auto">
               <div className="flex items-center gap-4">
                 <div className="p-3 rounded-xl bg-[#10b981]/10 border border-[#10b981]/20">
                   <HelpCircle size={24} className="text-[#10b981]" />
