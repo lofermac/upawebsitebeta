@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
       root: path.resolve(__dirname),
     },
   },
+  // Reduce aggressive caching in development
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
 };
 
 export default nextConfig;

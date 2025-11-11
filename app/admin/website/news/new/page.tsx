@@ -262,19 +262,22 @@ export default function NewArticlePage() {
                 <button
                   onClick={handleSave}
                   disabled={!title.trim() || !author.trim() || !category.trim() || !featuredImage.trim() || !excerpt.trim() || saving}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-lg transition-all duration-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                  className="relative overflow-hidden group flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#077124]/20"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-size-200 bg-pos-0 group-hover:bg-pos-100 transition-all duration-500"></div>
+                  <div className="relative flex items-center justify-center gap-2">
                   {saving ? (
                     <>
                       <Loader className="w-4 h-4 animate-spin" />
-                      Saving...
+                        <span>Saving...</span>
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      Save Article
+                        <span>Save Article</span>
                     </>
                   )}
+                  </div>
                 </button>
               </div>
             </div>
@@ -480,7 +483,7 @@ export default function NewArticlePage() {
           {/* Preview Button */}
           <button
             onClick={handlePreview}
-            className="group relative flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl text-sm font-semibold shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300"
+            className="group relative overflow-hidden flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 rounded-xl text-sm font-semibold shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/40 transition-all duration-300"
           >
             <Eye className="w-5 h-5" />
             <span>Preview</span>
@@ -490,19 +493,22 @@ export default function NewArticlePage() {
           <button
             onClick={handleSave}
             disabled={!title.trim() || !author.trim() || !category.trim() || !featuredImage.trim() || !excerpt.trim() || saving}
-            className="group relative flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#10b981] to-emerald-600 hover:from-[#0ea472] hover:to-emerald-500 rounded-xl text-sm font-semibold shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+            className="relative overflow-hidden group flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold shadow-2xl shadow-[#077124]/30 hover:shadow-[#077124]/40 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
-            {saving ? (
-              <>
-                <Loader className="w-5 h-5 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                <span>Save Changes</span>
-              </>
-            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#077124] via-[#0a9b30] to-[#077124] bg-size-200 bg-pos-0 group-hover:bg-pos-100 transition-all duration-500"></div>
+            <div className="relative flex items-center justify-center gap-2">
+              {saving ? (
+                <>
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  <span>Save Changes</span>
+                </>
+              )}
+            </div>
           </button>
         </div>
       </div>

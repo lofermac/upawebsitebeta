@@ -523,7 +523,7 @@ export default function GGPokerDealPage() {
               {/* Sidebar - Table of Contents */}
               <aside className="lg:col-span-1">
                 <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)]">
-                  <TableOfContents sections={sections} />
+                  <TableOfContents />
                 </div>
               </aside>
 
@@ -747,7 +747,7 @@ export default function GGPokerDealPage() {
             {/* Sidebar - Table of Contents for Review */}
             <aside className="lg:col-span-1">
               <div className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)]">
-                <TableOfContents sections={reviewSections} />
+                <TableOfContents />
               </div>
             </aside>
 

@@ -88,6 +88,7 @@ const LinkModal: React.FC<LinkModalProps> = ({
       onSubmit={handleSubmit}
       title="Insert/Edit Link"
       submitText={initialData ? 'Update Link' : 'Insert Link'}
+      disabled={!isValid}
     >
       <div className="space-y-4">
         <div>
@@ -149,15 +150,6 @@ const LinkModal: React.FC<LinkModalProps> = ({
           <ExternalLink className="w-3 h-3 text-gray-400" />
         </div>
       </div>
-
-      {/* Submit button override to add disabled state */}
-      <style jsx global>{`
-        .link-modal-submit-override button[type="submit"] {
-          opacity: ${isValid ? '1' : '0.5'};
-          cursor: ${isValid ? 'pointer' : 'not-allowed'};
-          pointer-events: ${isValid ? 'auto' : 'none'};
-        }
-      `}</style>
     </BlockConfigModal>
   );
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import GalleryLightbox from './GalleryLightbox';
 
 interface DynamicNewsContentProps {
   htmlContent: string;
@@ -8,11 +9,33 @@ interface DynamicNewsContentProps {
 
 export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentProps) {
   const [processedContent, setProcessedContent] = useState<string>('');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<{ src: string; alt?: string }[]>([]);
+  const [lightboxInitialIndex, setLightboxInitialIndex] = useState(0);
 
   useEffect(() => {
     // Process premium tables to add proper wrapper structure
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Helper function to create slugs for IDs (same as TableOfContents)
+    const slugify = (text: string): string => {
+      return text
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special chars
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/--+/g, '-') // Remove duplicate hyphens
+        .trim();
+    };
+    
+    // Process all H2 elements to add IDs for Table of Contents
+    const h2Elements = doc.querySelectorAll('h2');
+    h2Elements.forEach((h2) => {
+      if (!h2.id) {
+        const title = h2.textContent || '';
+        h2.id = slugify(title);
+      }
+    });
     
     // Process accordions - extract content from data-content attribute
     const accordionBlocks = doc.querySelectorAll('.accordion-block[data-content]');
@@ -79,31 +102,84 @@ export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentPr
   }, [htmlContent]);
 
   useEffect(() => {
-    // Setup accordion click handlers - simple CSS toggle
-    const accordionButtons = document.querySelectorAll('.dynamic-content-wrapper .accordion-toggle');
+    const wrapper = document.querySelector('.dynamic-content-wrapper');
     
-    accordionButtons.forEach((button) => {
-      // Check if already initialized
-      if (button.hasAttribute('data-accordion-initialized')) {
-        return;
-      }
+    if (!wrapper) return;
+
+    // Setup ACCORDION using EVENT DELEGATION
+    const handleAccordionClick = (e: Event) => {
+      const target = e.target as HTMLElement;
       
-      button.setAttribute('data-accordion-initialized', 'true');
+      // Check if clicked element is the accordion toggle button or inside it
+      const accordionToggle = target.closest('.accordion-toggle');
       
-      const handleClick = (e: Event) => {
+      if (accordionToggle) {
         e.preventDefault();
         e.stopPropagation();
         
         // Find the parent accordion wrapper
-        const accordionWrapper = button.closest('.accordion-block > div');
+        const accordionWrapper = accordionToggle.closest('.accordion-block > div');
         if (accordionWrapper) {
           // Simple toggle
           accordionWrapper.classList.toggle('open');
         }
-      };
+      }
+    };
+    
+    // Setup GALLERY LIGHTBOX using EVENT DELEGATION
+    const handleGalleryClick = (e: Event) => {
+      const target = e.target as HTMLElement;
       
-      button.addEventListener('click', handleClick);
-    });
+      // Check if clicked element is an image inside a gallery
+      if (target.tagName === 'IMG') {
+        const galleryBlock = target.closest('.gallery-block');
+        
+        if (galleryBlock) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Get all images in THIS specific gallery
+          const galleryImages = Array.from(galleryBlock.querySelectorAll('img'));
+          
+          // Find the index of the clicked image
+          const clickedIndex = galleryImages.indexOf(target as HTMLImageElement);
+          
+          // Extract image data
+          const imagesData = galleryImages.map((img) => ({
+            src: img.getAttribute('src') || '',
+            alt: img.getAttribute('alt') || undefined,
+          }));
+          
+          // Open lightbox
+          setLightboxImages(imagesData);
+          setLightboxInitialIndex(clickedIndex);
+          setLightboxOpen(true);
+        }
+      }
+    };
+    
+    // Master click handler that delegates to both
+    const handleWrapperClick = (e: Event) => {
+      handleAccordionClick(e);
+      handleGalleryClick(e);
+    };
+    
+    // Remove old listener if exists
+    const wrapperWithHandler = wrapper as HTMLElement & { _masterClickHandler?: (e: Event) => void };
+    if (wrapperWithHandler._masterClickHandler) {
+      wrapper.removeEventListener('click', wrapperWithHandler._masterClickHandler);
+    }
+    
+    // Attach new listener
+    wrapperWithHandler._masterClickHandler = handleWrapperClick;
+    wrapper.addEventListener('click', handleWrapperClick);
+    
+    // Cleanup
+    return () => {
+      if (wrapperWithHandler._masterClickHandler) {
+        wrapper.removeEventListener('click', wrapperWithHandler._masterClickHandler);
+      }
+    };
   }, [processedContent]);
 
   return (
@@ -111,6 +187,13 @@ export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentPr
       <div 
         className="dynamic-content-wrapper"
         dangerouslySetInnerHTML={{ __html: processedContent }}
+      />
+      
+      <GalleryLightbox
+        images={lightboxImages}
+        initialIndex={lightboxInitialIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
       />
       
       <style jsx global>{`
@@ -397,6 +480,17 @@ export default function DynamicNewsContent({ htmlContent }: DynamicNewsContentPr
           text-align: center !important;
           margin-left: auto !important;
           margin-right: auto !important;
+        }
+
+        /* Gallery images - clickable indicator */
+        .dynamic-content-wrapper .gallery-block img {
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+
+        .dynamic-content-wrapper .gallery-block img:hover {
+          transform: scale(1.05);
+          box-shadow: 0 20px 60px rgba(7, 113, 36, 0.3), 0 0 0 2px rgba(7, 113, 36, 0.2);
         }
 
         .dynamic-content-wrapper .signup-card-block {

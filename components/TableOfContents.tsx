@@ -1,193 +1,122 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useScrollSpy } from '@mantine/hooks';
+
+// Constante única para posicionamento
+const SCROLL_OFFSET = 140; // px do topo da tela (breathing room abaixo do header)
 
 interface TableOfContentsProps {
-  sections?: { id: string; title: string }[]; // Opcional: virá do backend no futuro
+  sections?: { id: string; title: string }[]; // Opcional: para uso futuro
 }
 
-export default function TableOfContents({ sections }: TableOfContentsProps) {
-  const [detectedSections, setDetectedSections] = useState<{ id: string; title: string }[]>([]);
-  const [activeSection, setActiveSection] = useState<string>("");
+export default function TableOfContents() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Função para converter título em id válido (kebab-case)
-  const slugify = (text: string): string => {
-    return text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "") // Remove caracteres especiais
-      .replace(/\s+/g, "-") // Substitui espaços por hífens
-      .replace(/--+/g, "-") // Remove hífens duplicados
-      .trim();
-  };
+  // Mantine useScrollSpy detecta automaticamente H2s e tracking
+  const spy = useScrollSpy({
+    selector: 'article h2',
+    offset: SCROLL_OFFSET,
+  });
 
+  const { reinitialize } = spy;  // Pegar função de re-scan
+
+  // Re-inicializar quando conteúdo carregar
   useEffect(() => {
-    // Se sections foi passado como prop, usar ele; senão, detectar do DOM
-    if (sections && sections.length > 0) {
-      setDetectedSections(sections);
-      return;
-    }
-
-    // Detectar H2s do DOM
-    const h2Elements = document.querySelectorAll("article h2");
-    
-    if (h2Elements.length === 0) {
-      return; // Não renderizar se não houver H2s
-    }
-
-    const sectionsFromDOM: { id: string; title: string }[] = [];
-
-    h2Elements.forEach((h2) => {
-      const title = h2.textContent || "";
-      let id = h2.id; // Usar o id existente se houver
-      
-      // Se não tiver id, criar um usando slugify
-      if (!id) {
-        id = slugify(title);
-        h2.id = id;
-      }
-
-      sectionsFromDOM.push({ id, title });
-      console.log("📋 Seção detectada:", { id, title });
-    });
-
-    setDetectedSections(sectionsFromDOM);
-    console.log("✅ Total de seções detectadas:", sectionsFromDOM.length);
-  }, [sections]);
-
-  useEffect(() => {
-    if (detectedSections.length === 0) return;
-
-    // Configurar Intersection Observer para detectar seção visível
-    const observerOptions = {
-      root: null,
-      rootMargin: "-20% 0px -60% 0px",
-      threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-    };
-
-    const observedElements: Element[] = [];
-
-    observerRef.current = new IntersectionObserver((entries) => {
-      const intersectingEntries = entries.filter(entry => entry.isIntersecting);
-      
-      if (intersectingEntries.length > 0) {
-        const mostVisible = intersectingEntries.reduce((prev, current) => {
-          return (current.intersectionRatio > prev.intersectionRatio) ? current : prev;
-        });
-        
-        setActiveSection(mostVisible.target.id);
-        console.log("✅ Active section:", mostVisible.target.id);
-      }
-    }, observerOptions);
-
-    // Observar todos os elementos
-    detectedSections.forEach(({ id }) => {
-      const element = document.getElementById(id);
-      if (element && observerRef.current) {
-        observerRef.current.observe(element);
-        observedElements.push(element);
-        console.log("👀 Observing:", id);
-      }
-    });
-
-    // Fallback: Scroll listener para garantir detecção
-    const handleScroll = () => {
-      let currentSection = detectedSections[0].id;
-      let minDistance = Infinity;
-
-      detectedSections.forEach(({ id }) => {
-        const element = document.getElementById(id);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          // Considera a seção ativa se estiver próxima ao topo (entre -100px e +300px)
-          const distance = Math.abs(rect.top - 120);
-          
-          if (rect.top < 300 && rect.top > -100 && distance < minDistance) {
-            minDistance = distance;
-            currentSection = id;
-          }
-        }
-      });
-
-      setActiveSection(currentSection);
-    };
-
-    // Throttle do scroll para performance
-    let scrollTimeout: NodeJS.Timeout;
-    const throttledScroll = () => {
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(handleScroll, 50); // Reduzido para 50ms para mais responsividade
-    };
-
-    window.addEventListener('scroll', throttledScroll, { passive: true });
-
-    // Chamar handleScroll imediatamente para definir seção inicial correta
-    handleScroll();
-
-    // Definir primeira seção como ativa inicialmente se nenhuma foi detectada
-    if (detectedSections.length > 0 && !activeSection) {
-      setActiveSection(detectedSections[0].id);
-    }
+    // Tentar re-scan após 100ms, 300ms, 500ms e 1000ms
+    const timers = [
+      setTimeout(() => reinitialize(), 100),
+      setTimeout(() => reinitialize(), 300),
+      setTimeout(() => reinitialize(), 500),
+      setTimeout(() => reinitialize(), 1000),
+    ];
 
     // Cleanup
     return () => {
-      window.removeEventListener('scroll', throttledScroll);
-      if (scrollTimeout) clearTimeout(scrollTimeout);
-      if (observerRef.current) {
-        observedElements.forEach(element => {
-          observerRef.current?.unobserve(element);
-        });
-        observerRef.current.disconnect();
-      }
+      timers.forEach(timer => clearTimeout(timer));
     };
-  }, [detectedSections, activeSection]);
+  }, [reinitialize]);
 
-  // Se não houver seções, não renderizar
-  if (detectedSections.length === 0) {
-    return null;
-  }
+  // DEBUG: Verificar estado do spy
+  console.log('🔍 [TOC Debug]', {
+    initialized: spy.initialized,
+    dataLength: spy.data.length,
+    activeIndex: spy.active,
+    data: spy.data,
+    selector: 'article h2'
+  });
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    console.log("🔵 Clicou na seção:", id);
+  // Função de scroll ao clicar
+  const handleScrollToSection = (heading: { id: string; value: string; getNode: () => HTMLElement }) => {
+    console.log('🖱️ Click:', heading.value);
     
-    const element = document.getElementById(id);
-    console.log("🔵 Elemento encontrado:", element);
+    const element = heading.getNode();
+    console.log('📍 Element:', element);
     
-    if (element) {
-      // Fechar o menu mobile após clicar
-      setIsExpanded(false);
-      
-      // Scroll suave com offset
-      const yOffset = -100; // Offset do topo
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      
-      window.scrollTo({
-        top: y,
-        behavior: 'smooth'
+    if (!element) {
+      console.error('❌ Element not found!');
+      return;
+    }
+
+    // Fechar menu mobile
+    setIsExpanded(false);
+
+    // Calcular posição com offset
+    const yOffset = -SCROLL_OFFSET;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.scrollY + yOffset;
+    
+    console.log('📊 Scroll Info:', {
+      elementTop: elementPosition,
+      windowScrollY: window.scrollY,
+      yOffset: yOffset,
+      calculatedY: offsetPosition,
+      scrollOffset: SCROLL_OFFSET
+    });
+
+    // Tentar método 1: scrollIntoView (mais robusto)
+    try {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
       });
       
-      console.log("✅ Scroll executado");
-      
-      // Verificar posição final após o scroll completar
+      // Ajustar para o offset correto após 0ms
       setTimeout(() => {
-        const distanciaDoTopo = element.getBoundingClientRect().top;
-        console.log("📊 Posição final do elemento:", {
-          distanciaDoTopo: distanciaDoTopo,
-          esperado: "~100px",
-          status: distanciaDoTopo > 80 && distanciaDoTopo < 120 ? "✅ Correto" : "❌ Incorreto"
+        window.scrollBy({
+          top: yOffset,
+          behavior: 'smooth'
         });
-      }, 800);
-    } else {
-      console.error("❌ Elemento não encontrado:", id);
-      console.log("🔍 Verificando elementos disponíveis na página:");
-      const allElements = document.querySelectorAll("article [id]");
-      allElements.forEach((el) => {
-        console.log("  - Elemento encontrado:", el.id, "Tag:", el.tagName);
+      }, 0);
+      
+      console.log('✅ Scroll executed via scrollIntoView + scrollBy');
+    } catch {
+      // Fallback: método original
+      console.warn('⚠️ scrollIntoView failed, using window.scrollTo fallback');
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
       });
     }
   };
+
+  // Se não houver seções detectadas, mostrar placeholder para debug
+  if (!spy.initialized) {
+    return (
+      <div className="shrink-0 w-full transition-all duration-300 rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5 backdrop-blur-sm">
+        <div className="text-yellow-400 text-sm">⏳ Loading Table of Contents...</div>
+      </div>
+    );
+  }
+
+  if (spy.data.length === 0) {
+    return (
+      <div className="shrink-0 w-full transition-all duration-300 rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5 backdrop-blur-sm">
+        <div className="text-red-400 text-sm">❌ No H2 headings found</div>
+        <div className="text-gray-500 text-xs mt-2">Selector: article h2</div>
+      </div>
+    );
+  }
 
   return (
     <div className="shrink-0 w-full transition-all duration-300 rounded-2xl bg-white/[0.02] border border-white/[0.08] p-5 backdrop-blur-sm hover:border-white/[0.12] hover:bg-white/[0.03]">
@@ -212,12 +141,12 @@ export default function TableOfContents({ sections }: TableOfContentsProps) {
 
       {/* Lista de seções */}
       <ul className={`pt-4 space-y-1 ${isExpanded ? "block" : "hidden"} lg:block`}>
-        {detectedSections.map((section) => {
-          const isActive = activeSection === section.id;
+        {spy.data.map((heading, index) => {
+          const isActive = index === spy.active;
           
           return (
             <li 
-              key={section.id}
+              key={heading.id}
               className={`
                 relative text-[14px]/[18px] font-semibold 
                 before:absolute after:absolute 
@@ -233,15 +162,14 @@ export default function TableOfContents({ sections }: TableOfContentsProps) {
                 }
               `}
             >
-              <a 
-                className={`transition-colors duration-300 hover:text-[#077124] block ${
+              <button
+                onClick={() => handleScrollToSection(heading)}
+                className={`transition-colors duration-300 hover:text-[#077124] block text-left w-full ${
                   isActive ? "text-[#077124]" : "text-gray-400 hover:text-gray-200"
                 }`}
-                href={`#${section.id}`}
-                onClick={(e) => handleLinkClick(e, section.id)}
               >
-                {section.title}
-              </a>
+                {heading.value}
+              </button>
             </li>
           );
         })}
@@ -249,4 +177,3 @@ export default function TableOfContents({ sections }: TableOfContentsProps) {
     </div>
   );
 }
-
