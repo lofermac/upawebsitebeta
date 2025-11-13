@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -17,7 +17,8 @@ import {
   Globe,
   LayoutGrid,
   FileCheck,
-  RefreshCw
+  RefreshCw,
+  Trophy
 } from 'lucide-react';
 import { getDeals } from '@/lib/supabase/deals';
 import RejectDealModal from '@/components/admin/RejectDealModal';
@@ -33,6 +34,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
+  Legend,
   ResponsiveContainer 
 } from 'recharts';
 
@@ -49,11 +51,11 @@ interface PlatformChartData {
 
 interface PlatformPerformance {
   name: string;
-  revenue: number;
-  activePlayers: number;
-  avgPerPlayer: number;
-  growth: number;
-  marketShare: number;
+  totalPlayers: number;      // All-time approved player_deals
+  activePlayers: number;     // Active players in period
+  grossRake: number;         // Total gross rake in period
+  netRake: number;           // Total net rake in period
+  marketShare: number;       // Percentage based on gross rake
 }
 
 interface SubAffiliateData {
@@ -79,6 +81,40 @@ interface DealWithEarnings {
   player_earnings?: Array<{
     net_rake: string | number;
   }>;
+}
+
+interface EarningWithDeal {
+  gross_rake: string | number;
+  player_deal_id: string;
+  period_month: number;
+  period_year: number;
+  player_deals?: {
+    deal_id: string;
+    deals?: {
+      name: string;
+    };
+  };
+}
+
+interface PlayerDealWithPlatform {
+  deal_id: string;
+  deals?: {
+    name: string;
+  } | null;
+}
+
+interface MetricsDataWithDeal {
+  player_deal_id: string;
+  gross_rake: string | number;
+  net_rake: string | number;
+  period_month: number;
+  period_year: number;
+  player_deals?: {
+    deal_id: string;
+    deals?: {
+      name: string;
+    };
+  };
 }
 
 type SubAffiliateQuery = {
@@ -3354,36 +3390,68 @@ function SubAffiliatesContent() {
 
 // Intelligence Dashboard Component - Enterprise Level
 function IntelligenceContent() {
-  // Period state
-  const [period, setPeriod] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
-  const [isLoading, setIsLoading] = useState(true);
+  // ============================================
+  // SHARED RESOURCES
+  // ============================================
+  const [availableDeals, setAvailableDeals] = useState<Array<{id: number, name: string}>>([]);
   
-  // KPIs state
+  // ============================================
+  // 1. KPIs STATE (6 cards at top)
+  // ============================================
+  const [kpiPeriod, setKpiPeriod] = useState<'7d' | 'currentMonth' | 'lastMonth' | '90d' | 'all'>('currentMonth');
   const [kpis, setKpis] = useState({
-    totalRevenue: 0,
-    revenueGrowth: 0,
+    totalRakeGenerated: 0,
+    rakeGrowth: 0,
     activePlayers: 0,
     totalPlayers: 0,
-    avgRevenuePerPlayer: 0,
-    conversionRate: 0,
-    approvedDeals: 0,
-    totalDeals: 0,
     activeSubAffiliates: 0,
     totalReferrals: 0,
-    topPlatform: { name: 'N/A', revenue: 0 }
+    topPlatformRake: { name: 'N/A', revenue: 0 },
+    topPlatformTotalPlayers: { name: 'N/A', count: 0 },
+    topPlatformActivePlayers: { name: 'N/A', count: 0 }
   });
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Charts data
+  // ============================================
+  // 2. REVENUE TREND STATE (line chart)
+  // ============================================
+  const [chartPeriod, setChartPeriod] = useState<'60d' | '90d' | '120d' | '180d' | 'all'>('90d');
+  const [chartPlatform, setChartPlatform] = useState<'all' | number>('all');
   const [revenueOverTime, setRevenueOverTime] = useState<RevenueData[]>([]);
+  const [isLoadingRevenue, setIsLoadingRevenue] = useState(true);
+  
+  // ============================================
+  // 3. PLAYER TREND STATE (line chart - NEW)
+  // ============================================
+  const [playerTrendPeriod, setPlayerTrendPeriod] = useState<'60d' | '90d' | '120d' | '180d' | 'all'>('90d');
+  const [playerTrendPlatform, setPlayerTrendPlatform] = useState<'all' | number>('all');
+  const [playerTrendData, setPlayerTrendData] = useState<Array<{month: string, totalPlayers: number, activePlayers: number}>>([]);
+  const [isLoadingPlayerTrend, setIsLoadingPlayerTrend] = useState(true);
+  
+  // ============================================
+  // 4. TOP PLATFORMS STATE (vertical bar chart)
+  // ============================================
+  const [topPlatformsPeriod, setTopPlatformsPeriod] = useState<'7d' | 'currentMonth' | 'lastMonth' | '90d' | 'all'>('currentMonth');
+  const [topPlatformsMetric, setTopPlatformsMetric] = useState<'rake' | 'totalPlayers' | 'activePlayers'>('rake');
   const [topPlatforms, setTopPlatforms] = useState<PlatformChartData[]>([]);
+  const [isLoadingTopPlatforms, setIsLoadingTopPlatforms] = useState(true);
+  
+  // ============================================
+  // 5. PLATFORM MATRIX STATE (table)
+  // ============================================
+  const [matrixPeriod, setMatrixPeriod] = useState<'7d' | 'currentMonth' | 'lastMonth' | '90d' | 'all'>('currentMonth');
   const [platformData, setPlatformData] = useState<PlatformPerformance[]>([]);
+  const [isLoadingMatrix, setIsLoadingMatrix] = useState(true);
+  const [sortConfig, setSortConfig] = useState({ key: 'marketShare', direction: 'desc' as 'asc' | 'desc' });
+  
+  // ============================================
+  // 6. SUB-AFFILIATES & TOP PLAYERS STATE
+  // ============================================
   const [topSubAffiliates, setTopSubAffiliates] = useState<SubAffiliateData[]>([]);
   const [topPlayers, setTopPlayers] = useState<TopPlayer[]>([]);
-  
-  // Table sorting
-  const [sortConfig, setSortConfig] = useState({ key: 'revenue', direction: 'desc' as 'asc' | 'desc' });
+  const [isLoadingExtras, setIsLoadingExtras] = useState(true);
 
-  // Sort handler
+  // Sort handler for matrix
   const handleSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'desc';
     if (sortConfig.key === key && sortConfig.direction === 'desc') {
@@ -3402,44 +3470,95 @@ function IntelligenceContent() {
     return aVal < bVal ? 1 : -1;
   });
 
-  useEffect(() => {
-    // Calculate date range based on period
-    const getDateRange = () => {
-      const now = new Date();
-      const start = new Date();
-      
-      switch (period) {
-        case '7d':
-          start.setDate(now.getDate() - 7);
-          break;
-        case '30d':
-          start.setDate(now.getDate() - 30);
-          break;
-        case '90d':
-          start.setDate(now.getDate() - 90);
-          break;
-        case 'all':
-          start.setFullYear(2000); // Far past date
-          break;
-      }
-      
-      return { start, end: now };
-    };
+  // Helper function to calculate date range
+  const getDateRange = (periodType: '7d' | 'currentMonth' | 'lastMonth' | '60d' | '90d' | '120d' | '180d' | 'all') => {
+    const now = new Date();
+    let start = new Date();
+    let end = new Date();
+    
+    switch (periodType) {
+      case '7d':
+        start.setDate(now.getDate() - 7);
+        end = now;
+        break;
+      case 'currentMonth':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = now;
+        break;
+      case 'lastMonth':
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        break;
+      case '60d':
+        start.setDate(now.getDate() - 60);
+        end = now;
+        break;
+      case '90d':
+        start.setDate(now.getDate() - 90);
+        end = now;
+        break;
+      case '120d':
+        start.setDate(now.getDate() - 120);
+        end = now;
+        break;
+      case '180d':
+        start.setDate(now.getDate() - 180);
+        end = now;
+        break;
+      case 'all':
+        start.setFullYear(2000);
+        end = now;
+        break;
+    }
+    
+    return { start, end };
+  };
 
-    async function loadIntelligenceData() {
+  // ============================================
+  // FETCH AVAILABLE DEALS (runs once)
+  // ============================================
+  useEffect(() => {
+    const fetchDeals = async () => {
+      const { data } = await supabase
+        .from('deals')
+        .select('id, name')
+        .order('name');
+      
+      if (data) setAvailableDeals(data);
+    };
+    fetchDeals();
+  }, []);
+
+  // ============================================
+  // 1. LOAD KPI DATA (depends on kpiPeriod ONLY)
+  // ============================================
+  useEffect(() => {
+    async function loadKPIData() {
       setIsLoading(true);
       try {
-        const { start, end } = getDateRange();
+        const { start, end } = getDateRange(kpiPeriod);
+        const startYear = start.getFullYear();
+        const startMonth = start.getMonth() + 1; // 1-12
+        const endYear = end.getFullYear();
+        const endMonth = end.getMonth() + 1; // 1-12
         
-        // Get all earnings with date filtering
-        const { data: allEarnings } = await supabase
+        // Get all earnings using period_month and period_year
+        const { data: allEarningsRaw } = await supabase
           .from('player_earnings')
-          .select('*, player_deals!inner(created_at)')
-          .gte('player_deals.created_at', start.toISOString())
-          .lte('player_deals.created_at', end.toISOString());
+          .select('gross_rake, net_rake, player_deal_id, period_month, period_year')
+          .gte('period_year', startYear)
+          .lte('period_year', endYear);
         
-        const totalRevenue = (allEarnings || []).reduce(
-          (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+        // Filter in JavaScript to handle month ranges across years
+        const allEarnings = (allEarningsRaw || []).filter(e => {
+          const periodNum = e.period_year * 100 + e.period_month;
+          const startNum = startYear * 100 + startMonth;
+          const endNum = endYear * 100 + endMonth;
+          return periodNum >= startNum && periodNum <= endNum;
+        });
+        
+        const totalRakeGenerated = allEarnings.reduce(
+          (sum, e) => sum + (parseFloat(String(e.gross_rake)) || 0), 
           0
         );
 
@@ -3449,47 +3568,44 @@ function IntelligenceContent() {
         const daysDiff = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
         prevStart.setDate(prevStart.getDate() - daysDiff);
         
-        const { data: prevEarnings } = await supabase
-          .from('player_earnings')
-          .select('*, player_deals!inner(created_at)')
-          .gte('player_deals.created_at', prevStart.toISOString())
-          .lte('player_deals.created_at', prevEnd.toISOString());
+        const prevStartYear = prevStart.getFullYear();
+        const prevStartMonth = prevStart.getMonth() + 1;
+        const prevEndYear = prevEnd.getFullYear();
+        const prevEndMonth = prevEnd.getMonth() + 1;
         
-        const prevRevenue = (prevEarnings || []).reduce(
-          (sum, e) => sum + (parseFloat(e.net_rake) || 0), 
+        const { data: prevEarningsRaw } = await supabase
+          .from('player_earnings')
+          .select('gross_rake, period_month, period_year')
+          .gte('period_year', prevStartYear)
+          .lte('period_year', prevEndYear);
+        
+        const prevEarnings = (prevEarningsRaw || []).filter(e => {
+          const periodNum = e.period_year * 100 + e.period_month;
+          const startNum = prevStartYear * 100 + prevStartMonth;
+          const endNum = prevEndYear * 100 + prevEndMonth;
+          return periodNum >= startNum && periodNum <= endNum;
+        });
+        
+        const prevRake = prevEarnings.reduce(
+          (sum, e) => sum + (parseFloat(String(e.gross_rake)) || 0), 
           0
         );
         
-        const revenueGrowth = prevRevenue === 0 ? 0 : ((totalRevenue - prevRevenue) / prevRevenue) * 100;
+        const rakeGrowth = prevRake === 0 ? 0 : ((totalRakeGenerated - prevRake) / prevRake) * 100;
 
-        // Get player stats
-        const { data: activeDeals } = await supabase
-          .from('player_deals')
-          .select('user_id')
-          .eq('status', 'approved')
-          .gte('created_at', start.toISOString());
+        // Active Players - COUNT(DISTINCT player_deal_id) in period
+        const uniquePlayerDealIds = new Set(allEarnings.map(e => e.player_deal_id));
+        const activePlayers = uniquePlayerDealIds.size;
         
-        const uniqueActivePlayers = new Set((activeDeals || []).map(d => d.user_id)).size;
+        // Total Players - COUNT(DISTINCT player_deal_id) all time
+        const { data: allTimeEarnings } = await supabase
+          .from('player_earnings')
+          .select('player_deal_id');
         
-        const { count: totalDealsCount } = await supabase
-          .from('player_deals')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', start.toISOString());
-        
-        const { count: totalPlayersCount } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
+        const totalPlayersSet = new Set((allTimeEarnings || []).map(e => e.player_deal_id));
+        const totalPlayers = totalPlayersSet.size;
 
-        // Conversion rate
-        const { count: approvedCount } = await supabase
-          .from('player_deals')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'approved')
-          .gte('created_at', start.toISOString());
-        
-        const conversionRate = (totalDealsCount || 0) === 0 ? 0 : ((approvedCount || 0) / (totalDealsCount || 1)) * 100;
-
-        // Sub-affiliates stats
+        // Sub-affiliates stats (unchanged)
         const { count: subAffiliatesCount } = await supabase
           .from('sub_affiliates')
           .select('*', { count: 'exact', head: true });
@@ -3498,19 +3614,141 @@ function IntelligenceContent() {
           .from('referrals')
           .select('*', { count: 'exact', head: true });
 
-        // Revenue over time
-        const { data: earningsByMonth } = await supabase
+        // Top Platform by Rake Generated (in period)
+        const { data: earningsWithDealsRaw } = await supabase
           .from('player_earnings')
-          .select('period_month, period_year, net_rake, player_deals!inner(created_at)')
-          .gte('player_deals.created_at', start.toISOString())
+          .select(`
+            gross_rake,
+            player_deal_id,
+            period_month,
+            period_year,
+            player_deals!inner(deal_id, deals!inner(name))
+          `)
+          .gte('period_year', startYear)
+          .lte('period_year', endYear);
+        
+        // Filter by period in JavaScript
+        const earningsWithDeals = (earningsWithDealsRaw || []).filter((e: unknown) => {
+          const earning = e as EarningWithDeal;
+          const periodNum = earning.period_year * 100 + earning.period_month;
+          const startNum = startYear * 100 + startMonth;
+          const endNum = endYear * 100 + endMonth;
+          return periodNum >= startNum && periodNum <= endNum;
+        }) as unknown as EarningWithDeal[];
+        
+        const platformRakeMap: Record<string, number> = {};
+        earningsWithDeals.forEach((earning: EarningWithDeal) => {
+          const platformName = earning.player_deals?.deals?.name || 'Unknown';
+          const rake = parseFloat(String(earning.gross_rake)) || 0;
+          platformRakeMap[platformName] = (platformRakeMap[platformName] || 0) + rake;
+        });
+        
+        const topPlatformRake = Object.entries(platformRakeMap)
+          .sort(([, a], [, b]) => b - a)[0] || ['N/A', 0];
+
+        // Top Platform by Active Players (in period)
+        const platformActivePlayersMap: Record<string, Set<string>> = {};
+        earningsWithDeals.forEach((earning: EarningWithDeal) => {
+          const platformName = earning.player_deals?.deals?.name || 'Unknown';
+          if (!platformActivePlayersMap[platformName]) {
+            platformActivePlayersMap[platformName] = new Set();
+          }
+          platformActivePlayersMap[platformName].add(earning.player_deal_id);
+        });
+        
+        const topPlatformActivePlayers = Object.entries(platformActivePlayersMap)
+          .map(([name, players]) => [name, players.size])
+          .sort(([, a], [, b]) => (b as number) - (a as number))[0] || ['N/A', 0];
+
+        // Top Platform by Total Players (NO period filter - all time approved deals)
+        const { data: allApprovedDeals } = await supabase
+          .from('player_deals')
+          .select('deal_id, deals!inner(name)')
+          .eq('status', 'approved');
+        
+        const platformTotalPlayersMap: Record<string, number> = {};
+        (allApprovedDeals || []).forEach((deal: unknown) => {
+          const typedDeal = deal as PlayerDealWithPlatform;
+          const platformName = typedDeal.deals?.name || 'Unknown';
+          platformTotalPlayersMap[platformName] = (platformTotalPlayersMap[platformName] || 0) + 1;
+        });
+        
+        const topPlatformTotalPlayers = Object.entries(platformTotalPlayersMap)
+          .sort(([, a], [, b]) => b - a)[0] || ['N/A', 0];
+
+        // Update KPIs
+        setKpis({
+          totalRakeGenerated,
+          rakeGrowth,
+          activePlayers,
+          totalPlayers,
+          activeSubAffiliates: subAffiliatesCount || 0,
+          totalReferrals: referralsCount || 0,
+          topPlatformRake: {
+            name: topPlatformRake[0],
+            revenue: topPlatformRake[1]
+          },
+          topPlatformTotalPlayers: {
+            name: topPlatformTotalPlayers[0],
+            count: topPlatformTotalPlayers[1]
+          },
+          topPlatformActivePlayers: {
+            name: topPlatformActivePlayers[0] as string,
+            count: topPlatformActivePlayers[1] as number
+          }
+        });
+      } catch (error) {
+        console.error('Error loading KPI data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadKPIData();
+  }, [kpiPeriod]); // Only depends on kpiPeriod
+
+  // ============================================
+  // 2. LOAD REVENUE TREND (depends on chartPeriod and chartPlatform)
+  // ============================================
+  useEffect(() => {
+    async function loadRevenueTrend() {
+      setIsLoadingRevenue(true);
+      try {
+        const { start, end } = getDateRange(chartPeriod);
+        const startYear = start.getFullYear();
+        const startMonth = start.getMonth() + 1;
+        const endYear = end.getFullYear();
+        const endMonth = end.getMonth() + 1;
+
+        // Revenue over time with platform filter
+        let revenueQuery = supabase
+          .from('player_earnings')
+          .select('period_month, period_year, net_rake, player_deal_id, player_deals!inner(deal_id)')
+          .gte('period_year', startYear)
+          .lte('period_year', endYear);
+
+        // Add platform filter if not "all"
+        if (chartPlatform !== 'all') {
+          revenueQuery = revenueQuery.eq('player_deals.deal_id', chartPlatform);
+        }
+
+        const { data: earningsByMonthRaw } = await revenueQuery
           .order('period_year', { ascending: true })
           .order('period_month', { ascending: true });
         
+        // Filter by period in JavaScript
+        const earningsByMonth = (earningsByMonthRaw || []).filter(e => {
+          const periodNum = e.period_year * 100 + e.period_month;
+          const startNum = startYear * 100 + startMonth;
+          const endNum = endYear * 100 + endMonth;
+          return periodNum >= startNum && periodNum <= endNum;
+        });
+        
         const revenueByMonth: Record<string, number> = {};
-        (earningsByMonth || []).forEach(e => {
+        earningsByMonth.forEach(e => {
           const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
           const key = `${monthNames[e.period_month - 1]} ${e.period_year}`;
-          revenueByMonth[key] = (revenueByMonth[key] || 0) + parseFloat(e.net_rake);
+          revenueByMonth[key] = (revenueByMonth[key] || 0) + parseFloat(String(e.net_rake));
         });
         
         const revenueChartData = Object.entries(revenueByMonth)
@@ -3520,57 +3758,354 @@ function IntelligenceContent() {
           }))
           .slice(-12); // Last 12 months
 
-        // Platform performance
-        const { data: dealsWithEarnings } = await supabase
+        setRevenueOverTime(revenueChartData);
+      } catch (error) {
+        console.error('Error loading revenue trend:', error);
+      } finally {
+        setIsLoadingRevenue(false);
+      }
+    }
+
+    loadRevenueTrend();
+  }, [chartPeriod, chartPlatform]);
+
+  // ============================================
+  // 3. LOAD PLAYER TREND (depends on playerTrendPeriod and playerTrendPlatform)
+  // ============================================
+  useEffect(() => {
+    async function loadPlayerTrend() {
+      setIsLoadingPlayerTrend(true);
+      try {
+        console.log('=== PLAYER TREND DEBUG ===');
+        console.log('Period:', playerTrendPeriod);
+        console.log('Platform:', playerTrendPlatform);
+
+        const { start, end } = getDateRange(playerTrendPeriod);
+        const startYear = start.getFullYear();
+        const startMonth = start.getMonth() + 1;
+        const endYear = end.getFullYear();
+        const endMonth = end.getMonth() + 1;
+
+        // 1. TOTAL PLAYERS (all-time, acumulado) - NÃO filtra por período
+        const { data: allPlayerDeals } = await supabase
           .from('player_deals')
-          .select(`
-            id,
-            user_id,
-            created_at,
-            deal:deals(id, name),
-            player_earnings(net_rake, created_at)
-          `)
-          .gte('created_at', start.toISOString()) as { data: DealWithEarnings[] | null };
-        
-        const platformStats: Record<string, { 
-          revenue: number; 
-          players: Set<string>; 
-          prevRevenue: number;
-        }> = {};
-        
-        let totalPlatformRevenue = 0;
-        
-        (dealsWithEarnings || []).forEach((deal) => {
-          const platformName = deal.deal?.name || 'Unknown';
-          if (!platformStats[platformName]) {
-            platformStats[platformName] = { 
-              revenue: 0, 
-              players: new Set(), 
-              prevRevenue: 0 
-            };
-          }
+          .select('id, created_at, deal_id')
+          .eq('status', 'approved')
+          .order('created_at');
+
+        console.log('All player deals:', allPlayerDeals?.length);
+
+        // Agrupar Total Players por mês (acumulado)
+        const totalPlayersByMonth: Record<string, number> = {};
+        let cumulativeCount = 0;
+
+        (allPlayerDeals || []).forEach(deal => {
+          const dealDate = new Date(deal.created_at);
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const key = `${monthNames[dealDate.getMonth()]} ${dealDate.getFullYear()}`;
           
-          (deal.player_earnings || []).forEach((e) => {
-            const earning = parseFloat(String(e.net_rake)) || 0;
-            platformStats[platformName].revenue += earning;
-            totalPlatformRevenue += earning;
-            platformStats[platformName].players.add(deal.user_id);
-          });
+          cumulativeCount++;
+          totalPlayersByMonth[key] = cumulativeCount;
+        });
+
+        console.log('Total players by month:', totalPlayersByMonth);
+
+        // 2. ACTIVE PLAYERS (filtrado por período usando period_month/period_year)
+        let playerQuery = supabase
+          .from('player_earnings')
+          .select('period_month, period_year, player_deal_id, player_deals!inner(deal_id)')
+          .gte('period_year', startYear)
+          .lte('period_year', endYear);
+
+        // Add platform filter if not "all"
+        if (playerTrendPlatform !== 'all') {
+          playerQuery = playerQuery.eq('player_deals.deal_id', playerTrendPlatform);
+        }
+
+        const { data: earningsByMonthRaw } = await playerQuery;
+        
+        // Filter by period in JavaScript
+        const earningsByMonth = (earningsByMonthRaw || []).filter(e => {
+          const periodNum = e.period_year * 100 + e.period_month;
+          const startNum = startYear * 100 + startMonth;
+          const endNum = endYear * 100 + endMonth;
+          return periodNum >= startNum && periodNum <= endNum;
         });
         
-        const platformsArray = Object.entries(platformStats)
-          .map(([name, stats]) => ({
-            name,
-            revenue: stats.revenue,
-            activePlayers: stats.players.size,
-            avgPerPlayer: stats.players.size > 0 ? stats.revenue / stats.players.size : 0,
-            growth: 0, // Would need historical data
-            marketShare: totalPlatformRevenue > 0 ? (stats.revenue / totalPlatformRevenue) * 100 : 0
-          }))
-          .sort((a, b) => b.revenue - a.revenue);
-        
-        const topPlatform = platformsArray[0] || { name: 'N/A', revenue: 0 };
+        console.log('Active players raw data:', earningsByMonth?.length);
 
+        // Count unique active players per month
+        const activePlayersByMonth: Record<string, Set<string>> = {};
+        (earningsByMonth || []).forEach(e => {
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const key = `${monthNames[e.period_month - 1]} ${e.period_year}`;
+          if (!activePlayersByMonth[key]) {
+            activePlayersByMonth[key] = new Set();
+          }
+          activePlayersByMonth[key].add(e.player_deal_id);
+        });
+
+        console.log('Active players by month:', Object.keys(activePlayersByMonth));
+
+        // 3. COMBINAR dados (pegar os últimos 12 meses da série total)
+        const allMonths = Object.keys(totalPlayersByMonth).slice(-12);
+        
+        const combinedData = allMonths.map(month => ({
+          month,
+          totalPlayers: totalPlayersByMonth[month] || 0,
+          activePlayers: activePlayersByMonth[month] ? activePlayersByMonth[month].size : 0
+        }));
+
+        console.log('Combined player trend data:', combinedData);
+
+        setPlayerTrendData(combinedData);
+      } catch (error) {
+        console.error('Error loading player trend:', error);
+      } finally {
+        setIsLoadingPlayerTrend(false);
+      }
+    }
+
+    loadPlayerTrend();
+  }, [playerTrendPeriod, playerTrendPlatform]);
+
+  // ============================================
+  // 4. LOAD TOP PLATFORMS (depends on topPlatformsPeriod and topPlatformsMetric)
+  // ============================================
+  useEffect(() => {
+    async function loadTopPlatforms() {
+      setIsLoadingTopPlatforms(true);
+      try {
+        console.log('=== TOP PLATFORMS DEBUG ===');
+        console.log('Metric:', topPlatformsMetric);
+        console.log('Period:', topPlatformsPeriod);
+
+        const { start, end } = getDateRange(topPlatformsPeriod);
+        const startYear = start.getFullYear();
+        const startMonth = start.getMonth() + 1;
+        const endYear = end.getFullYear();
+        const endMonth = end.getMonth() + 1;
+
+        if (topPlatformsMetric === 'rake') {
+          // Query for Gross Rake metric using period_month/period_year
+          const { data: earningsDataRaw } = await supabase
+            .from('player_earnings')
+            .select('gross_rake, period_month, period_year, player_deals!inner(deal_id, deals!inner(name))')
+            .gte('period_year', startYear)
+            .lte('period_year', endYear);
+
+          // Filter by period in JavaScript
+          const earningsData = (earningsDataRaw || []).filter((e: unknown) => {
+            const earning = e as EarningWithDeal;
+            const periodNum = earning.period_year * 100 + earning.period_month;
+            const startNum = startYear * 100 + startMonth;
+            const endNum = endYear * 100 + endMonth;
+            return periodNum >= startNum && periodNum <= endNum;
+          }) as unknown as EarningWithDeal[];
+
+          const platformRakeMap: Record<string, number> = {};
+          earningsData.forEach((e: EarningWithDeal) => {
+            const platformName = e.player_deals?.deals?.name || 'Unknown';
+            const rake = parseFloat(String(e.gross_rake)) || 0;
+            platformRakeMap[platformName] = (platformRakeMap[platformName] || 0) + rake;
+          });
+
+          const topPlatformsData = Object.entries(platformRakeMap)
+            .map(([name, revenue]) => ({ name, revenue, activePlayers: 0, avgPerPlayer: 0, growth: 0, marketShare: 0 }))
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
+
+          console.log('Top platforms data (rake):', topPlatformsData);
+          setTopPlatforms(topPlatformsData);
+        } else if (topPlatformsMetric === 'totalPlayers') {
+          // Query for Total Players (all-time, NO period filter)
+          const { data: allPlayerDeals } = await supabase
+            .from('player_deals')
+            .select('deal_id, deals!inner(name)')
+            .eq('status', 'approved');
+
+          const platformTotalPlayersMap: Record<string, number> = {};
+          (allPlayerDeals || []).forEach((pd: unknown) => {
+            const typedDeal = pd as PlayerDealWithPlatform;
+            const platformName = typedDeal.deals?.name || 'Unknown';
+            platformTotalPlayersMap[platformName] = (platformTotalPlayersMap[platformName] || 0) + 1;
+          });
+
+          const topPlatformsData = Object.entries(platformTotalPlayersMap)
+            .map(([name, count]) => ({ 
+              name, 
+              revenue: 0, 
+              activePlayers: count, 
+              avgPerPlayer: 0, 
+              growth: 0, 
+              marketShare: 0 
+            }))
+            .sort((a, b) => b.activePlayers - a.activePlayers)
+            .slice(0, 5);
+
+          console.log('Top platforms data (total players):', topPlatformsData);
+          setTopPlatforms(topPlatformsData);
+        } else {
+          // Query for Active Players metric (WITH period filter using period_month/period_year)
+          const { data: earningsDataRaw } = await supabase
+            .from('player_earnings')
+            .select('player_deal_id, period_month, period_year, player_deals!inner(deal_id, deals!inner(name))')
+            .gte('period_year', startYear)
+            .lte('period_year', endYear);
+
+          // Filter by period in JavaScript
+          const earningsData = (earningsDataRaw || []).filter((e: unknown) => {
+            const earning = e as EarningWithDeal;
+            const periodNum = earning.period_year * 100 + earning.period_month;
+            const startNum = startYear * 100 + startMonth;
+            const endNum = endYear * 100 + endMonth;
+            return periodNum >= startNum && periodNum <= endNum;
+          }) as unknown as EarningWithDeal[];
+
+          const platformPlayersMap: Record<string, Set<string>> = {};
+          earningsData.forEach((e: EarningWithDeal) => {
+            const platformName = e.player_deals?.deals?.name || 'Unknown';
+            if (!platformPlayersMap[platformName]) {
+              platformPlayersMap[platformName] = new Set();
+            }
+            platformPlayersMap[platformName].add(e.player_deal_id);
+          });
+
+          const topPlatformsData = Object.entries(platformPlayersMap)
+            .map(([name, players]) => ({ 
+              name, 
+              revenue: 0, 
+              activePlayers: players.size, 
+              avgPerPlayer: 0, 
+              growth: 0, 
+              marketShare: 0 
+            }))
+            .sort((a, b) => b.activePlayers - a.activePlayers)
+            .slice(0, 5);
+
+          console.log('Top platforms data (active players):', topPlatformsData);
+          setTopPlatforms(topPlatformsData);
+        }
+      } catch (error) {
+        console.error('Error loading top platforms:', error);
+      } finally {
+        setIsLoadingTopPlatforms(false);
+      }
+    }
+
+    loadTopPlatforms();
+  }, [topPlatformsPeriod, topPlatformsMetric]);
+
+  // ============================================
+  // 5. LOAD PLATFORM MATRIX (depends on matrixPeriod)
+  // ============================================
+  useEffect(() => {
+    async function loadPlatformMatrix() {
+      setIsLoadingMatrix(true);
+      try {
+        const { start, end } = getDateRange(matrixPeriod);
+        const startYear = start.getFullYear();
+        const startMonth = start.getMonth() + 1;
+        const endYear = end.getFullYear();
+        const endMonth = end.getMonth() + 1;
+
+        // Total Players (all-time, NO filter)
+        const { data: totalPlayersByPlatform } = await supabase
+          .from('player_deals')
+          .select('deal_id, deals!inner(name)')
+          .eq('status', 'approved');
+
+        // Active Players, Gross Rake, Net Rake (WITH period filter using period_month/period_year)
+        const { data: metricsDataRaw } = await supabase
+          .from('player_earnings')
+          .select('player_deal_id, gross_rake, net_rake, period_month, period_year, player_deals!inner(deal_id, deals!inner(name))')
+          .gte('period_year', startYear)
+          .lte('period_year', endYear);
+
+        // Filter by period in JavaScript
+        const metricsData = (metricsDataRaw || []).filter((m: unknown) => {
+          const metric = m as MetricsDataWithDeal;
+          const periodNum = metric.period_year * 100 + metric.period_month;
+          const startNum = startYear * 100 + startMonth;
+          const endNum = endYear * 100 + endMonth;
+          return periodNum >= startNum && periodNum <= endNum;
+        }) as unknown as MetricsDataWithDeal[];
+
+        // Group by platform
+        const platformMap: Record<string, { 
+          name: string;
+          totalPlayers: number;
+          activePlayers: Set<string>;
+          grossRake: number;
+          netRake: number;
+        }> = {};
+
+        // Count total players (all-time)
+        (totalPlayersByPlatform || []).forEach((pd: unknown) => {
+          const typedDeal = pd as PlayerDealWithPlatform;
+          const platformName = typedDeal.deals?.name || 'Unknown';
+          if (!platformMap[platformName]) {
+            platformMap[platformName] = {
+              name: platformName,
+              totalPlayers: 0,
+              activePlayers: new Set(),
+              grossRake: 0,
+              netRake: 0
+            };
+          }
+          platformMap[platformName].totalPlayers += 1;
+        });
+
+        // Add metrics from period
+        metricsData.forEach((m: MetricsDataWithDeal) => {
+          const platformName = m.player_deals?.deals?.name || 'Unknown';
+          if (!platformMap[platformName]) {
+            platformMap[platformName] = {
+              name: platformName,
+              totalPlayers: 0,
+              activePlayers: new Set(),
+              grossRake: 0,
+              netRake: 0
+            };
+          }
+          platformMap[platformName].activePlayers.add(m.player_deal_id);
+          platformMap[platformName].grossRake += parseFloat(String(m.gross_rake)) || 0;
+          platformMap[platformName].netRake += parseFloat(String(m.net_rake)) || 0;
+        });
+
+        // Calculate total gross rake for market share calculation
+        const totalGrossRake = Object.values(platformMap).reduce(
+          (sum, p) => sum + p.grossRake, 
+          0
+        );
+
+        const platformsArray = Object.values(platformMap).map(p => ({
+          name: p.name,
+          totalPlayers: p.totalPlayers,
+          activePlayers: p.activePlayers.size,
+          grossRake: p.grossRake,
+          netRake: p.netRake,
+          marketShare: totalGrossRake > 0 ? (p.grossRake / totalGrossRake) * 100 : 0
+        }));
+
+        setPlatformData(platformsArray);
+      } catch (error) {
+        console.error('Error loading platform matrix:', error);
+      } finally {
+        setIsLoadingMatrix(false);
+      }
+    }
+
+    loadPlatformMatrix();
+  }, [matrixPeriod]);
+
+  // ============================================
+  // 6. LOAD SUB-AFFILIATES & TOP PLAYERS (independent)
+  // ============================================
+  useEffect(() => {
+    async function loadExtras() {
+      setIsLoadingExtras(true);
+      try {
         // Top Sub-Affiliates
         const { data: subAffiliates } = await supabase
           .from('sub_affiliates')
@@ -3638,80 +4173,49 @@ function IntelligenceContent() {
             revenue: sa.revenue
           }));
 
-        // Top Earning Players - SOLUÇÃO DEFINITIVA (queries separadas)
+        // Top Earning Players
         let topPlayersData: TopPlayer[] = [];
         try {
-          console.log('🔍 [TOP PLAYERS] Iniciando busca...');
-          
-          // PASSO 1: Buscar todos os earnings
-          const { data: allEarnings, error: earningsError } = await supabase
+          const { data: allEarnings } = await supabase
             .from('player_earnings')
             .select('net_rake, player_deal_id');
           
-          console.log('📊 [TOP PLAYERS] Total earnings encontrados:', allEarnings?.length || 0);
-          
-          if (earningsError || !allEarnings || allEarnings.length === 0) {
-            console.warn('⚠️ [TOP PLAYERS] Sem earnings');
-            setTopPlayers([]);
-          } else {
-            // PASSO 2: Extrair player_deal_ids únicos
+          if (allEarnings && allEarnings.length > 0) {
             const playerDealIds = [...new Set(
               allEarnings
                 .map(e => e.player_deal_id)
                 .filter(id => id !== null && id !== undefined)
             )];
             
-            console.log('🎯 [TOP PLAYERS] Player deal IDs únicos:', playerDealIds.length);
-            
-            if (playerDealIds.length === 0) {
-              console.warn('⚠️ [TOP PLAYERS] Sem player_deal_ids válidos');
-              setTopPlayers([]);
-            } else {
-              // PASSO 3: Buscar player_deals (SEM join com profiles)
-              const { data: playerDeals, error: dealsError } = await supabase
+            if (playerDealIds.length > 0) {
+              const { data: playerDeals } = await supabase
                 .from('player_deals')
                 .select('id, user_id, platform_username, deal_id')
                 .in('id', playerDealIds);
               
-              console.log('👥 [TOP PLAYERS] Player deals encontrados:', playerDeals?.length || 0);
-              
-              if (dealsError || !playerDeals || playerDeals.length === 0) {
-                console.warn('⚠️ [TOP PLAYERS] Sem player_deals');
-                setTopPlayers([]);
-              } else {
-                // PASSO 4: Extrair user_ids únicos dos deals
+              if (playerDeals && playerDeals.length > 0) {
                 const userIds = [...new Set(
                   playerDeals
                     .map(pd => pd.user_id)
                     .filter(id => id !== null && id !== undefined)
                 )];
                 
-                console.log('👤 [TOP PLAYERS] User IDs únicos:', userIds.length);
-                
-                // PASSO 5: Buscar profiles SEPARADAMENTE
                 const { data: profiles } = await supabase
                   .from('profiles')
                   .select('id, full_name')
                   .in('id', userIds);
                 
-                console.log('📝 [TOP PLAYERS] Profiles encontrados:', profiles?.length || 0);
-                
-                // PASSO 6: Extrair deal_ids únicos
                 const dealIds = [...new Set(
                   playerDeals
                     .map(pd => pd.deal_id)
                     .filter(id => id !== null && id !== undefined)
                 )];
                 
-                // PASSO 7: Buscar deals (plataformas) SEPARADAMENTE
                 const { data: deals } = await supabase
                   .from('deals')
                   .select('id, name')
                   .in('id', dealIds);
                 
-                console.log('🎮 [TOP PLAYERS] Deals info encontrados:', deals?.length || 0);
-                
-                // PASSO 8: Criar mapas
                 const profileMap: Record<string, UserProfile> = {};
                 (profiles || []).forEach(p => {
                   profileMap[p.id] = p;
@@ -3727,7 +4231,6 @@ function IntelligenceContent() {
                   dealMap[pd.id] = pd;
                 });
                 
-                // PASSO 9: Agrupar earnings por user_id
                 const playerEarningsMap: Record<string, TopPlayer> = {};
                 
                 allEarnings.forEach(earning => {
@@ -3750,65 +4253,210 @@ function IntelligenceContent() {
                   playerEarningsMap[userId].earnings += parseFloat(earning.net_rake || 0);
                 });
                 
-                console.log('💰 [TOP PLAYERS] Players com earnings:', Object.keys(playerEarningsMap).length);
-                
-                // PASSO 10: Ordenar e pegar top 5
                 topPlayersData = Object.values(playerEarningsMap)
                   .sort((a, b) => b.earnings - a.earnings)
                   .slice(0, 5);
-                
-                console.log('🏆 [TOP PLAYERS] Top 5 final:', topPlayersData);
-                
-                setTopPlayers(topPlayersData);
               }
             }
           }
         } catch (error) {
-          console.error('💥 [TOP PLAYERS] Erro fatal:', error);
-          setTopPlayers([]);
+          console.error('Error loading top players:', error);
         }
 
-        // Update all states
-        setKpis({
-          totalRevenue,
-          revenueGrowth: parseFloat(revenueGrowth.toFixed(1)),
-          activePlayers: uniqueActivePlayers,
-          totalPlayers: totalPlayersCount || 0,
-          avgRevenuePerPlayer: uniqueActivePlayers > 0 ? totalRevenue / uniqueActivePlayers : 0,
-          conversionRate: parseFloat(conversionRate.toFixed(1)),
-          approvedDeals: approvedCount || 0,
-          totalDeals: totalDealsCount || 0,
-          activeSubAffiliates: subAffiliatesCount || 0,
-          totalReferrals: referralsCount || 0,
-          topPlatform: { name: topPlatform.name, revenue: topPlatform.revenue }
-        });
-        
-        setRevenueOverTime(revenueChartData);
-        setTopPlatforms(platformsArray.slice(0, 5));
-        setPlatformData(platformsArray);
         setTopSubAffiliates(topSubAffiliatesData);
         setTopPlayers(topPlayersData);
-        
       } catch (error) {
-        console.error('Error loading intelligence data:', error);
+        console.error('Error loading extras:', error);
       } finally {
-        setIsLoading(false);
+        setIsLoadingExtras(false);
       }
     }
 
-    loadIntelligenceData();
-  }, [period]);
+    loadExtras();
+  }, []); // Runs only once
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
-          <p className="text-gray-400">Loading intelligence data...</p>
+  // Memoize Revenue Chart to prevent unnecessary re-renders
+  const revenueChart = useMemo(() => {
+    if (isLoadingRevenue) {
+      return (
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
         </div>
-      </div>
+      );
+    }
+    if (revenueOverTime.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          No revenue data available
+        </div>
+      );
+    }
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={revenueOverTime}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis 
+            dataKey="month" 
+            stroke="#9CA3AF"
+            style={{ fontSize: '12px' }}
+          />
+          <YAxis 
+            stroke="#9CA3AF"
+            style={{ fontSize: '12px' }}
+            tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+          />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#1F2937', 
+              border: '1px solid #374151',
+              borderRadius: '8px'
+            }}
+            labelStyle={{ color: '#F3F4F6' }}
+            formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+          />
+          <Line 
+            type="monotone" 
+            dataKey="revenue" 
+            stroke="#10b981" 
+            strokeWidth={3}
+            dot={{ fill: '#10b981', r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     );
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingRevenue, revenueOverTime, chartPeriod, chartPlatform]);
+
+  // Memoize Player Trend Chart to prevent unnecessary re-renders
+  const playerTrendChart = useMemo(() => {
+    if (isLoadingPlayerTrend) {
+      return (
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      );
+    }
+    if (playerTrendData.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[300px] text-gray-500">
+          No player data available
+        </div>
+      );
+    }
+    return (
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={playerTrendData}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis 
+            dataKey="month" 
+            stroke="#9CA3AF"
+            style={{ fontSize: '12px' }}
+          />
+          <YAxis 
+            stroke="#9CA3AF"
+            style={{ fontSize: '12px' }}
+          />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#1F2937', 
+              border: '1px solid #374151',
+              borderRadius: '8px'
+            }}
+            labelStyle={{ color: '#F3F4F6' }}
+          />
+          <Legend />
+          
+          {/* Linha 1: Total Players (azul) - acumulado */}
+          <Line 
+            type="monotone" 
+            dataKey="totalPlayers" 
+            stroke="#3B82F6" 
+            strokeWidth={3}
+            name="Total Players"
+            dot={{ fill: '#3B82F6', r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+          
+          {/* Linha 2: Active Players (verde) - filtrado */}
+          <Line 
+            type="monotone" 
+            dataKey="activePlayers" 
+            stroke="#10B981" 
+            strokeWidth={3}
+            name="Active Players"
+            dot={{ fill: '#10B981', r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingPlayerTrend, playerTrendData, playerTrendPeriod, playerTrendPlatform]);
+
+  // Memoize Top Platforms Chart to prevent unnecessary re-renders
+  const topPlatformsChart = useMemo(() => {
+    if (isLoadingTopPlatforms) {
+      return (
+        <div className="flex items-center justify-center h-[450px] text-gray-500">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+        </div>
+      );
+    }
+    if (topPlatforms.length === 0) {
+      return (
+        <div className="flex items-center justify-center h-[450px] text-gray-500">
+          No platform data available
+        </div>
+      );
+    }
+    return (
+      <ResponsiveContainer width="100%" height={450}>
+        <BarChart data={topPlatforms} margin={{ bottom: 20, top: 20, left: 10, right: 10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis 
+            dataKey="name" 
+            stroke="#9CA3AF"
+            angle={0}
+            textAnchor="middle"
+            height={60}
+            interval={0}
+            tick={{ fontSize: 13, fontWeight: 'bold' }}
+          />
+          <YAxis 
+            stroke="#9CA3AF"
+            style={{ fontSize: '12px' }}
+            tickFormatter={(value) => 
+              topPlatformsMetric === 'rake' ? `$${(value / 1000).toFixed(0)}k` : value
+            }
+          />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: '#1F2937', 
+              border: '1px solid #374151',
+              borderRadius: '8px'
+            }}
+            cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
+            formatter={(value: number) => [
+              topPlatformsMetric === 'rake' ? `$${value.toLocaleString()}` : value,
+              topPlatformsMetric === 'rake' 
+                ? 'Rake' 
+                : topPlatformsMetric === 'totalPlayers' 
+                  ? 'Total Players' 
+                  : 'Active Players'
+            ]}
+          />
+          <Bar 
+            dataKey={topPlatformsMetric === 'rake' ? 'revenue' : 'activePlayers'} 
+            fill="#8b5cf6" 
+            radius={[8, 8, 0, 0]}
+            maxBarSize={80}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoadingTopPlatforms, topPlatforms, topPlatformsPeriod, topPlatformsMetric]);
 
   return (
     <div className="space-y-8">
@@ -3826,9 +4474,9 @@ function IntelligenceContent() {
         
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setPeriod('7d')}
+            onClick={() => setKpiPeriod('7d')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              period === '7d'
+              kpiPeriod === '7d'
                 ? 'bg-emerald-500 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
@@ -3836,19 +4484,29 @@ function IntelligenceContent() {
             Last 7 Days
           </button>
           <button
-            onClick={() => setPeriod('30d')}
+            onClick={() => setKpiPeriod('currentMonth')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              period === '30d'
+              kpiPeriod === 'currentMonth'
                 ? 'bg-emerald-500 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
           >
-            Last 30 Days
+            Current Month
           </button>
           <button
-            onClick={() => setPeriod('90d')}
+            onClick={() => setKpiPeriod('lastMonth')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              period === '90d'
+              kpiPeriod === 'lastMonth'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+            }`}
+          >
+            Last Month
+          </button>
+          <button
+            onClick={() => setKpiPeriod('90d')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              kpiPeriod === '90d'
                 ? 'bg-emerald-500 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
@@ -3856,9 +4514,9 @@ function IntelligenceContent() {
             Last 90 Days
           </button>
           <button
-            onClick={() => setPeriod('all')}
+            onClick={() => setKpiPeriod('all')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              period === 'all'
+              kpiPeriod === 'all'
                 ? 'bg-emerald-500 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
             }`}
@@ -3870,239 +4528,466 @@ function IntelligenceContent() {
 
       {/* Executive Summary - 6 KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* KPI 1: Total Revenue */}
+        {/* KPI 1: Total Rake Generated */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-400">Total Revenue</p>
-                <p className="text-2xl font-bold text-white">
-                  ${kpis.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Total Rake Generated</p>
+                <p className="text-2xl font-bold text-white leading-tight">
+                  ${kpis.totalRakeGenerated.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            {kpis.revenueGrowth >= 0 ? (
-              <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-              </svg>
-            )}
-            <span className={`text-sm font-medium ${kpis.revenueGrowth >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-              {kpis.revenueGrowth >= 0 ? '+' : ''}{kpis.revenueGrowth.toFixed(1)}%
-            </span>
-            <span className="text-sm text-gray-500">vs previous period</span>
-          </div>
+          )}
         </div>
 
         {/* KPI 2: Active Players */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-400">Active Players</p>
-                <p className="text-2xl font-bold text-white">{kpis.activePlayers}</p>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Active Players</p>
+                <p className="text-2xl font-bold text-white leading-tight">{kpis.activePlayers}</p>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-gray-500">{kpis.totalPlayers} total players</span>
-          </div>
+          )}
         </div>
 
-        {/* KPI 3: Avg Revenue per Player */}
+        {/* KPI 3: Sub-Affiliates */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Avg Rev per Player</p>
-                <p className="text-2xl font-bold text-white">
-                  ${kpis.avgRevenuePerPlayer.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* KPI 4: Conversion Rate */}
-        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Conversion Rate</p>
-                <p className="text-2xl font-bold text-white">{kpis.conversionRate.toFixed(1)}%</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-gray-500">{kpis.approvedDeals}/{kpis.totalDeals} approved</span>
-          </div>
-        </div>
-
-        {/* KPI 5: Active Sub-Affiliates */}
-        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <div>
-                <p className="text-sm text-gray-400">Sub-Affiliates</p>
-                <p className="text-2xl font-bold text-white">{kpis.activeSubAffiliates}</p>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Sub-Affiliates</p>
+                <p className="text-2xl font-bold text-white leading-tight">{kpis.activeSubAffiliates}</p>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-gray-500">{kpis.totalReferrals} total referrals</span>
-          </div>
+          )}
         </div>
 
-        {/* KPI 6: Top Platform */}
+        {/* KPI 4: Top Platform Rake Generated */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-400">Top Platform</p>
-                <p className="text-xl font-bold text-white truncate">{kpis.topPlatform.name}</p>
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
               </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-emerald-500 font-medium">
-              ${kpis.topPlatform.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            <span className="text-sm text-gray-500">revenue</span>
-          </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-8 h-8 text-emerald-500" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Top Platform Rake Generated</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-xl font-bold text-white leading-tight">{kpis.topPlatformRake.name}</p>
+                  <p className="text-xl font-bold text-emerald-500 leading-tight">
+                    ${kpis.topPlatformRake.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* KPI 5: Top Platform Total Players */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-8 h-8 text-yellow-500" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Top Platform Total Players</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-xl font-bold text-white leading-tight">{kpis.topPlatformTotalPlayers.name}</p>
+                  <p className="text-xl font-bold text-yellow-500 leading-tight">
+                    {kpis.topPlatformTotalPlayers.count}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* KPI 6: Top Platform Active Players */}
+        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+          {isLoading ? (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-gray-800 animate-pulse"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-gray-800 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-8 bg-gray-800 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-8 h-8 text-orange-500" />
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm text-gray-400 mb-1">Top Platform Active Players</p>
+                <div className="flex items-center gap-4">
+                  <p className="text-xl font-bold text-white leading-tight">{kpis.topPlatformActivePlayers.name}</p>
+                  <p className="text-xl font-bold text-orange-500 leading-tight">
+                    {kpis.topPlatformActivePlayers.count}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Revenue Analytics - 2 Charts */}
+      {/* Revenue Trend & Player Trend - 2 Charts Side by Side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Trend - Line Chart */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Revenue Trend</h3>
-          {revenueOverTime.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueOverTime}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="month" 
-                  stroke="#9CA3AF"
-                  style={{ fontSize: '12px' }}
-                />
-                <YAxis 
-                  stroke="#9CA3AF"
-                  style={{ fontSize: '12px' }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ color: '#F3F4F6' }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#10b981" 
-                  strokeWidth={3}
-                  dot={{ fill: '#10b981', r: 4 }}
-                  activeDot={{ r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
-              No revenue data available
+          {/* Header with Title, Period Filters, and Platform Dropdown */}
+          <div className="flex flex-col gap-4 mb-6">
+            <h3 className="text-lg font-bold text-white">Revenue Trend</h3>
+            
+            {/* Period Filters for Chart (smaller buttons) */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setChartPeriod('60d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  chartPeriod === '60d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 60 Days
+              </button>
+              <button
+                onClick={() => setChartPeriod('90d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  chartPeriod === '90d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 90 Days
+              </button>
+              <button
+                onClick={() => setChartPeriod('120d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  chartPeriod === '120d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 120 Days
+              </button>
+              <button
+                onClick={() => setChartPeriod('180d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  chartPeriod === '180d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 180 Days
+              </button>
+              <button
+                onClick={() => setChartPeriod('all')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  chartPeriod === 'all'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                All Time
+              </button>
             </div>
-          )}
+
+            {/* Platform Dropdown */}
+            <select
+              value={chartPlatform === 'all' ? 'all' : chartPlatform}
+              onChange={(e) => setChartPlatform(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+              className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 hover:border-gray-600 focus:outline-none focus:border-emerald-500 text-sm"
+            >
+              <option value="all">All Platforms</option>
+              {availableDeals.map(deal => (
+                <option key={deal.id} value={deal.id}>{deal.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {revenueChart}
         </div>
 
-        {/* Top Platforms - Horizontal Bar Chart */}
+        {/* Player Trend - Line Chart */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Top Platforms</h3>
-          {topPlatforms.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart 
-                data={topPlatforms} 
-                layout="vertical"
-                margin={{ left: 20 }}
+          {/* Header with Title, Period Filters, and Platform Dropdown */}
+          <div className="flex flex-col gap-4 mb-6">
+            <h3 className="text-lg font-bold text-white">Player Trend</h3>
+            
+            {/* Period Filters for Player Trend */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setPlayerTrendPeriod('60d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  playerTrendPeriod === '60d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  type="number" 
-                  stroke="#9CA3AF"
-                  style={{ fontSize: '12px' }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                />
-                <YAxis 
-                  type="category" 
-                  dataKey="name" 
-                  stroke="#9CA3AF"
-                  width={100}
-                  style={{ fontSize: '12px' }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
-                    border: '1px solid #374151',
-                    borderRadius: '8px'
-                  }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
-                />
-                <Bar dataKey="revenue" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex items-center justify-center h-[300px] text-gray-500">
-              No platform data available
+                Last 60 Days
+              </button>
+              <button
+                onClick={() => setPlayerTrendPeriod('90d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  playerTrendPeriod === '90d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 90 Days
+              </button>
+              <button
+                onClick={() => setPlayerTrendPeriod('120d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  playerTrendPeriod === '120d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 120 Days
+              </button>
+              <button
+                onClick={() => setPlayerTrendPeriod('180d')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  playerTrendPeriod === '180d'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Last 180 Days
+              </button>
+              <button
+                onClick={() => setPlayerTrendPeriod('all')}
+                className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                  playerTrendPeriod === 'all'
+                    ? 'bg-emerald-500 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                All Time
+              </button>
             </div>
-          )}
+
+            {/* Platform Dropdown */}
+            <select
+              value={playerTrendPlatform === 'all' ? 'all' : playerTrendPlatform}
+              onChange={(e) => setPlayerTrendPlatform(e.target.value === 'all' ? 'all' : parseInt(e.target.value))}
+              className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 hover:border-gray-600 focus:outline-none focus:border-emerald-500 text-sm"
+            >
+              <option value="all">All Platforms</option>
+              {availableDeals.map(deal => (
+                <option key={deal.id} value={deal.id}>{deal.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {playerTrendChart}
         </div>
       </div>
 
+      {/* Top Platforms - Full Width Vertical Bar Chart */}
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
+        {/* Header with Title, Period Filters, and Metric Selector */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <h3 className="text-lg font-bold text-white">Top Platforms</h3>
+          
+          {/* Period Filters for Top Platforms */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setTopPlatformsPeriod('7d')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                topPlatformsPeriod === '7d'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last 7 Days
+            </button>
+            <button
+              onClick={() => setTopPlatformsPeriod('currentMonth')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                topPlatformsPeriod === 'currentMonth'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Current Month
+            </button>
+            <button
+              onClick={() => setTopPlatformsPeriod('lastMonth')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                topPlatformsPeriod === 'lastMonth'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last Month
+            </button>
+            <button
+              onClick={() => setTopPlatformsPeriod('90d')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                topPlatformsPeriod === '90d'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last 90 Days
+            </button>
+            <button
+              onClick={() => setTopPlatformsPeriod('all')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                topPlatformsPeriod === 'all'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              All Time
+            </button>
+          </div>
+
+          {/* Metric Selector */}
+          <select
+            value={topPlatformsMetric}
+            onChange={(e) => setTopPlatformsMetric(e.target.value as 'rake' | 'totalPlayers' | 'activePlayers')}
+            className="px-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 hover:border-gray-600 focus:outline-none focus:border-emerald-500 text-sm"
+          >
+            <option value="rake">Rake Generated</option>
+            <option value="totalPlayers">Total Player Count</option>
+            <option value="activePlayers">Active Player Count</option>
+          </select>
+        </div>
+
+        {topPlatformsChart}
+      </div>
+
       {/* Platform Performance Matrix Table */}
-      {platformData.length > 0 && (
-        <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-800">
+      <div className="bg-[#0a0e13] border border-gray-800 rounded-lg overflow-hidden">
+        <div className="p-6 border-b border-gray-800 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
             <h3 className="text-lg font-bold text-white">Platform Performance Matrix</h3>
             <p className="text-sm text-gray-400 mt-1">Detailed breakdown by poker room</p>
           </div>
-          
+
+          {/* Period Filters for Matrix */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setMatrixPeriod('7d')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                matrixPeriod === '7d'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last 7 Days
+            </button>
+            <button
+              onClick={() => setMatrixPeriod('currentMonth')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                matrixPeriod === 'currentMonth'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Current Month
+            </button>
+            <button
+              onClick={() => setMatrixPeriod('lastMonth')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                matrixPeriod === 'lastMonth'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last Month
+            </button>
+            <button
+              onClick={() => setMatrixPeriod('90d')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                matrixPeriod === '90d'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              Last 90 Days
+            </button>
+            <button
+              onClick={() => setMatrixPeriod('all')}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                matrixPeriod === 'all'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+              }`}
+            >
+              All Time
+            </button>
+          </div>
+        </div>
+        
+        {isLoadingMatrix ? (
+          <div className="flex items-center justify-center h-[300px] text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+          </div>
+        ) : platformData.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-900/50 border-b border-gray-800">
@@ -4118,6 +5003,15 @@ function IntelligenceContent() {
                   </th>
                   <th 
                     className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('totalPlayers')}
+                  >
+                    Total Players
+                    {sortConfig.key === 'totalPlayers' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
+                  </th>
+                  <th 
+                    className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                     onClick={() => handleSort('activePlayers')}
                   >
                     Active Players
@@ -4127,24 +5021,30 @@ function IntelligenceContent() {
                   </th>
                   <th 
                     className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
-                    onClick={() => handleSort('revenue')}
+                    onClick={() => handleSort('grossRake')}
                   >
-                    Total Revenue
-                    {sortConfig.key === 'revenue' && (
+                    Total Gross Rake
+                    {sortConfig.key === 'grossRake' && (
                       <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                     )}
                   </th>
                   <th 
                     className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
-                    onClick={() => handleSort('avgPerPlayer')}
+                    onClick={() => handleSort('netRake')}
                   >
-                    Avg per Player
-                    {sortConfig.key === 'avgPerPlayer' && (
+                    Total Net Rake
+                    {sortConfig.key === 'netRake' && (
                       <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
                     )}
                   </th>
-                  <th className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <th 
+                    className="text-center px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                    onClick={() => handleSort('marketShare')}
+                  >
                     Market Share
+                    {sortConfig.key === 'marketShare' && (
+                      <span className="ml-2">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                    )}
                   </th>
                 </tr>
               </thead>
@@ -4158,16 +5058,19 @@ function IntelligenceContent() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
+                      <span className="text-sm font-semibold text-gray-300">{platform.totalPlayers}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
                       <span className="text-sm font-semibold text-blue-400">{platform.activePlayers}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="text-sm font-semibold text-emerald-500">
-                        ${platform.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${platform.grossRake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="text-sm text-gray-300">
-                        ${platform.avgPerPlayer.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      <span className="text-sm font-semibold text-purple-400">
+                        ${platform.netRake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -4188,10 +5091,14 @@ function IntelligenceContent() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex items-center justify-center h-[200px] text-gray-500">
+            No platform data available for this period
+          </div>
+        )}
+      </div>
 
-      {/* Top Performers - 2 Lists */}
+      {/* Top Performers Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Sub-Affiliates */}
         <div className="bg-[#0a0e13] border border-gray-800 rounded-lg p-6">
